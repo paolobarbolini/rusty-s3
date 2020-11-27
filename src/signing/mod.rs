@@ -48,11 +48,7 @@ pub fn sign(
         vec!["host"].into_iter(),
     );
 
-    println!("---------------- canonical_req: {}", canonical_req);
-
     let signed_string = string_to_sign::string_to_sign(date, region, &canonical_req);
-
-    println!("------------------------- signed_string: {}", signed_string);
 
     let signature = signature::signature(date, secret, region, &signed_string);
 
