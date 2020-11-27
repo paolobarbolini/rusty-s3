@@ -1,6 +1,3 @@
-use std::borrow::Cow;
-
-use time::PrimitiveDateTime;
 use url::Url;
 
 use super::util::percent_encode;
@@ -86,5 +83,65 @@ where
         }
 
         string.push_str(key);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use pretty_assertions::assert_eq;
+    use time::PrimitiveDateTime;
+
+    use super::*;
+
+    #[test]
+    fn aws_example() {
+        let date = PrimitiveDateTime::parse(
+            "Fri, 24 May 2013 00:00:00 GMT",
+            "%a, %d %b %Y %-H:%M:%S GMT",
+        )
+        .unwrap();
+        let method = "GET";
+        let url = "https://examplebucket.s3.amazonaws.com/test.txt"
+            .parse()
+            .unwrap();
+        let region = "us-east-1";
+        let key = "AKIAIOSFODNN7EXAMPLE";
+        let expires_seconds = 86400;
+
+        let date_str = date.format("%Y%m%dT%H%M%SZ");
+        let yyyymmdd = date.format("%Y%m%d");
+
+        let credential = format!(
+            "{}/{}/{}/{}/{}",
+            key, yyyymmdd, region, "s3", "aws4_request"
+        );
+        let signed_headers_str = "host";
+
+        let expected = concat!(
+            "GET\n",
+            "/test.txt\n",
+            "X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host\n",
+            "host:examplebucket.s3.amazonaws.com\n",
+            "\n",
+            "host\n",
+            "UNSIGNED-PAYLOAD",
+        );
+
+        let got = canonical_request(
+            method,
+            &url,
+            vec![
+                ("X-Amz-Algorithm", "AWS4-HMAC-SHA256"),
+                ("X-Amz-Credential", &credential),
+                ("X-Amz-Date", &date_str),
+                ("X-Amz-Expires", &expires_seconds.to_string()),
+                ("X-Amz-SignedHeaders", signed_headers_str),
+            ]
+            .into_iter(),
+            vec![("host", url.host_str().unwrap())].into_iter(),
+            vec!["host"].into_iter(),
+        );
+
+        assert_eq!(got, expected);
     }
 }
