@@ -28,6 +28,11 @@ pub fn sign(
     let signed_headers_str = "host";
     let url_query = format!("{}?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential={}&X-Amz-Date={}&X-Amz-Expires={}&X-Amz-SignedHeaders={}",url.to_string(),credential,date_str,expires_seconds,signed_headers_str);
 
+    let host_header = match url.port_or_known_default() {
+        Some(port) => format!("{}:{}", url.host_str().unwrap(), port),
+        None => url.host_str().unwrap().to_string(),
+    };
+
     let canonical_req = canonical_request::canonical_request(
         method,
         &url,
@@ -39,7 +44,7 @@ pub fn sign(
             ("X-Amz-SignedHeaders", signed_headers_str),
         ]
         .into_iter(),
-        vec![("host", url.host_str().unwrap())].into_iter(),
+        vec![("host", host_header.as_ref())].into_iter(),
         vec!["host"].into_iter(),
     );
 
