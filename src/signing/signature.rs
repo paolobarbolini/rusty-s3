@@ -10,7 +10,7 @@ pub fn signature(
     region: &str,
     string_to_sign: &str,
 ) -> String {
-    let yyyymmdd = date.format("%Y/%m/%d");
+    let yyyymmdd = date.format("%Y%m%d");
 
     let mut mac = HmacSha256::new_varkey(format!("AWS4{}", secret).as_bytes())
         .expect("HMAC can take keys of any size");
