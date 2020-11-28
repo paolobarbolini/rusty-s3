@@ -4,7 +4,7 @@ use url::Url;
 mod canonical_request;
 mod signature;
 mod string_to_sign;
-pub(super) mod util;
+pub(crate) mod util;
 
 pub fn sign(
     date: &PrimitiveDateTime,

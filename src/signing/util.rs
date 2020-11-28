@@ -31,9 +31,14 @@ pub const FRAGMENT: &AsciiSet = &CONTROLS
     .add(b'|')
     .add(b'\\')
     .add(b'^')
-    .add(b'`')
-    .add(b'/');
+    .add(b'`');
+
+pub const FRAGMENT_SLASH: &AsciiSet = &FRAGMENT.add(b'/');
 
 pub fn percent_encode(val: &str) -> String {
+    utf8_percent_encode(val, FRAGMENT_SLASH).to_string()
+}
+
+pub fn percent_encode_path(val: &str) -> String {
     utf8_percent_encode(val, FRAGMENT).to_string()
 }
