@@ -15,8 +15,6 @@ pub fn sign(
     region: &str,
     expires_seconds: u64,
 ) -> String {
-    // GET http://localhost:portadiminio/bucket/object
-
     let yyyymmdd = date.format("%Y%m%d");
 
     let credential_ = format!(
@@ -24,7 +22,7 @@ pub fn sign(
         key, yyyymmdd, region, "s3", "aws4_request"
     );
     let credential = util::percent_encode(&credential_);
-    let date_str = date.format("%Y%m%dT%H%M%SZ"); //"2020-11-26T15:16Z";
+    let date_str = date.format("%Y%m%dT%H%M%SZ");
     let signed_headers_str = "host";
     let url_query = format!("{}?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential={}&X-Amz-Date={}&X-Amz-Expires={}&X-Amz-SignedHeaders={}",url.to_string(),credential,date_str,expires_seconds,signed_headers_str);
 
