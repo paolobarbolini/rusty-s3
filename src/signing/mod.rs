@@ -26,9 +26,14 @@ pub fn sign(
     let signed_headers_str = "host";
     let url_query = format!("{}?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential={}&X-Amz-Date={}&X-Amz-Expires={}&X-Amz-SignedHeaders={}",url.to_string(),credential,date_str,expires_seconds,signed_headers_str);
 
-    let host_header = match url.port_or_known_default() {
-        Some(port) => format!("{}:{}", url.host_str().unwrap(), port),
-        None => url.host_str().unwrap().to_string(),
+    let host_header = match (url.scheme(), url.port()) {
+        ("http", None) | ("http", Some(80)) | ("https", None) | ("https", Some(443)) => {
+            url.host_str().unwrap().to_string()
+        }
+        ("http", Some(port)) | ("https", Some(port)) => {
+            format!("{}:{}", url.host_str().unwrap(), port)
+        }
+        _ => panic!("unsupported url scheme"),
     };
 
     let canonical_req = canonical_request::canonical_request(
