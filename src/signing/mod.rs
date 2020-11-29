@@ -1,4 +1,4 @@
-use time::PrimitiveDateTime;
+use time::OffsetDateTime;
 use url::Url;
 
 mod canonical_request;
@@ -7,7 +7,7 @@ mod string_to_sign;
 pub(crate) mod util;
 
 pub fn sign(
-    date: &PrimitiveDateTime,
+    date: &OffsetDateTime,
     method: &str,
     url: &Url,
     key: &str,
@@ -71,7 +71,8 @@ mod tests {
             "Fri, 24 May 2013 00:00:00 GMT",
             "%a, %d %b %Y %-H:%M:%S GMT",
         )
-        .unwrap();
+        .unwrap()
+        .assume_utc();
         let method = "GET";
         let url = "https://examplebucket.s3.amazonaws.com/test.txt"
             .parse()

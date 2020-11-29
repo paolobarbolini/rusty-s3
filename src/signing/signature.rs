@@ -1,11 +1,11 @@
 use hmac::{Hmac, Mac, NewMac};
 use sha2::Sha256;
-use time::PrimitiveDateTime;
+use time::OffsetDateTime;
 
 type HmacSha256 = Hmac<Sha256>;
 
 pub fn signature(
-    date: &PrimitiveDateTime,
+    date: &OffsetDateTime,
     secret: &str,
     region: &str,
     string_to_sign: &str,
@@ -48,7 +48,8 @@ mod tests {
             "Fri, 24 May 2013 00:00:00 GMT",
             "%a, %d %b %Y %-H:%M:%S GMT",
         )
-        .unwrap();
+        .unwrap()
+        .assume_utc();
 
         let secret = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
         let region = "us-east-1";

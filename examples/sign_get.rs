@@ -1,9 +1,8 @@
 use rusty_s3::sign;
-use time::PrimitiveDateTime;
-use url::Url;
+use time::OffsetDateTime;
 
 fn main() {
-    let date = PrimitiveDateTime::now();
+    let date = OffsetDateTime::now_utc();
 
     let url = "http://localhost:9000/test/img.jpg".parse().unwrap();
     let key = "minioadmin";

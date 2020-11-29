@@ -67,7 +67,7 @@ mod tests {
             .unwrap();
         let name = "rusty-s3";
         let region = "eu-west-1";
-        let bucket = Bucket::new(endpoint.clone(), true, name.into(), region.into()).unwrap();
+        let bucket = Bucket::new(endpoint, true, name.into(), region.into()).unwrap();
 
         assert_eq!(bucket.base_url(), &base_url);
         assert_eq!(bucket.name(), name);
@@ -82,7 +82,7 @@ mod tests {
             .unwrap();
         let name = "rusty-s3";
         let region = "eu-west-1";
-        let bucket = Bucket::new(endpoint.clone(), false, name.into(), region.into()).unwrap();
+        let bucket = Bucket::new(endpoint, false, name.into(), region.into()).unwrap();
 
         assert_eq!(bucket.base_url(), &base_url);
         assert_eq!(bucket.name(), name);
@@ -102,7 +102,7 @@ mod tests {
         let endpoint: Url = "https://s3.eu-west-1.amazonaws.com".parse().unwrap();
         let name = "rusty-s3";
         let region = "eu-west-1";
-        let bucket = Bucket::new(endpoint.clone(), true, name.into(), region.into()).unwrap();
+        let bucket = Bucket::new(endpoint, true, name.into(), region.into()).unwrap();
 
         let path_style = bucket.object_url("something/cat.jpg").unwrap();
         assert_eq!(
@@ -116,7 +116,7 @@ mod tests {
         let endpoint: Url = "https://s3.eu-west-1.amazonaws.com".parse().unwrap();
         let name = "rusty-s3";
         let region = "eu-west-1";
-        let bucket = Bucket::new(endpoint.clone(), false, name.into(), region.into()).unwrap();
+        let bucket = Bucket::new(endpoint, false, name.into(), region.into()).unwrap();
 
         let domain_style = bucket.object_url("something/cat.jpg").unwrap();
         assert_eq!(

@@ -1,5 +1,5 @@
 use std::time::Duration;
-use time::PrimitiveDateTime;
+use time::OffsetDateTime;
 use url::Url;
 
 use super::S3Action;
@@ -21,7 +21,7 @@ impl<'a> GetObject<'a> {
         }
     }
 
-    fn sign_with_time(&self, expires_at: Duration, time: &PrimitiveDateTime) -> Url {
+    fn sign_with_time(&self, expires_at: Duration, time: &OffsetDateTime) -> Url {
         let url = self.bucket.object_url(self.object).unwrap();
 
         match self.credentials {
@@ -44,13 +44,15 @@ impl<'a> GetObject<'a> {
 
 impl<'a> S3Action for GetObject<'a> {
     fn sign(&self, expires_at: Duration) -> Url {
-        let now = PrimitiveDateTime::now();
+        let now = OffsetDateTime::now_utc();
         self.sign_with_time(expires_at, &now)
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use time::PrimitiveDateTime;
+
     use super::*;
     use crate::{Bucket, Credentials};
 
@@ -60,7 +62,8 @@ mod tests {
             "Fri, 24 May 2013 00:00:00 GMT",
             "%a, %d %b %Y %-H:%M:%S GMT",
         )
-        .unwrap();
+        .unwrap()
+        .assume_utc();
         let expires_at = Duration::from_secs(86400);
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
