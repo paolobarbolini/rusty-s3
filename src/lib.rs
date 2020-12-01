@@ -5,3 +5,4 @@ pub mod actions;
 mod bucket;
 mod credentials;
 mod signing;
+pub(crate) mod sorting_iter;
