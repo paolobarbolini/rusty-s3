@@ -92,6 +92,13 @@ where
 
     let signature = signature::signature(date, secret, region, &signed_string);
 
+    // SAFETY: here to verify the safety of the above `mem::transmute`s, by making sure
+    // the ownership is alive until here.
+    let _ = host_header.as_str();
+    let _ = credential.as_str();
+    let _ = date_str.as_str();
+    let _ = expires_seconds_string.as_str();
+
     url.query_pairs_mut()
         .append_pair("X-Amz-Signature", &signature);
     url
