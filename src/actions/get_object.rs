@@ -1,15 +1,18 @@
+use std::iter;
 use std::time::Duration;
 use time::OffsetDateTime;
 use url::Url;
 
 use super::S3Action;
 use crate::signing::sign;
-use crate::{Bucket, Credentials};
+use crate::{Bucket, Credentials, Map};
 
 pub struct GetObject<'a> {
     bucket: &'a Bucket,
     credentials: Option<&'a Credentials>,
     object: &'a str,
+
+    query: Map,
 }
 
 impl<'a> GetObject<'a> {
@@ -18,6 +21,8 @@ impl<'a> GetObject<'a> {
             bucket,
             credentials,
             object,
+
+            query: Map::new(),
         }
     }
 
@@ -25,18 +30,17 @@ impl<'a> GetObject<'a> {
         let url = self.bucket.object_url(self.object).unwrap();
 
         match self.credentials {
-            Some(credentials) => {
-                let url = sign(
-                    time,
-                    "GET",
-                    &url,
-                    credentials.key(),
-                    credentials.secret(),
-                    self.bucket.region(),
-                    expires_at.as_secs(),
-                );
-                url.parse().unwrap()
-            }
+            Some(credentials) => sign(
+                time,
+                "GET",
+                url,
+                credentials.key(),
+                credentials.secret(),
+                self.bucket.region(),
+                expires_at.as_secs(),
+                self.query.iter(),
+                iter::empty(),
+            ),
             None => url,
         }
     }

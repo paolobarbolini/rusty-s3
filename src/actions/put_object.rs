@@ -1,3 +1,4 @@
+use std::iter;
 use std::time::Duration;
 use time::OffsetDateTime;
 use url::Url;
@@ -25,18 +26,17 @@ impl<'a> PutObject<'a> {
         let url = self.bucket.object_url(self.object).unwrap();
 
         match self.credentials {
-            Some(credentials) => {
-                let url = sign(
-                    time,
-                    "PUT",
-                    &url,
-                    credentials.key(),
-                    credentials.secret(),
-                    self.bucket.region(),
-                    expires_at.as_secs(),
-                );
-                url.parse().unwrap()
-            }
+            Some(credentials) => sign(
+                time,
+                "PUT",
+                url,
+                credentials.key(),
+                credentials.secret(),
+                self.bucket.region(),
+                expires_at.as_secs(),
+                iter::empty(),
+                iter::empty(),
+            ),
             None => url,
         }
     }

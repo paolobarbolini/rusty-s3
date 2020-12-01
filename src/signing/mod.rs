@@ -1,30 +1,42 @@
+use std::iter;
+use std::mem;
+
 use time::OffsetDateTime;
 use url::Url;
+
+use crate::sorting_iter::SortingIterator;
 
 mod canonical_request;
 mod signature;
 mod string_to_sign;
 pub(crate) mod util;
 
-pub fn sign(
+#[allow(clippy::too_many_arguments)]
+pub fn sign<'a, Q, H>(
     date: &OffsetDateTime,
     method: &str,
-    url: &Url,
+    mut url: Url,
     key: &str,
     secret: &str,
     region: &str,
     expires_seconds: u64,
-) -> String {
+
+    query_string: Q,
+    headers: H,
+) -> Url
+where
+    Q: Iterator<Item = (&'a str, &'a str)> + Clone,
+    H: Iterator<Item = (&'a str, &'a str)> + Clone,
+{
     let yyyymmdd = date.format("%Y%m%d");
 
-    let credential_ = format!(
+    let credential = format!(
         "{}/{}/{}/{}/{}",
         key, yyyymmdd, region, "s3", "aws4_request"
     );
-    let credential = util::percent_encode(&credential_);
     let date_str = date.format("%Y%m%dT%H%M%SZ");
     let signed_headers_str = "host";
-    let url_query = format!("{}?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential={}&X-Amz-Date={}&X-Amz-Expires={}&X-Amz-SignedHeaders={}",url.to_string(),credential,date_str,expires_seconds,signed_headers_str);
+    let expires_seconds_string = expires_seconds.to_string();
 
     let host_header = match (url.scheme(), url.port()) {
         ("http", None) | ("http", Some(80)) | ("https", None) | ("https", Some(443)) => {
@@ -36,30 +48,59 @@ pub fn sign(
         _ => panic!("unsupported url scheme"),
     };
 
+    // SAFETY: this is a workaround for host_header, credential, date_str, expires_seconds_string
+    // having to live as long as &'a str. These parementers outlive the functions taking them,
+    // so this is safe.
+    let host_header_: &'static str = unsafe { mem::transmute(host_header.as_str()) };
+    let credential_: &'static str = unsafe { mem::transmute(credential.as_str()) };
+    let date_str_: &'static str = unsafe { mem::transmute(date_str.as_str()) };
+    let expires_seconds_string_: &'static str =
+        unsafe { mem::transmute(expires_seconds_string.as_str()) };
+
+    let standard_headers = iter::once(("host", host_header_));
+    let headers = SortingIterator::new(standard_headers, headers);
+
+    let standard_query = [
+        ("X-Amz-Algorithm", "AWS4-HMAC-SHA256"),
+        ("X-Amz-Credential", credential_),
+        ("X-Amz-Date", date_str_),
+        ("X-Amz-Expires", expires_seconds_string_),
+        ("X-Amz-SignedHeaders", signed_headers_str),
+    ];
+
+    let query_string = SortingIterator::new(standard_query.iter().copied(), query_string);
+
+    {
+        let mut query_pairs = url.query_pairs_mut();
+        query_pairs.clear();
+
+        let query_string = query_string.clone();
+        for (key, value) in query_string {
+            query_pairs.append_pair(key, value);
+        }
+    }
+
     let canonical_req = canonical_request::canonical_request(
         method,
         &url,
-        vec![
-            ("X-Amz-Algorithm", "AWS4-HMAC-SHA256"),
-            ("X-Amz-Credential", &credential_),
-            ("X-Amz-Date", &date_str),
-            ("X-Amz-Expires", &expires_seconds.to_string()),
-            ("X-Amz-SignedHeaders", signed_headers_str),
-        ]
-        .into_iter(),
-        vec![("host", host_header.as_ref())].into_iter(),
-        vec!["host"].into_iter(),
+        query_string,
+        headers,
+        iter::once("host"),
     );
 
     let signed_string = string_to_sign::string_to_sign(date, region, &canonical_req);
 
     let signature = signature::signature(date, secret, region, &signed_string);
 
-    format!("{}&X-Amz-Signature={}", url_query, signature)
+    url.query_pairs_mut()
+        .append_pair("X-Amz-Signature", &signature);
+    url
 }
 
 #[cfg(test)]
 mod tests {
+    use std::iter;
+
     use pretty_assertions::assert_eq;
     use time::PrimitiveDateTime;
 
@@ -84,8 +125,18 @@ mod tests {
 
         let expected = "https://examplebucket.s3.amazonaws.com/test.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&X-Amz-Signature=aeeed9bbccd4d02ee5c0109b86d86835f995330da4c265957d157751f604d404";
 
-        let got = sign(&date, method, &url, key, secret, region, expires_seconds);
+        let got = sign(
+            &date,
+            method,
+            url,
+            key,
+            secret,
+            region,
+            expires_seconds,
+            iter::empty(),
+            iter::empty(),
+        );
 
-        assert_eq!(expected, got);
+        assert_eq!(expected, got.as_str());
     }
 }
