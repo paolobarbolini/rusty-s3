@@ -11,7 +11,6 @@ hex = "0.4"
 time = { version = "0.2.23", default-features = false, features = ["std"] }
 url = "2.2.0"
 percent-encoding = "2.1.0"
-form_urlencoded = "1.0.0"
 
 [dev-dependencies]
 pretty_assertions = "0.6.1"
