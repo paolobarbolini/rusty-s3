@@ -1,4 +1,5 @@
 use std::cmp::Ord;
+use std::iter::{Fuse, FusedIterator};
 
 #[derive(Debug, Clone)]
 pub struct SortingIterator<A, B>
@@ -6,8 +7,8 @@ where
     A: Iterator,
     B: Iterator<Item = A::Item>,
 {
-    a: Option<A>,
-    b: Option<B>,
+    a: Fuse<A>,
+    b: Fuse<B>,
 
     a_buffer: Option<A::Item>,
     b_buffer: Option<B::Item>,
@@ -20,8 +21,8 @@ where
 {
     pub(crate) fn new(a: A, b: B) -> Self {
         Self {
-            a: Some(a),
-            b: Some(b),
+            a: a.fuse(),
+            b: b.fuse(),
 
             a_buffer: None,
             b_buffer: None,
@@ -39,14 +40,8 @@ where
     type Item = A::Item;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let a_next = self
-            .a_buffer
-            .take()
-            .or_else(|| self.a.as_mut().and_then(|a| a.next()));
-        let b_next = self
-            .b_buffer
-            .take()
-            .or_else(|| self.b.as_mut().and_then(|b| b.next()));
+        let a_next = self.a_buffer.take().or_else(|| self.a.next());
+        let b_next = self.b_buffer.take().or_else(|| self.b.next());
 
         match (a_next, b_next) {
             (Some(a_next), Some(b_next)) if a_next < b_next => {
@@ -57,21 +52,19 @@ where
                 self.a_buffer = Some(a_next);
                 Some(b_next)
             }
-            (Some(a_next), None) => {
-                self.b = None;
-                Some(a_next)
-            }
-            (None, Some(b_next)) => {
-                self.a = None;
-                Some(b_next)
-            }
-            (None, None) => {
-                self.a = None;
-                self.b = None;
-                None
-            }
+            (Some(next), None) | (None, Some(next)) => Some(next),
+            (None, None) => None,
         }
     }
+}
+
+impl<A, B> FusedIterator for SortingIterator<A, B>
+where
+    A: Iterator,
+    B: Iterator<Item = A::Item>,
+    A::Item: Ord,
+    B::Item: Ord,
+{
 }
 
 #[cfg(test)]
