@@ -34,15 +34,15 @@ where
         key, yyyymmdd, region, "s3", "aws4_request"
     );
     let date_str = date.format("%Y%m%dT%H%M%SZ");
-    let signed_headers_str = "host";
     let expires_seconds_string = expires_seconds.to_string();
 
+    let host = url.host_str().expect("host is known");
     let host_header = match (url.scheme(), url.port()) {
         ("http", None) | ("http", Some(80)) | ("https", None) | ("https", Some(443)) => {
-            url.host_str().unwrap().to_string()
+            host.to_string()
         }
         ("http", Some(port)) | ("https", Some(port)) => {
-            format!("{}:{}", url.host_str().unwrap(), port)
+            format!("{}:{}", host, port)
         }
         _ => panic!("unsupported url scheme"),
     };
@@ -77,7 +77,7 @@ where
         ("X-Amz-Credential", credential_),
         ("X-Amz-Date", date_str_),
         ("X-Amz-Expires", expires_seconds_string_),
-        ("X-Amz-SignedHeaders", signed_headers_str),
+        ("X-Amz-SignedHeaders", "host"),
     ];
 
     let query_string = SortingIterator::new(standard_query.iter().copied(), query_string);
@@ -86,10 +86,7 @@ where
         let mut query_pairs = url.query_pairs_mut();
         query_pairs.clear();
 
-        let query_string = query_string.clone();
-        for (key, value) in query_string {
-            query_pairs.append_pair(key, value);
-        }
+        query_pairs.extend_pairs(query_string.clone());
     }
 
     let canonical_req = canonical_request::canonical_request(
