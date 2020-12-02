@@ -1,5 +1,4 @@
-use std::iter;
-use std::mem;
+use std::{iter, slice, str};
 
 use time::OffsetDateTime;
 use url::Url;
@@ -48,14 +47,27 @@ where
         _ => panic!("unsupported url scheme"),
     };
 
-    // SAFETY: this is a workaround for host_header, credential, date_str, expires_seconds_string
-    // having to live as long as &'a str. These parementers outlive the functions taking them,
-    // so this is safe.
-    let host_header_: &'static str = unsafe { mem::transmute(host_header.as_str()) };
-    let credential_: &'static str = unsafe { mem::transmute(credential.as_str()) };
-    let date_str_: &'static str = unsafe { mem::transmute(date_str.as_str()) };
-    let expires_seconds_string_: &'static str =
-        unsafe { mem::transmute(expires_seconds_string.as_str()) };
+    // SAFETY: this is a workaround for the compiler thinking thet host_header, credential,
+    // date_str and expires_seconds_string have to live as long as &'a str.
+    // These parementers outlive the functions taking them, and we make sure of it by
+    // trying to access them before returning. This makes sure we haven't dropped them
+    // or moved them to another function.
+    let host_header_ = unsafe {
+        let s = host_header.as_str();
+        str::from_utf8_unchecked(slice::from_raw_parts(s.as_ptr(), s.len()))
+    };
+    let credential_ = unsafe {
+        let s = credential.as_str();
+        str::from_utf8_unchecked(slice::from_raw_parts(s.as_ptr(), s.len()))
+    };
+    let date_str_ = unsafe {
+        let s = date_str.as_str();
+        str::from_utf8_unchecked(slice::from_raw_parts(s.as_ptr(), s.len()))
+    };
+    let expires_seconds_string_ = unsafe {
+        let s = expires_seconds_string.as_str();
+        str::from_utf8_unchecked(slice::from_raw_parts(s.as_ptr(), s.len()))
+    };
 
     let standard_headers = iter::once(("host", host_header_));
     let headers = SortingIterator::new(standard_headers, headers);
@@ -92,8 +104,8 @@ where
 
     let signature = signature::signature(date, secret, region, &signed_string);
 
-    // SAFETY: here to verify the safety of the above `mem::transmute`s, by making sure
-    // the ownership is alive until here.
+    // SAFETY: here to verify the safety of the above unsafe functions, by making sure
+    // the borrowed values are still alive.
     let _ = host_header.as_str();
     let _ = credential.as_str();
     let _ = date_str.as_str();
