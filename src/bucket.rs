@@ -2,6 +2,7 @@ use url::{ParseError, Url};
 
 use crate::signing::util::percent_encode_path;
 
+#[derive(Debug, Clone)]
 pub struct Bucket {
     base_url: Url,
     name: String,
