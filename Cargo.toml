@@ -17,6 +17,10 @@ hex = "0.4"
 time = { version = "0.2.23", default-features = false, features = ["std"] }
 url = "2.2.0"
 percent-encoding = "2.1.0"
+serde = { version = "1", features = ["derive"] }
+quick-xml = { version = "0.20.0", features = ["serialize"] }
 
 [dev-dependencies]
+tokio = { version = "0.2.23", features = ["macros", "fs", "rt-core"] }
+reqwest = "0.10.9"
 pretty_assertions = "0.6.1"
