@@ -1,6 +1,7 @@
-use serde::Deserialize;
 use std::iter;
 use std::time::Duration;
+
+use serde::Deserialize;
 use time::OffsetDateTime;
 use url::Url;
 

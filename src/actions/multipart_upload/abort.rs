@@ -4,22 +4,32 @@ use std::time::Duration;
 use time::OffsetDateTime;
 use url::Url;
 
-use super::S3Action;
+use crate::actions::S3Action;
 use crate::signing::sign;
 use crate::{Bucket, Credentials};
 
-pub struct PutObject<'a> {
+#[derive(Clone)]
+pub struct AbortMultipartUpload<'a> {
     bucket: &'a Bucket,
     credentials: Option<&'a Credentials>,
     object: &'a str,
+
+    upload_id: &'a str,
 }
 
-impl<'a> PutObject<'a> {
-    pub fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>, object: &'a str) -> Self {
+impl<'a> AbortMultipartUpload<'a> {
+    pub fn new(
+        bucket: &'a Bucket,
+        credentials: Option<&'a Credentials>,
+        object: &'a str,
+        upload_id: &'a str,
+    ) -> Self {
         Self {
             bucket,
             credentials,
             object,
+
+            upload_id,
         }
     }
 
@@ -29,13 +39,13 @@ impl<'a> PutObject<'a> {
         match self.credentials {
             Some(credentials) => sign(
                 time,
-                "PUT",
+                "DELETE",
                 url,
                 credentials.key(),
                 credentials.secret(),
                 self.bucket.region(),
                 expires_at.as_secs(),
-                iter::empty(),
+                iter::once(("uploadId", self.upload_id)),
                 iter::empty(),
             ),
             None => url,
@@ -43,7 +53,7 @@ impl<'a> PutObject<'a> {
     }
 }
 
-impl<'a> S3Action for PutObject<'a> {
+impl<'a> S3Action for AbortMultipartUpload<'a> {
     fn sign(&self, expires_at: Duration) -> Url {
         let now = OffsetDateTime::now_utc();
         self.sign_with_time(expires_at, &now)
@@ -75,10 +85,10 @@ mod tests {
             "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY".into(),
         );
 
-        let action = PutObject::new(&bucket, Some(&credentials), "test.txt");
+        let action = AbortMultipartUpload::new(&bucket, Some(&credentials), "test.txt", "abcd");
 
         let url = action.sign_with_time(expires_at, &date);
-        let expected = "https://examplebucket.s3.amazonaws.com/test.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&X-Amz-Signature=f4db56459304dafaa603a99a23c6bea8821890259a65c18ff503a4a72a80efd9";
+        let expected = "https://examplebucket.s3.amazonaws.com/test.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&uploadId=abcd&X-Amz-Signature=7670bc768a7cdb5c276a9dddadeefdffb52061f94db6c14b4a9284fdc195bb59";
 
         assert_eq!(expected, url.as_str());
     }
