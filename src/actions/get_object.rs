@@ -8,6 +8,7 @@ use super::S3Action;
 use crate::signing::sign;
 use crate::{Bucket, Credentials, Map};
 
+#[derive(Debug, Clone)]
 pub struct GetObject<'a> {
     bucket: &'a Bucket,
     credentials: Option<&'a Credentials>,

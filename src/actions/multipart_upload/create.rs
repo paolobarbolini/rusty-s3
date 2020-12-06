@@ -9,17 +9,17 @@ use crate::actions::S3Action;
 use crate::signing::sign;
 use crate::{Bucket, Credentials};
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct CreateMultipartUpload<'a> {
     bucket: &'a Bucket,
     credentials: Option<&'a Credentials>,
     object: &'a str,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct CreateMultipartUploadResponse(InnerCreateMultipartUploadResponse);
 
-#[derive(Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 struct InnerCreateMultipartUploadResponse {
     #[serde(rename = "UploadId")]
     upload_id: String,

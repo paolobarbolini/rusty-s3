@@ -8,6 +8,7 @@ use super::S3Action;
 use crate::signing::sign;
 use crate::{Bucket, Credentials};
 
+#[derive(Debug, Clone)]
 pub struct PutObject<'a> {
     bucket: &'a Bucket,
     credentials: Option<&'a Credentials>,

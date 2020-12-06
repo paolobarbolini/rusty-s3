@@ -8,7 +8,7 @@ use crate::actions::S3Action;
 use crate::signing::sign;
 use crate::{Bucket, Credentials};
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct AbortMultipartUpload<'a> {
     bucket: &'a Bucket,
     credentials: Option<&'a Credentials>,

@@ -8,6 +8,7 @@ use crate::actions::S3Action;
 use crate::signing::sign;
 use crate::{Bucket, Credentials};
 
+#[derive(Debug, Clone)]
 pub struct UploadPart<'a> {
     bucket: &'a Bucket,
     credentials: Option<&'a Credentials>,

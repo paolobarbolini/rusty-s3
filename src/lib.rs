@@ -25,6 +25,13 @@
 //! let credentials = Credentials::new(key, secret);
 //! ```
 
+#![deny(
+    missing_debug_implementations,
+    missing_copy_implementations,
+    rust_2018_idioms,
+    broken_intra_doc_links
+)]
+
 pub use self::bucket::Bucket;
 pub use self::credentials::Credentials;
 pub use self::map::Map;
