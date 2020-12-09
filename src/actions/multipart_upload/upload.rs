@@ -8,6 +8,23 @@ use crate::actions::S3Action;
 use crate::signing::sign;
 use crate::{Bucket, Credentials};
 
+/// Upload a part to a previously created multipart upload.
+///
+/// Every part must be between 5 MB and 5 GB in size, except for the last part.
+///
+/// The part must be uploaded via a PUT request, on success the server will
+/// return an `ETag` header which must be given to
+/// [`CompleteMultipartUpload`][crate::actions::CompleteMultipartUpload] in order to
+/// complete the upload.
+///
+/// A maximum of 10,000 parts can be uploaded to a single multipart upload.
+///
+/// The uploaded part will consume storage on S3 until the multipart upload
+/// is completed or aborted.
+///
+/// Find out more about UploadPart from the [AWS API Reference][api]
+///
+/// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPart.html
 #[derive(Debug, Clone)]
 pub struct UploadPart<'a> {
     bucket: &'a Bucket,

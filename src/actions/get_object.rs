@@ -8,6 +8,11 @@ use super::S3Action;
 use crate::signing::sign;
 use crate::{Bucket, Credentials, Map};
 
+/// Retrieve an object from S3, using a `GET` request.
+///
+/// Find out more about GetObject from the [AWS API Reference][api]
+///
+/// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
 #[derive(Debug, Clone)]
 pub struct GetObject<'a> {
     bucket: &'a Bucket,

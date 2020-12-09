@@ -13,6 +13,7 @@ mod get_object;
 mod multipart_upload;
 mod put_object;
 
+/// A request which can be signed
 pub trait S3Action {
     fn sign(&self, expires_at: Duration) -> Url;
 }

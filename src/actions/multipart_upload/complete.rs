@@ -9,6 +9,11 @@ use crate::actions::S3Action;
 use crate::signing::sign;
 use crate::{Bucket, Credentials};
 
+/// Complete a multipart upload.
+///
+/// Find out more about CompleteMultipartUpload from the [AWS API Reference][api]
+///
+/// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateMultipartUpload.html
 #[derive(Debug, Clone)]
 pub struct CompleteMultipartUpload<'a, I> {
     bucket: &'a Bucket,

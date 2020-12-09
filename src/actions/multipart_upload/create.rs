@@ -9,6 +9,16 @@ use crate::actions::S3Action;
 use crate::signing::sign;
 use crate::{Bucket, Credentials};
 
+/// Create a multipart upload.
+///
+/// A few advantages of multipart uploads are:
+///
+/// * being able to be resume without having to start back from the beginning
+/// * parallelize the uploads across multiple threads
+///
+/// Find out more about CreateMultipartUpload from the [AWS API Reference][api]
+///
+/// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateMultipartUpload.html
 #[derive(Debug, Clone)]
 pub struct CreateMultipartUpload<'a> {
     bucket: &'a Bucket,

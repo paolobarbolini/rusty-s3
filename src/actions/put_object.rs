@@ -8,6 +8,11 @@ use super::S3Action;
 use crate::signing::sign;
 use crate::{Bucket, Credentials};
 
+/// Upload a file to S3, using a `PUT` request.
+///
+/// Find out more about PutObject from the [AWS API Reference][api]
+///
+/// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html
 #[derive(Debug, Clone)]
 pub struct PutObject<'a> {
     bucket: &'a Bucket,
