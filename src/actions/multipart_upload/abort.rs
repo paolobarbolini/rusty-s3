@@ -4,6 +4,7 @@ use std::time::Duration;
 use time::OffsetDateTime;
 use url::Url;
 
+use crate::actions::Method;
 use crate::actions::S3Action;
 use crate::signing::sign;
 use crate::{Bucket, Credentials};
@@ -61,6 +62,8 @@ impl<'a> AbortMultipartUpload<'a> {
 }
 
 impl<'a> S3Action for AbortMultipartUpload<'a> {
+    const METHOD: Method = Method::Delete;
+
     fn sign(&self, expires_at: Duration) -> Url {
         let now = OffsetDateTime::now_utc();
         self.sign_with_time(expires_at, &now)

@@ -5,6 +5,7 @@ use time::OffsetDateTime;
 use url::Url;
 
 use super::S3Action;
+use crate::actions::Method;
 use crate::signing::sign;
 use crate::{Bucket, Credentials};
 
@@ -50,6 +51,8 @@ impl<'a> PutObject<'a> {
 }
 
 impl<'a> S3Action for PutObject<'a> {
+    const METHOD: Method = Method::Put;
+
     fn sign(&self, expires_at: Duration) -> Url {
         let now = OffsetDateTime::now_utc();
         self.sign_with_time(expires_at, &now)
