@@ -23,7 +23,7 @@ use crate::{Bucket, Credentials};
 /// The uploaded part will consume storage on S3 until the multipart upload
 /// is completed or aborted.
 ///
-/// Find out more about UploadPart from the [AWS API Reference][api]
+/// Find out more about `UploadPart` from the [AWS API Reference][api]
 ///
 /// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPart.html
 #[derive(Debug, Clone)]

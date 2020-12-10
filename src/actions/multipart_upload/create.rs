@@ -17,7 +17,7 @@ use crate::{Bucket, Credentials};
 /// * being able to be resume without having to start back from the beginning
 /// * parallelize the uploads across multiple threads
 ///
-/// Find out more about CreateMultipartUpload from the [AWS API Reference][api]
+/// Find out more about `CreateMultipartUpload` from the [AWS API Reference][api]
 ///
 /// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateMultipartUpload.html
 #[derive(Debug, Clone)]

@@ -13,7 +13,7 @@ use crate::{Bucket, Credentials};
 ///
 /// This also cleans up any previously uploaded part.
 ///
-/// Find out more about AbortMultipartUpload from the [AWS API Reference][api]
+/// Find out more about `AbortMultipartUpload` from the [AWS API Reference][api]
 ///
 /// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_AbortMultipartUpload.html
 #[derive(Debug, Clone)]

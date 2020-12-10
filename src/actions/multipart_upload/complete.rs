@@ -12,7 +12,7 @@ use crate::{Bucket, Credentials};
 
 /// Complete a multipart upload.
 ///
-/// Find out more about CompleteMultipartUpload from the [AWS API Reference][api]
+/// Find out more about `CompleteMultipartUpload` from the [AWS API Reference][api]
 ///
 /// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateMultipartUpload.html
 #[derive(Debug, Clone)]
