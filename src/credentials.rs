@@ -27,3 +27,22 @@ impl Debug for Credentials {
             .finish()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn key_secret() {
+        let credentials = Credentials::new("abcd".into(), "1234".into());
+        assert_eq!(credentials.key(), "abcd");
+        assert_eq!(credentials.secret(), "1234");
+    }
+
+    #[test]
+    fn debug() {
+        let credentials = Credentials::new("abcd".into(), "1234".into());
+        let debug_output = format!("{:?}", credentials);
+        assert_eq!(debug_output, "Credentials { key: \"abcd\" }");
+    }
+}
