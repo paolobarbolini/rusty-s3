@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use url::Url;
 
+pub use self::delete_object::DeleteObject;
 pub use self::get_object::GetObject;
 pub use self::multipart_upload::abort::AbortMultipartUpload;
 pub use self::multipart_upload::complete::CompleteMultipartUpload;
@@ -10,6 +11,7 @@ pub use self::multipart_upload::upload::UploadPart;
 pub use self::put_object::PutObject;
 use crate::Method;
 
+mod delete_object;
 mod get_object;
 mod multipart_upload;
 mod put_object;
