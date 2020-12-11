@@ -4,6 +4,7 @@ use url::Url;
 
 pub use self::delete_object::DeleteObject;
 pub use self::get_object::GetObject;
+pub use self::list_objects_v2::ListObjectsV2;
 pub use self::multipart_upload::abort::AbortMultipartUpload;
 pub use self::multipart_upload::complete::CompleteMultipartUpload;
 pub use self::multipart_upload::create::CreateMultipartUpload;
@@ -13,6 +14,7 @@ use crate::Method;
 
 mod delete_object;
 mod get_object;
+mod list_objects_v2;
 mod multipart_upload;
 mod put_object;
 
