@@ -47,7 +47,7 @@ impl<'a> AbortMultipartUpload<'a> {
         match self.credentials {
             Some(credentials) => sign(
                 time,
-                "DELETE",
+                Method::Delete,
                 url,
                 credentials.key(),
                 credentials.secret(),

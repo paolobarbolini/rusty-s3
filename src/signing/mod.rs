@@ -4,6 +4,7 @@ use time::OffsetDateTime;
 use url::Url;
 
 use crate::sorting_iter::SortingIterator;
+use crate::Method;
 
 mod canonical_request;
 mod signature;
@@ -13,7 +14,7 @@ pub(crate) mod util;
 #[allow(clippy::too_many_arguments)]
 pub fn sign<'a, Q, H>(
     date: &OffsetDateTime,
-    method: &str,
+    method: Method,
     mut url: Url,
     key: &str,
     secret: &str,
@@ -120,6 +121,7 @@ mod tests {
     use pretty_assertions::assert_eq;
     use time::PrimitiveDateTime;
 
+    use super::Method;
     use super::*;
 
     #[test]
@@ -130,7 +132,7 @@ mod tests {
         )
         .unwrap()
         .assume_utc();
-        let method = "GET";
+        let method = Method::Get;
         let url = "https://examplebucket.s3.amazonaws.com/test.txt"
             .parse()
             .unwrap();

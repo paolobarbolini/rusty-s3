@@ -1,11 +1,12 @@
 use url::Url;
 
 use super::util::percent_encode;
+use crate::Method;
 
 const UNSIGNED_PAYLOAD: &str = "UNSIGNED-PAYLOAD";
 
 pub fn canonical_request<'a, Q, H, S>(
-    method: &str,
+    method: Method,
     url: &Url,
     query_string: Q,
     headers: H,
@@ -17,7 +18,7 @@ where
     S: Iterator<Item = &'a str>,
 {
     let mut string = String::with_capacity(64);
-    string.push_str(method);
+    string.push_str(method.to_str());
     string.push('\n');
     string.push_str(url.path());
     string.push('\n');
@@ -92,6 +93,7 @@ mod tests {
     use time::PrimitiveDateTime;
 
     use super::*;
+    use crate::Method;
 
     #[test]
     fn aws_example() {
@@ -101,7 +103,7 @@ mod tests {
         )
         .unwrap()
         .assume_utc();
-        let method = "GET";
+        let method = Method::Get;
         let url = "https://examplebucket.s3.amazonaws.com/test.txt"
             .parse()
             .unwrap();

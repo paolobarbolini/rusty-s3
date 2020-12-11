@@ -56,7 +56,7 @@ impl<'a> CreateMultipartUpload<'a> {
         match self.credentials {
             Some(credentials) => sign(
                 time,
-                "POST",
+                Method::Post,
                 url,
                 credentials.key(),
                 credentials.secret(),

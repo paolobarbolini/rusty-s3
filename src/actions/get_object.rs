@@ -44,7 +44,7 @@ impl<'a> GetObject<'a> {
         match self.credentials {
             Some(credentials) => sign(
                 time,
-                "GET",
+                Method::Get,
                 url,
                 credentials.key(),
                 credentials.secret(),

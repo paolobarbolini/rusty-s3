@@ -36,7 +36,7 @@ impl<'a> PutObject<'a> {
         match self.credentials {
             Some(credentials) => sign(
                 time,
-                "PUT",
+                Method::Put,
                 url,
                 credentials.key(),
                 credentials.secret(),
