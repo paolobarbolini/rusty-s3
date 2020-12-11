@@ -58,6 +58,8 @@ fn base_url(mut endpoint: Url, name: &str, path_style: bool) -> Url {
 
 #[cfg(test)]
 mod tests {
+    use pretty_assertions::assert_eq;
+
     use super::*;
 
     #[test]

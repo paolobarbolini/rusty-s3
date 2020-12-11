@@ -118,6 +118,8 @@ where
 mod tests {
     use time::PrimitiveDateTime;
 
+    use pretty_assertions::assert_eq;
+
     use super::*;
     use crate::{Bucket, Credentials};
 
