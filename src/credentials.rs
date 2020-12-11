@@ -7,14 +7,17 @@ pub struct Credentials {
 }
 
 impl Credentials {
+    #[inline]
     pub fn new(key: String, secret: String) -> Self {
         Self { key, secret }
     }
 
+    #[inline]
     pub fn key(&self) -> &str {
         &self.key
     }
 
+    #[inline]
     pub fn secret(&self) -> &str {
         &self.secret
     }

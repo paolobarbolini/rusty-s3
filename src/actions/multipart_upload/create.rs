@@ -37,6 +37,7 @@ struct InnerCreateMultipartUploadResponse {
 }
 
 impl<'a> CreateMultipartUpload<'a> {
+    #[inline]
     pub fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>, object: &'a str) -> Self {
         Self {
             bucket,

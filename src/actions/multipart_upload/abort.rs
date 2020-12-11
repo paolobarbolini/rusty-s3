@@ -26,6 +26,7 @@ pub struct AbortMultipartUpload<'a> {
 }
 
 impl<'a> AbortMultipartUpload<'a> {
+    #[inline]
     pub fn new(
         bucket: &'a Bucket,
         credentials: Option<&'a Credentials>,

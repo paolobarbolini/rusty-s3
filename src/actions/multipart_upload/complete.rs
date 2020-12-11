@@ -26,6 +26,7 @@ pub struct CompleteMultipartUpload<'a, I> {
 }
 
 impl<'a, I> CompleteMultipartUpload<'a, I> {
+    #[inline]
     pub fn new(
         bucket: &'a Bucket,
         credentials: Option<&'a Credentials>,

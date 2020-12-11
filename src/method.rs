@@ -10,6 +10,7 @@ pub enum Method {
 }
 
 impl Method {
+    #[inline]
     pub fn to_str(&self) -> &'static str {
         match self {
             Self::Head => "HEAD",
@@ -22,6 +23,7 @@ impl Method {
 }
 
 impl Display for Method {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.to_str())
     }

@@ -37,6 +37,7 @@ pub struct UploadPart<'a> {
 }
 
 impl<'a> UploadPart<'a> {
+    #[inline]
     pub fn new(
         bucket: &'a Bucket,
         credentials: Option<&'a Credentials>,

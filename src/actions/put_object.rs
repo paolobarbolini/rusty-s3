@@ -22,6 +22,7 @@ pub struct PutObject<'a> {
 }
 
 impl<'a> PutObject<'a> {
+    #[inline]
     pub fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>, object: &'a str) -> Self {
         Self {
             bucket,
