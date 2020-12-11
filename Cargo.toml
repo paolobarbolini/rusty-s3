@@ -1,6 +1,6 @@
 [package]
 name = "rusty-s3"
-version = "0.0.1"
+version = "0.0.2"
 authors = ["Paolo Barbolini <paolo@paolo565.org>", "Federico Guerinoni <guerinoni.federico@gmail.com>"]
 description = "Simple pure Rust AWS S3 Client following a Sans-IO approach"
 keywords = ["aws", "s3", "minio"]
