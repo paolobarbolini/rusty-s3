@@ -2,11 +2,11 @@ use std::borrow::Cow;
 use std::fmt::{self, Debug};
 
 #[derive(Clone)]
-pub struct Map {
-    inner: Vec<(Cow<'static, str>, Cow<'static, str>)>,
+pub struct Map<'a> {
+    inner: Vec<(Cow<'a, str>, Cow<'a, str>)>,
 }
 
-impl Map {
+impl<'a> Map<'a> {
     #[inline]
     pub const fn new() -> Self {
         Self { inner: Vec::new() }
@@ -31,8 +31,8 @@ impl Map {
 
     pub fn insert<K, V>(&mut self, key: K, value: V)
     where
-        K: Into<Cow<'static, str>>,
-        V: Into<Cow<'static, str>>,
+        K: Into<Cow<'a, str>>,
+        V: Into<Cow<'a, str>>,
     {
         let key = key.into();
         let value = value.into();
@@ -48,7 +48,7 @@ impl Map {
         }
     }
 
-    pub fn remove(&mut self, key: &str) -> Option<(Cow<'static, str>, Cow<'static, str>)> {
+    pub fn remove(&mut self, key: &str) -> Option<(Cow<'a, str>, Cow<'a, str>)> {
         match self.inner.binary_search_by(|a| a.0.as_ref().cmp(key)) {
             Ok(i) => Some(self.inner.remove(i)),
             Err(_) => None,
@@ -60,13 +60,13 @@ impl Map {
     }
 }
 
-impl Debug for Map {
+impl<'a> Debug for Map<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_map().entries(self.iter()).finish()
     }
 }
 
-impl Default for Map {
+impl<'a> Default for Map<'a> {
     #[inline]
     fn default() -> Self {
         Self::new()

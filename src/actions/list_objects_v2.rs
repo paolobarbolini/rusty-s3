@@ -25,7 +25,7 @@ pub struct ListObjectsV2<'a> {
     bucket: &'a Bucket,
     credentials: Option<&'a Credentials>,
 
-    query: Map,
+    query: Map<'a>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -101,7 +101,7 @@ impl<'a> ListObjectsV2<'a> {
         }
     }
 
-    pub fn query_mut(&mut self) -> &mut Map {
+    pub fn query_mut(&mut self) -> &mut Map<'a> {
         &mut self.query
     }
 

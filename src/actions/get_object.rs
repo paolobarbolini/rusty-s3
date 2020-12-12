@@ -20,7 +20,7 @@ pub struct GetObject<'a> {
     credentials: Option<&'a Credentials>,
     object: &'a str,
 
-    query: Map,
+    query: Map<'a>,
 }
 
 impl<'a> GetObject<'a> {
@@ -35,7 +35,7 @@ impl<'a> GetObject<'a> {
         }
     }
 
-    pub fn query_mut(&mut self) -> &mut Map {
+    pub fn query_mut(&mut self) -> &mut Map<'a> {
         &mut self.query
     }
 
