@@ -23,4 +23,5 @@ quick-xml = { version = "0.20.0", features = ["serialize"] }
 [dev-dependencies]
 tokio = { version = "0.2.23", features = ["macros", "fs", "rt-core"] }
 reqwest = "0.10.9"
+getrandom = "0.2"
 pretty_assertions = "0.6.1"

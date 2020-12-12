@@ -62,7 +62,7 @@ jobs:
       run: rustup default 1.42.0
 
     - name: Run tests
-      run: cargo test
+      run: cargo test --lib
 
   coverage:
     runs-on: ubuntu-20.04
