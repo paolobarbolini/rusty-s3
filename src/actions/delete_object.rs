@@ -9,7 +9,7 @@ use crate::actions::Method;
 use crate::signing::sign;
 use crate::{Bucket, Credentials};
 
-/// Retrieve an object from S3, using a `GET` request.
+/// Delete an object from S3, using a `DELETE` request.
 ///
 /// Find out more about `DeleteObject` from the [AWS API Reference][api]
 ///

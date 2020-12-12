@@ -10,12 +10,12 @@ use crate::actions::S3Action;
 use crate::signing::sign;
 use crate::{Bucket, Credentials, Map};
 
-/// Create a multipart upload.
+/// List all objects in the bucket
 ///
-/// A few advantages of multipart uploads are:
-///
-/// * being able to be resume without having to start back from the beginning
-/// * parallelize the uploads across multiple threads
+/// If `next_continuation_token` is `Some` the response is truncated, and the
+/// rest of the list can be retrieved by reusing the `ListObjectV2` action
+/// but with `continuation-token` set to the value of `next_continuation_token`
+/// received in the previous response.
 ///
 /// Find out more about `ListObjectsV2` from the [AWS API Reference][api]
 ///
