@@ -86,16 +86,21 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Install cargo-tarpaulin
+      run: |
+        LINK="https://github.com/xd009642/tarpaulin/releases/download/0.16.0/cargo-tarpaulin-0.16.0-travis.tar.gz"
+        curl -L --output tarpaulin.tar.gz "$LINK"
+        tar -xzvf tarpaulin.tar.gz
+        chmod +x cargo-tarpaulin
+
     - name: Run cargo-tarpaulin
-      uses: actions-rs/tarpaulin@v0.1
-      with:
-        version: '0.16.0'
+      run: ./cargo-tarpaulin tarpaulin --lib --out Xml
 
     - name: Upload to codecov.io
       uses: codecov/codecov-action@v1.0.2
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        args: --lib
+        args: '--lib'
 
     - name: Archive code coverage results
       uses: actions/upload-artifact@v1
