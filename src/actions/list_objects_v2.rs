@@ -29,11 +29,11 @@ pub struct ListObjectsV2<'a> {
 }
 
 #[derive(Debug, Clone, Deserialize)]
-pub struct ListObjectsResult {
-    #[serde(rename = "IsTruncated")]
-    is_truncated: bool,
+pub struct ListObjectsV2Response {
+    // #[serde(rename = "IsTruncated")]
+    // is_truncated: bool,
     #[serde(rename = "Contents")]
-    contents: Vec<ListObjectsContent>,
+    pub contents: Vec<ListObjectsContent>,
 
     // #[serde(rename = "Name")]
     // name: String,
@@ -42,9 +42,9 @@ pub struct ListObjectsResult {
     // #[serde(rename = "Delimiter")]
     // delimiter: String,
     #[serde(rename = "MaxKeys")]
-    max_keys: u16,
+    pub max_keys: u16,
     #[serde(rename = "CommonPrefixes", default)]
-    common_prefixes: Vec<CommonPrefixes>,
+    pub common_prefixes: Vec<CommonPrefixes>,
     // #[serde(rename = "EncodingType")]
     // encoding_type: String,
     // #[serde(rename = "KeyCount")]
@@ -52,39 +52,39 @@ pub struct ListObjectsResult {
     // #[serde(rename = "ContinuationToken")]
     // continuation_token: Option<String>,
     #[serde(rename = "NextContinuationToken")]
-    next_continuation_token: Option<String>,
+    pub next_continuation_token: Option<String>,
     #[serde(rename = "StartAfter")]
-    start_after: Option<String>,
+    pub start_after: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ListObjectsContent {
     #[serde(rename = "ETag")]
-    etag: String,
+    pub etag: String,
     #[serde(rename = "Key")]
-    key: String,
+    pub key: String,
     #[serde(rename = "LastModified")]
-    last_modified: String,
+    pub last_modified: String,
     #[serde(rename = "Owner")]
-    owner: Option<ListObjectsOwner>,
+    pub owner: Option<ListObjectsOwner>,
     #[serde(rename = "Size")]
-    size: u64,
+    pub size: u64,
     #[serde(rename = "StorageClass")]
-    storage_class: String,
+    pub storage_class: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct ListObjectsOwner {
     #[serde(rename = "ID")]
-    id: String,
+    pub id: String,
     #[serde(rename = "DisplayName")]
-    display_name: String,
+    pub display_name: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct CommonPrefixes {
     #[serde(rename = "Prefix")]
-    prefix: String,
+    pub prefix: String,
 }
 
 impl<'a> ListObjectsV2<'a> {
@@ -105,8 +105,8 @@ impl<'a> ListObjectsV2<'a> {
         &mut self.query
     }
 
-    pub fn parse_response(s: &str) -> Result<ListObjectsResult, quick_xml::DeError> {
-        let mut parsed: ListObjectsResult = quick_xml::de::from_str(s)?;
+    pub fn parse_response(s: &str) -> Result<ListObjectsV2Response, quick_xml::DeError> {
+        let mut parsed: ListObjectsV2Response = quick_xml::de::from_str(s)?;
 
         // S3 returns an Owner with an empty DisplayName and ID when fetch-owner is disabled
         for content in parsed.contents.iter_mut() {
@@ -233,7 +233,6 @@ mod tests {
         "#;
 
         let parsed = ListObjectsV2::parse_response(input).unwrap();
-        assert_eq!(parsed.is_truncated, false);
         assert_eq!(parsed.contents.len(), 3);
 
         let item_1 = &parsed.contents[0];
