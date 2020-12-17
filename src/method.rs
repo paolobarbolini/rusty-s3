@@ -1,5 +1,6 @@
 use std::fmt::{self, Display};
 
+/// The HTTP request method for an [`S3Action`](crate::actions::S3Action).
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum Method {
     Head,
@@ -10,6 +11,12 @@ pub enum Method {
 }
 
 impl Method {
+    /// Convert this `Method` into an uppercase string.
+    ///
+    /// ```rust
+    /// # use rusty_s3::Method;
+    /// assert_eq!(Method::Get.to_str(), "GET");
+    /// ```
     #[inline]
     pub fn to_str(&self) -> &'static str {
         match self {

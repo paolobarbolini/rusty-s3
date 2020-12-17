@@ -1,5 +1,6 @@
 use std::fmt::{self, Debug, Formatter};
 
+/// S3 credentials
 #[derive(Clone, PartialEq, Eq)]
 pub struct Credentials {
     key: String,
@@ -7,16 +8,19 @@ pub struct Credentials {
 }
 
 impl Credentials {
+    /// Construct a new `Credentials` using the provided key and secret
     #[inline]
     pub fn new(key: String, secret: String) -> Self {
         Self { key, secret }
     }
 
+    /// Get the key of this `Credentials`
     #[inline]
     pub fn key(&self) -> &str {
         &self.key
     }
 
+    /// Get the secret of this `Credentials`
     #[inline]
     pub fn secret(&self) -> &str {
         &self.secret

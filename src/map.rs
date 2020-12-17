@@ -1,27 +1,32 @@
 use std::borrow::Cow;
 use std::fmt::{self, Debug};
 
+/// A map used for holding query string paramenters or headers
 #[derive(Clone)]
 pub struct Map<'a> {
     inner: Vec<(Cow<'a, str>, Cow<'a, str>)>,
 }
 
 impl<'a> Map<'a> {
+    /// Construct a new empty `Map`
     #[inline]
     pub const fn new() -> Self {
         Self { inner: Vec::new() }
     }
 
+    /// Get the number of elements in this `Map`
     #[inline]
     pub fn len(&self) -> usize {
         self.inner.len()
     }
 
+    /// Return `true` if this `Map` is empty
     #[inline]
     pub fn is_empty(&self) -> bool {
         self.inner.is_empty()
     }
 
+    /// Get the value of an element of this `Map`, or `None` if it doesn't contain `key`
     pub fn get(&self, key: &str) -> Option<&str> {
         match self.inner.binary_search_by(|a| a.0.as_ref().cmp(key)) {
             Ok(i) => self.inner.get(i).map(|kv| kv.1.as_ref()),
@@ -29,6 +34,9 @@ impl<'a> Map<'a> {
         }
     }
 
+    /// Insert a new element in this `Map`
+    ///
+    /// Overwrites elements with the same `key`, if present.
     pub fn insert<K, V>(&mut self, key: K, value: V)
     where
         K: Into<Cow<'a, str>>,
@@ -48,6 +56,7 @@ impl<'a> Map<'a> {
         }
     }
 
+    /// Remove an element from this `Map` and return it
     pub fn remove(&mut self, key: &str) -> Option<(Cow<'a, str>, Cow<'a, str>)> {
         match self.inner.binary_search_by(|a| a.0.as_ref().cmp(key)) {
             Ok(i) => Some(self.inner.remove(i)),
@@ -55,6 +64,9 @@ impl<'a> Map<'a> {
         }
     }
 
+    /// Return an `Iterator` over this map
+    ///
+    /// The elements are always sorted in alphabetical order based on the key.
     pub fn iter(&self) -> impl Iterator<Item = (&str, &str)> + Clone {
         self.inner.iter().map(|t| (t.0.as_ref(), t.1.as_ref()))
     }

@@ -2,6 +2,39 @@ use url::{ParseError, Url};
 
 use crate::signing::util::percent_encode_path;
 
+/// An S3 bucket
+///
+/// ## Path style url
+///
+/// ```rust
+/// # use rusty_s3::Bucket;
+/// let endpoint = "https://eu-west-1.s3.amazonaws.com".parse().expect("endpoint is a valid Url");
+/// let path_style = true;
+/// let name = String::from("rusty-s3");
+/// let region = String::from("eu-west-1");
+///
+/// let bucket = Bucket::new(endpoint, path_style, name, region).expect("Url has a valid scheme and host");
+/// assert_eq!(bucket.base_url().as_str(), "https://eu-west-1.s3.amazonaws.com/rusty-s3/");
+/// assert_eq!(bucket.name(), "rusty-s3");
+/// assert_eq!(bucket.region(), "eu-west-1");
+/// assert_eq!(bucket.object_url("duck.jpg").expect("url is valid").as_str(), "https://eu-west-1.s3.amazonaws.com/rusty-s3/duck.jpg");
+/// ```
+///
+/// ## Domain style url
+///
+/// ```rust
+/// # use rusty_s3::Bucket;
+/// let endpoint = "https://eu-west-1.s3.amazonaws.com".parse().expect("endpoint is a valid Url");
+/// let path_style = false;
+/// let name = String::from("rusty-s3");
+/// let region = String::from("eu-west-1");
+///
+/// let bucket = Bucket::new(endpoint, path_style, name, region).expect("Url has a valid scheme and host");
+/// assert_eq!(bucket.base_url().as_str(), "https://rusty-s3.eu-west-1.s3.amazonaws.com/");
+/// assert_eq!(bucket.name(), "rusty-s3");
+/// assert_eq!(bucket.region(), "eu-west-1");
+/// assert_eq!(bucket.object_url("duck.jpg").expect("url is valid").as_str(), "https://rusty-s3.eu-west-1.s3.amazonaws.com/duck.jpg");
+/// ```
 #[derive(Debug, Clone)]
 pub struct Bucket {
     base_url: Url,
@@ -10,6 +43,7 @@ pub struct Bucket {
 }
 
 impl Bucket {
+    /// Construct a new S3 bucket
     pub fn new(endpoint: Url, path_style: bool, name: String, region: String) -> Option<Self> {
         let _ = endpoint.host_str()?;
 
@@ -27,18 +61,25 @@ impl Bucket {
         })
     }
 
+    /// Get the base url of this s3 `Bucket`
     pub fn base_url(&self) -> &Url {
         &self.base_url
     }
 
+    /// Get the name of this `Bucket`
     pub fn name(&self) -> &str {
         &self.name
     }
 
+    /// Get the region of this `Bucket`
     pub fn region(&self) -> &str {
         &self.region
     }
 
+    /// Generate an url to an object of this `Bucket`
+    ///
+    /// This is not a signed url, it's just the starting point for
+    /// generating an url to an S3 object.
     pub fn object_url(&self, object: &str) -> Result<Url, ParseError> {
         let object = percent_encode_path(object);
         self.base_url.join(&object)
