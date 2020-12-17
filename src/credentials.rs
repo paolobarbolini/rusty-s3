@@ -75,10 +75,7 @@ mod tests {
         let credentials = Credentials::from_env().unwrap();
         assert_eq!(credentials.key(), "key");
         assert_eq!(credentials.secret(), "secret");
-    }
 
-    #[test]
-    fn from_env_unset() {
         env::remove_var("AWS_ACCESS_KEY_ID");
         env::remove_var("AWS_SECRET_ACCESS_KEY");
 
