@@ -54,7 +54,7 @@ impl<'a> GetObject<'a> {
                 self.query.iter(),
                 iter::empty(),
             ),
-            None => url,
+            None => crate::signing::util::add_query_params(url, self.query.iter()),
         }
     }
 }
@@ -128,6 +128,26 @@ mod tests {
 
         let url = action.sign_with_time(expires_at, &date);
         let expected = "https://examplebucket.s3.amazonaws.com/test.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&response-content-type=text%2Fplain&X-Amz-Signature=9cee3ba363b3a52fed152d18bb250d52a459d0905600d9b032825a3794ffd2cb";
+
+        assert_eq!(expected, url.as_str());
+    }
+
+    #[test]
+    fn anonymous_custom_query() {
+        let expires_at = Duration::from_secs(86400);
+
+        let endpoint = "https://s3.amazonaws.com".parse().unwrap();
+        let bucket =
+            Bucket::new(endpoint, false, "examplebucket".into(), "us-east-1".into()).unwrap();
+
+        let mut action = GetObject::new(&bucket, None, "test.txt");
+        action
+            .query_mut()
+            .insert("response-content-type", "text/plain");
+
+        let url = action.sign(expires_at);
+        let expected =
+            "https://examplebucket.s3.amazonaws.com/test.txt?response-content-type=text%2Fplain";
 
         assert_eq!(expected, url.as_str());
     }

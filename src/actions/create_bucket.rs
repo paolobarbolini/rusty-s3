@@ -51,7 +51,7 @@ impl<'a> CreateBucket<'a> {
                 self.query.iter(),
                 iter::empty(),
             ),
-            None => url,
+            None => crate::signing::util::add_query_params(url, self.query.iter()),
         }
     }
 }
@@ -96,6 +96,23 @@ mod tests {
 
         let url = action.sign_with_time(expires_at, &date);
         let expected = "https://examplebucket.s3.amazonaws.com/?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&X-Amz-Signature=fb5c8ab11e9fd9d3c54ea0293e1df0820feef6c1f2de12e5fe00636e3f0cf9d2";
+
+        assert_eq!(expected, url.as_str());
+    }
+
+    #[test]
+    fn anonymous_custom_query() {
+        let expires_at = Duration::from_secs(86400);
+
+        let endpoint = "https://s3.amazonaws.com".parse().unwrap();
+        let bucket =
+            Bucket::new(endpoint, false, "examplebucket".into(), "us-east-1".into()).unwrap();
+
+        let mut action = CreateBucket::new(&bucket, None);
+        action.query_mut().insert("x-amz-grant-read", "things");
+
+        let url = action.sign(expires_at);
+        let expected = "https://examplebucket.s3.amazonaws.com/?x-amz-grant-read=things";
 
         assert_eq!(expected, url.as_str());
     }
