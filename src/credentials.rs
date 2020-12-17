@@ -1,3 +1,4 @@
+use std::env;
 use std::fmt::{self, Debug, Formatter};
 
 /// S3 credentials
@@ -12,6 +13,17 @@ impl Credentials {
     #[inline]
     pub fn new(key: String, secret: String) -> Self {
         Self { key, secret }
+    }
+
+    /// Construct a new `Credentials` using AWS's default environment variables
+    ///
+    /// Reads the key from the `AWS_ACCESS_KEY_ID` environment variable and the secret
+    /// from the `AWS_SECRET_ACCESS_KEY` environment variable.
+    /// Returns `None` if either environment variables aren't set or they aren't valid utf-8.
+    pub fn from_env() -> Option<Self> {
+        let key = env::var("AWS_ACCESS_KEY_ID").ok()?;
+        let secret = env::var("AWS_SECRET_ACCESS_KEY").ok()?;
+        Some(Self::new(key, secret))
     }
 
     /// Get the key of this `Credentials`
@@ -53,5 +65,23 @@ mod tests {
         let credentials = Credentials::new("abcd".into(), "1234".into());
         let debug_output = format!("{:?}", credentials);
         assert_eq!(debug_output, "Credentials { key: \"abcd\" }");
+    }
+
+    #[test]
+    fn from_env() {
+        env::set_var("AWS_ACCESS_KEY_ID", "key");
+        env::set_var("AWS_SECRET_ACCESS_KEY", "secret");
+
+        let credentials = Credentials::from_env().unwrap();
+        assert_eq!(credentials.key(), "key");
+        assert_eq!(credentials.secret(), "secret");
+    }
+
+    #[test]
+    fn from_env_unset() {
+        env::remove_var("AWS_ACCESS_KEY_ID");
+        env::remove_var("AWS_SECRET_ACCESS_KEY");
+
+        assert!(Credentials::from_env().is_none());
     }
 }
