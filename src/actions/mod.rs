@@ -1,3 +1,5 @@
+//! S3 request building and response parsing support
+
 use std::time::Duration;
 
 use url::Url;
