@@ -14,11 +14,11 @@ fn main() {
     let bucket = Bucket::new(url, true, "test".into(), region.into()).unwrap();
     let credential = Credentials::new(key.into(), secret.into());
 
-    let mut get_obj = GetObject::new(&bucket, Some(&credential), "img.jpg");
-    get_obj
+    let mut action = GetObject::new(&bucket, Some(&credential), "img.jpg");
+    action
         .query_mut()
         .insert("response-cache-control", "no-cache, no-store");
-    let url_generated = get_obj.sign(ONE_HOUR);
+    let signed_url = action.sign(ONE_HOUR);
 
-    println!("url: {}", url_generated);
+    println!("url: {}", signed_url);
 }

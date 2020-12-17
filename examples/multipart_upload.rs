@@ -21,8 +21,8 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     let bucket = Bucket::new(url, true, "test".into(), region.into()).unwrap();
     let credential = Credentials::new(key.into(), secret.into());
 
-    let get_obj = CreateMultipartUpload::new(&bucket, Some(&credential), "idk.txt");
-    let url = get_obj.sign(ONE_HOUR);
+    let action = CreateMultipartUpload::new(&bucket, Some(&credential), "idk.txt");
+    let url = action.sign(ONE_HOUR);
     let resp = client.post(url).send().await?.error_for_status()?;
     let body = resp.text().await?;
 
@@ -56,18 +56,18 @@ async fn main() -> Result<(), Box<dyn StdError>> {
 
     println!("etag: {}", etag.to_str().unwrap());
 
-    let get_obj = CompleteMultipartUpload::new(
+    let action = CompleteMultipartUpload::new(
         &bucket,
         Some(&credential),
         "idk.txt",
         multipart.upload_id(),
         iter::once(etag.to_str().unwrap()),
     );
-    let url = get_obj.sign(ONE_HOUR);
+    let url = action.sign(ONE_HOUR);
 
     let resp = client
         .post(url)
-        .body(get_obj.body())
+        .body(action.body())
         .send()
         .await?
         .error_for_status()?;

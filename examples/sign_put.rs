@@ -14,8 +14,8 @@ fn main() {
     let bucket = Bucket::new(url, true, "test".into(), region.into()).unwrap();
     let credential = Credentials::new(key.into(), secret.into());
 
-    let put_obj = PutObject::new(&bucket, Some(&credential), "duck.jpg");
-    let url_generated = put_obj.sign(ONE_HOUR);
+    let action = PutObject::new(&bucket, Some(&credential), "duck.jpg");
+    let signed_url = action.sign(ONE_HOUR);
 
-    println!("url: {}", url_generated);
+    println!("url: {}", signed_url);
 }

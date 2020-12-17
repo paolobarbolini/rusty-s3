@@ -19,10 +19,10 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     let bucket = Bucket::new(url, true, "test".into(), region.into()).unwrap();
     let credential = Credentials::new(key.into(), secret.into());
 
-    let get_obj = ListObjectsV2::new(&bucket, Some(&credential));
-    let url_generated = get_obj.sign(ONE_HOUR);
+    let action = ListObjectsV2::new(&bucket, Some(&credential));
+    let signed_url = action.sign(ONE_HOUR);
 
-    let resp = client.get(url_generated).send().await?.error_for_status()?;
+    let resp = client.get(signed_url).send().await?.error_for_status()?;
     let text = resp.text().await?;
 
     println!("{}", text);

@@ -19,10 +19,10 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     let bucket = Bucket::new(url, true, "test123".into(), region.into()).unwrap();
     let credential = Credentials::new(key.into(), secret.into());
 
-    let get_obj = CreateBucket::new(&bucket, Some(&credential));
-    let url_generated = get_obj.sign(ONE_HOUR);
+    let action = CreateBucket::new(&bucket, Some(&credential));
+    let signed_url = action.sign(ONE_HOUR);
 
-    client.put(url_generated).send().await?.error_for_status()?;
+    client.put(signed_url).send().await?.error_for_status()?;
 
     Ok(())
 }
