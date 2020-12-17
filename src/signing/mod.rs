@@ -1,4 +1,4 @@
-use std::{iter, slice, str};
+use std::{iter, str};
 
 use time::OffsetDateTime;
 use url::Url;
@@ -28,6 +28,13 @@ where
     Q: Iterator<Item = (&'a str, &'a str)> + Clone,
     H: Iterator<Item = (&'a str, &'a str)> + Clone,
 {
+    // Convert `&'a str` into `&str`, in order to later be able to join them to
+    // the inner iterators, which because of the references they take to the inner
+    // `String`s, have a shorter lifetime than 'a.
+    // Thanks to: https://t.me/rustlang_it/61993
+    let query_string = query_string.map(|(key, value)| (key, value));
+    let headers = headers.map(|(key, value)| (key, value));
+
     let yyyymmdd = date.format("%Y%m%d");
 
     let credential = format!(
@@ -48,36 +55,14 @@ where
         _ => panic!("unsupported url scheme"),
     };
 
-    // SAFETY: this is a workaround for the compiler thinking thet host_header, credential,
-    // date_str and expires_seconds_string have to live as long as &'a str.
-    // These parementers outlive the functions taking them, and we make sure of it by
-    // trying to access them before returning. This makes sure we haven't dropped them
-    // or moved them to another function.
-    let host_header_ = unsafe {
-        let s = host_header.as_str();
-        str::from_utf8_unchecked(slice::from_raw_parts(s.as_ptr(), s.len()))
-    };
-    let credential_ = unsafe {
-        let s = credential.as_str();
-        str::from_utf8_unchecked(slice::from_raw_parts(s.as_ptr(), s.len()))
-    };
-    let date_str_ = unsafe {
-        let s = date_str.as_str();
-        str::from_utf8_unchecked(slice::from_raw_parts(s.as_ptr(), s.len()))
-    };
-    let expires_seconds_string_ = unsafe {
-        let s = expires_seconds_string.as_str();
-        str::from_utf8_unchecked(slice::from_raw_parts(s.as_ptr(), s.len()))
-    };
-
-    let standard_headers = iter::once(("host", host_header_));
+    let standard_headers = iter::once(("host", host_header.as_str()));
     let headers = SortingIterator::new(standard_headers, headers);
 
     let standard_query = [
         ("X-Amz-Algorithm", "AWS4-HMAC-SHA256"),
-        ("X-Amz-Credential", credential_),
-        ("X-Amz-Date", date_str_),
-        ("X-Amz-Expires", expires_seconds_string_),
+        ("X-Amz-Credential", credential.as_str()),
+        ("X-Amz-Date", date_str.as_str()),
+        ("X-Amz-Expires", expires_seconds_string.as_str()),
         ("X-Amz-SignedHeaders", "host"),
     ];
 
@@ -97,17 +82,8 @@ where
         headers,
         iter::once("host"),
     );
-
     let signed_string = string_to_sign::string_to_sign(date, region, &canonical_req);
-
     let signature = signature::signature(date, secret, region, &signed_string);
-
-    // SAFETY: here to verify the safety of the above unsafe functions, by making sure
-    // the borrowed values are still alive.
-    let _ = host_header.as_str();
-    let _ = credential.as_str();
-    let _ = date_str.as_str();
-    let _ = expires_seconds_string.as_str();
 
     url.query_pairs_mut()
         .append_pair("X-Amz-Signature", &signature);

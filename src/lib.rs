@@ -31,6 +31,7 @@
     rust_2018_idioms,
     broken_intra_doc_links
 )]
+#![forbid(unsafe_code)]
 
 pub use self::bucket::Bucket;
 pub use self::credentials::Credentials;
