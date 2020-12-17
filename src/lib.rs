@@ -32,6 +32,7 @@
     broken_intra_doc_links
 )]
 #![forbid(unsafe_code)]
+#![doc(html_root_url = "https://docs.rs/rusty-s3/0.1.0")]
 
 pub use self::bucket::Bucket;
 pub use self::credentials::Credentials;
