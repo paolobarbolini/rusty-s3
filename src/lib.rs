@@ -14,7 +14,7 @@
 //! # env::set_var("AWS_ACCESS_KEY_ID", "key");
 //! # env::set_var("AWS_SECRET_ACCESS_KEY", "secret");
 //!
-//! let endpoint = "https://eu-west-1.s3.amazonaws.com".parse().expect("endpoint is a valid Url");
+//! let endpoint = "https://s3-eu-west-1.amazonaws.com".parse().expect("endpoint is a valid Url");
 //! let path_style = true;
 //! let name = String::from("rusty-s3");
 //! let region = String::from("eu-west-1");

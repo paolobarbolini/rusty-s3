@@ -8,16 +8,16 @@ use crate::signing::util::percent_encode_path;
 ///
 /// ```rust
 /// # use rusty_s3::Bucket;
-/// let endpoint = "https://eu-west-1.s3.amazonaws.com".parse().expect("endpoint is a valid Url");
+/// let endpoint = "https://s3-eu-west-1.amazonaws.com".parse().expect("endpoint is a valid Url");
 /// let path_style = true;
 /// let name = String::from("rusty-s3");
 /// let region = String::from("eu-west-1");
 ///
 /// let bucket = Bucket::new(endpoint, path_style, name, region).expect("Url has a valid scheme and host");
-/// assert_eq!(bucket.base_url().as_str(), "https://eu-west-1.s3.amazonaws.com/rusty-s3/");
+/// assert_eq!(bucket.base_url().as_str(), "https://s3-eu-west-1.amazonaws.com/rusty-s3/");
 /// assert_eq!(bucket.name(), "rusty-s3");
 /// assert_eq!(bucket.region(), "eu-west-1");
-/// assert_eq!(bucket.object_url("duck.jpg").expect("url is valid").as_str(), "https://eu-west-1.s3.amazonaws.com/rusty-s3/duck.jpg");
+/// assert_eq!(bucket.object_url("duck.jpg").expect("url is valid").as_str(), "https://s3-eu-west-1.amazonaws.com/rusty-s3/duck.jpg");
 /// ```
 ///
 /// ## Domain style url
@@ -30,10 +30,10 @@ use crate::signing::util::percent_encode_path;
 /// let region = String::from("eu-west-1");
 ///
 /// let bucket = Bucket::new(endpoint, path_style, name, region).expect("Url has a valid scheme and host");
-/// assert_eq!(bucket.base_url().as_str(), "https://rusty-s3.eu-west-1.s3.amazonaws.com/");
+/// assert_eq!(bucket.base_url().as_str(), "https://rusty-s3.s3-eu-west-1.amazonaws.com/");
 /// assert_eq!(bucket.name(), "rusty-s3");
 /// assert_eq!(bucket.region(), "eu-west-1");
-/// assert_eq!(bucket.object_url("duck.jpg").expect("url is valid").as_str(), "https://rusty-s3.eu-west-1.s3.amazonaws.com/duck.jpg");
+/// assert_eq!(bucket.object_url("duck.jpg").expect("url is valid").as_str(), "https://rusty-s3.s3-eu-west-1.amazonaws.com/duck.jpg");
 /// ```
 #[derive(Debug, Clone)]
 pub struct Bucket {
@@ -105,8 +105,8 @@ mod tests {
 
     #[test]
     fn new_pathstyle() {
-        let endpoint: Url = "https://s3.eu-west-1.amazonaws.com".parse().unwrap();
-        let base_url: Url = "https://s3.eu-west-1.amazonaws.com/rusty-s3/"
+        let endpoint: Url = "https://s3-eu-west-1.amazonaws.com".parse().unwrap();
+        let base_url: Url = "https://s3-eu-west-1.amazonaws.com/rusty-s3/"
             .parse()
             .unwrap();
         let name = "rusty-s3";
@@ -120,8 +120,8 @@ mod tests {
 
     #[test]
     fn new_domainstyle() {
-        let endpoint: Url = "https://s3.eu-west-1.amazonaws.com".parse().unwrap();
-        let base_url: Url = "https://rusty-s3.s3.eu-west-1.amazonaws.com"
+        let endpoint: Url = "https://s3-eu-west-1.amazonaws.com".parse().unwrap();
+        let base_url: Url = "https://rusty-s3.s3-eu-west-1.amazonaws.com"
             .parse()
             .unwrap();
         let name = "rusty-s3";
@@ -143,28 +143,28 @@ mod tests {
 
     #[test]
     fn object_url_pathstyle() {
-        let endpoint: Url = "https://s3.eu-west-1.amazonaws.com".parse().unwrap();
+        let endpoint: Url = "https://s3-eu-west-1.amazonaws.com".parse().unwrap();
         let name = "rusty-s3";
         let region = "eu-west-1";
         let bucket = Bucket::new(endpoint, true, name.into(), region.into()).unwrap();
 
         let path_style = bucket.object_url("something/cat.jpg").unwrap();
         assert_eq!(
-            "https://s3.eu-west-1.amazonaws.com/rusty-s3/something/cat.jpg",
+            "https://s3-eu-west-1.amazonaws.com/rusty-s3/something/cat.jpg",
             path_style.as_str()
         );
     }
 
     #[test]
     fn object_url_domainstyle() {
-        let endpoint: Url = "https://s3.eu-west-1.amazonaws.com".parse().unwrap();
+        let endpoint: Url = "https://s3-eu-west-1.amazonaws.com".parse().unwrap();
         let name = "rusty-s3";
         let region = "eu-west-1";
         let bucket = Bucket::new(endpoint, false, name.into(), region.into()).unwrap();
 
         let domain_style = bucket.object_url("something/cat.jpg").unwrap();
         assert_eq!(
-            "https://rusty-s3.s3.eu-west-1.amazonaws.com/something/cat.jpg",
+            "https://rusty-s3.s3-eu-west-1.amazonaws.com/something/cat.jpg",
             domain_style.as_str()
         );
     }
