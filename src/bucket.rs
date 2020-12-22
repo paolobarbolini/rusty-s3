@@ -24,7 +24,7 @@ use crate::signing::util::percent_encode_path;
 ///
 /// ```rust
 /// # use rusty_s3::Bucket;
-/// let endpoint = "https://eu-west-1.s3.amazonaws.com".parse().expect("endpoint is a valid Url");
+/// let endpoint = "https://s3-eu-west-1.amazonaws.com".parse().expect("endpoint is a valid Url");
 /// let path_style = false;
 /// let name = String::from("rusty-s3");
 /// let region = String::from("eu-west-1");
