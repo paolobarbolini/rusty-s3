@@ -94,4 +94,19 @@ mod tests {
 
         assert_eq!(expected, url.as_str());
     }
+
+    #[test]
+    fn anonymous_custom_query() {
+        let expires_at = Duration::from_secs(86400);
+
+        let endpoint = "https://s3.amazonaws.com".parse().unwrap();
+        let bucket =
+            Bucket::new(endpoint, false, "examplebucket".into(), "us-east-1".into()).unwrap();
+
+        let action = DeleteObject::new(&bucket, None, "test.txt");
+        let url = action.sign(expires_at);
+        let expected = "https://examplebucket.s3.amazonaws.com/test.txt";
+
+        assert_eq!(expected, url.as_str());
+    }
 }

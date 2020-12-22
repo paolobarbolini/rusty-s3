@@ -53,6 +53,7 @@ impl<'a> CreateMultipartUpload<'a> {
 
     fn sign_with_time(&self, expires_at: Duration, time: &OffsetDateTime) -> Url {
         let url = self.bucket.object_url(self.object).unwrap();
+        let query = iter::once(("uploads", "1"));
 
         match self.credentials {
             Some(credentials) => sign(
@@ -63,10 +64,10 @@ impl<'a> CreateMultipartUpload<'a> {
                 credentials.secret(),
                 self.bucket.region(),
                 expires_at.as_secs(),
-                iter::once(("uploads", "1")),
+                query,
                 iter::empty(),
             ),
-            None => url,
+            None => crate::signing::util::add_query_params(url, query),
         }
     }
 }
@@ -117,6 +118,21 @@ mod tests {
 
         let url = action.sign_with_time(expires_at, &date);
         let expected = "https://examplebucket.s3.amazonaws.com/test.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&uploads=1&X-Amz-Signature=a6289f9e5ff2a914c6e324403bcd00b1d258c568487faa50d317ef0910c25c0a";
+
+        assert_eq!(expected, url.as_str());
+    }
+
+    #[test]
+    fn anonymous_custom_query() {
+        let expires_at = Duration::from_secs(86400);
+
+        let endpoint = "https://s3.amazonaws.com".parse().unwrap();
+        let bucket =
+            Bucket::new(endpoint, false, "examplebucket".into(), "us-east-1".into()).unwrap();
+
+        let action = CreateMultipartUpload::new(&bucket, None, "test.txt");
+        let url = action.sign(expires_at);
+        let expected = "https://examplebucket.s3.amazonaws.com/test.txt?uploads=1";
 
         assert_eq!(expected, url.as_str());
     }

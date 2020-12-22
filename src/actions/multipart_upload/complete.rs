@@ -51,6 +51,7 @@ where
 {
     fn sign_with_time(&self, expires_at: Duration, time: &OffsetDateTime) -> Url {
         let url = self.bucket.object_url(self.object).unwrap();
+        let query = iter::once(("uploadId", self.upload_id));
 
         match self.credentials {
             Some(credentials) => sign(
@@ -61,10 +62,10 @@ where
                 credentials.secret(),
                 self.bucket.region(),
                 expires_at.as_secs(),
-                iter::once(("uploadId", self.upload_id)),
+                query,
                 iter::empty(),
             ),
-            None => url,
+            None => crate::signing::util::add_query_params(url, query),
         }
     }
 
@@ -157,5 +158,22 @@ mod tests {
 
         let expected = "<CompleteMultipartUpload><Part><ETag>123456789</ETag><PartNumber>1</PartNumber></Part><Part><ETag>abcdef</ETag><PartNumber>2</PartNumber></Part></CompleteMultipartUpload>";
         assert_eq!(action.body(), expected);
+    }
+
+    #[test]
+    fn anonymous_custom_query() {
+        let expires_at = Duration::from_secs(86400);
+
+        let endpoint = "https://s3.amazonaws.com".parse().unwrap();
+        let bucket =
+            Bucket::new(endpoint, false, "examplebucket".into(), "us-east-1".into()).unwrap();
+
+        let etags = ["123456789", "abcdef"];
+        let action =
+            CompleteMultipartUpload::new(&bucket, None, "test.txt", "abcd", etags.iter().copied());
+        let url = action.sign(expires_at);
+        let expected = "https://examplebucket.s3.amazonaws.com/test.txt?uploadId=abcd";
+
+        assert_eq!(expected, url.as_str());
     }
 }

@@ -23,6 +23,7 @@ pub struct CreateBucket<'a> {
 }
 
 impl<'a> CreateBucket<'a> {
+    // TODO: don't take an Option for Credentials, since CreateBucket requests must be authenticated.
     pub fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>) -> Self {
         Self {
             bucket,

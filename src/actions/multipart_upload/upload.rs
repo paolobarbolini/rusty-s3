@@ -76,7 +76,7 @@ impl<'a> UploadPart<'a> {
                 query.iter().copied(),
                 iter::empty(),
             ),
-            None => url,
+            None => crate::signing::util::add_query_params(url, query.iter().copied()),
         }
     }
 }
@@ -121,6 +121,21 @@ mod tests {
 
         let url = action.sign_with_time(expires_at, &date);
         let expected = "https://examplebucket.s3.amazonaws.com/test.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&partNumber=1&uploadId=abcd&X-Amz-Signature=d2ed12e1e116c88a79cd6d1726f5fe75c99db8a0292ba000f97ecc309a9303f8";
+
+        assert_eq!(expected, url.as_str());
+    }
+
+    #[test]
+    fn anonymous_custom_query() {
+        let expires_at = Duration::from_secs(86400);
+
+        let endpoint = "https://s3.amazonaws.com".parse().unwrap();
+        let bucket =
+            Bucket::new(endpoint, false, "examplebucket".into(), "us-east-1".into()).unwrap();
+
+        let action = UploadPart::new(&bucket, None, "test.txt", 1, "abcd");
+        let url = action.sign(expires_at);
+        let expected = "https://examplebucket.s3.amazonaws.com/test.txt?partNumber=1&uploadId=abcd";
 
         assert_eq!(expected, url.as_str());
     }
