@@ -82,3 +82,77 @@ impl PartialEq for RotatingCredentials {
         *current1 == *current2
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use pretty_assertions::assert_eq;
+
+    use super::*;
+
+    #[test]
+    fn rotate() {
+        let credentials = RotatingCredentials::new("abcd".into(), "1234".into(), "xyz".into());
+
+        let current = credentials.current_credentials();
+        assert_eq!(current.key(), "abcd");
+        assert_eq!(current.secret(), "1234");
+        assert_eq!(current.token(), Some("xyz"));
+        drop(current);
+
+        credentials.update("1234".into(), "5678".into(), "9012".into());
+
+        let current = credentials.current_credentials();
+        assert_eq!(current.key(), "1234");
+        assert_eq!(current.secret(), "5678");
+        assert_eq!(current.token(), Some("9012"));
+        drop(current);
+
+        credentials.update("dcba".into(), "4321".into(), "yxz".into());
+
+        let current = credentials.current_credentials();
+        assert_eq!(current.key(), "dcba");
+        assert_eq!(current.secret(), "4321");
+        assert_eq!(current.token(), Some("yxz"));
+        drop(current);
+    }
+
+    #[test]
+    fn rotate_cloned() {
+        let credentials = RotatingCredentials::new("abcd".into(), "1234".into(), "xyz".into());
+
+        let current = credentials.current_credentials();
+        assert_eq!(current.key(), "abcd");
+        assert_eq!(current.secret(), "1234");
+        assert_eq!(current.token(), Some("xyz"));
+        drop(current);
+
+        let credentials2 = credentials.clone();
+
+        credentials.update("1234".into(), "5678".into(), "9012".into());
+
+        let current = credentials2.current_credentials();
+        assert_eq!(current.key(), "1234");
+        assert_eq!(current.secret(), "5678");
+        assert_eq!(current.token(), Some("9012"));
+        drop(current);
+
+        assert_eq!(credentials, credentials2);
+
+        credentials.update("dcba".into(), "4321".into(), "yxz".into());
+
+        let current = credentials.current_credentials();
+        assert_eq!(current.key(), "dcba");
+        assert_eq!(current.secret(), "4321");
+        assert_eq!(current.token(), Some("yxz"));
+        drop(current);
+
+        assert_eq!(credentials, credentials2);
+    }
+
+    #[test]
+    fn debug() {
+        let credentials = RotatingCredentials::new("abcd".into(), "1234".into(), "xyz".into());
+        let debug_output = format!("{:?}", credentials);
+        assert_eq!(debug_output, "Credentials { key: \"abcd\" }");
+    }
+}

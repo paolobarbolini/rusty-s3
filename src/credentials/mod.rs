@@ -87,11 +87,27 @@ mod tests {
         let credentials = Credentials::new("abcd".into(), "1234".into());
         assert_eq!(credentials.key(), "abcd");
         assert_eq!(credentials.secret(), "1234");
+        assert!(credentials.token().is_none());
+    }
+
+    #[test]
+    fn key_secret_token() {
+        let credentials = Credentials::new_with_token("abcd".into(), "1234".into(), "xyz".into());
+        assert_eq!(credentials.key(), "abcd");
+        assert_eq!(credentials.secret(), "1234");
+        assert_eq!(credentials.token(), Some("xyz"));
     }
 
     #[test]
     fn debug() {
         let credentials = Credentials::new("abcd".into(), "1234".into());
+        let debug_output = format!("{:?}", credentials);
+        assert_eq!(debug_output, "Credentials { key: \"abcd\" }");
+    }
+
+    #[test]
+    fn debug_token() {
+        let credentials = Credentials::new_with_token("abcd".into(), "1234".into(), "xyz".into());
         let debug_output = format!("{:?}", credentials);
         assert_eq!(debug_output, "Credentials { key: \"abcd\" }");
     }
@@ -104,6 +120,7 @@ mod tests {
         let credentials = Credentials::from_env().unwrap();
         assert_eq!(credentials.key(), "key");
         assert_eq!(credentials.secret(), "secret");
+        assert!(credentials.token().is_none());
 
         env::remove_var("AWS_ACCESS_KEY_ID");
         env::remove_var("AWS_SECRET_ACCESS_KEY");
