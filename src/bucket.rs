@@ -1,6 +1,11 @@
 use url::{ParseError, Url};
 
+use crate::actions::{
+    AbortMultipartUpload, CompleteMultipartUpload, CreateBucket, CreateMultipartUpload,
+    DeleteObject, GetObject, ListObjectsV2, PutObject, UploadPart,
+};
 use crate::signing::util::percent_encode_path;
+use crate::Credentials;
 
 /// An S3 bucket
 ///
@@ -97,6 +102,117 @@ fn base_url(mut endpoint: Url, name: &str, path_style: bool) -> Url {
     }
 }
 
+// === Bucket level actions ===
+
+impl Bucket {
+    /// Create a new bucket.
+    ///
+    /// See [`CreateBucket`] for more details.
+    pub fn create_bucket<'a>(&'a self, credentials: &'a Credentials) -> CreateBucket<'a> {
+        CreateBucket::new(self, Some(credentials))
+    }
+}
+
+// === Basic actions ===
+
+impl Bucket {
+    /// Retrieve an object from S3, using a `GET` request.
+    ///
+    /// See [`GetObject`] for more details.
+    pub fn get_object<'a>(
+        &'a self,
+        credentials: Option<&'a Credentials>,
+        object: &'a str,
+    ) -> GetObject<'a> {
+        GetObject::new(self, credentials, object)
+    }
+
+    /// List all objects in the bucket.
+    ///
+    /// See [`ListObjectsV2`] for more details.
+    pub fn list_objects_v2<'a>(
+        &'a self,
+        credentials: Option<&'a Credentials>,
+    ) -> ListObjectsV2<'a> {
+        ListObjectsV2::new(self, credentials)
+    }
+
+    /// Upload a file to S3, using a `PUT` request.
+    ///
+    /// See [`PutObject`] for more details.
+    pub fn put_object<'a>(
+        &'a self,
+        credentials: Option<&'a Credentials>,
+        object: &'a str,
+    ) -> PutObject<'a> {
+        PutObject::new(self, credentials, object)
+    }
+
+    /// Delete an object from S3, using a `DELETE` request.
+    ///
+    /// See [`DeleteObject`] for more details.
+    pub fn delete_object<'a>(
+        &'a self,
+        credentials: Option<&'a Credentials>,
+        object: &'a str,
+    ) -> DeleteObject<'a> {
+        DeleteObject::new(self, credentials, object)
+    }
+}
+
+// === Multipart Upload ===
+
+impl Bucket {
+    /// Create a multipart upload.
+    ///
+    /// See [`CreateMultipartUpload`] for more details.
+    pub fn create_multipart_upload<'a>(
+        &'a self,
+        credentials: Option<&'a Credentials>,
+        object: &'a str,
+    ) -> CreateMultipartUpload<'a> {
+        CreateMultipartUpload::new(self, credentials, object)
+    }
+
+    /// Upload a part to a previously created multipart upload.
+    ///
+    /// See [`UploadPart`] for more details.
+    pub fn upload_part<'a>(
+        &'a self,
+        credentials: Option<&'a Credentials>,
+        object: &'a str,
+        part_number: u16,
+        upload_id: &'a str,
+    ) -> UploadPart<'a> {
+        UploadPart::new(self, credentials, object, part_number, upload_id)
+    }
+
+    /// Complete a multipart upload.
+    ///
+    /// See [`CompleteMultipartUpload`] for more details.
+    pub fn complete_multipart_upload<'a, I>(
+        &'a self,
+        credentials: Option<&'a Credentials>,
+        object: &'a str,
+        upload_id: &'a str,
+        etags: I,
+    ) -> CompleteMultipartUpload<'a, I> {
+        CompleteMultipartUpload::new(self, credentials, object, upload_id, etags)
+    }
+
+    /// Abort multipart upload.
+    ///
+    /// See [`AbortMultipartUpload`] for more details.
+    pub fn abort_multipart_upload<'a>(
+        &'a self,
+        credentials: Option<&'a Credentials>,
+        object: &'a str,
+        upload_id: &'a str,
+    ) -> AbortMultipartUpload<'a> {
+        AbortMultipartUpload::new(self, credentials, object, upload_id)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
@@ -167,5 +283,36 @@ mod tests {
             "https://rusty-s3.s3-eu-west-1.amazonaws.com/something/cat.jpg",
             domain_style.as_str()
         );
+    }
+
+    #[test]
+    fn all_actions() {
+        let endpoint: Url = "https://s3-eu-west-1.amazonaws.com".parse().unwrap();
+
+        let name = "rusty-s3";
+        let region = "eu-west-1";
+        let bucket = Bucket::new(endpoint, true, name.into(), region.into()).unwrap();
+
+        let credentials = Credentials::new(
+            "AKIAIOSFODNN7EXAMPLE".into(),
+            "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY".into(),
+        );
+
+        let _ = bucket.create_bucket(&credentials);
+
+        let _ = bucket.get_object(Some(&credentials), "duck.jpg");
+        let _ = bucket.list_objects_v2(Some(&credentials));
+        let _ = bucket.put_object(Some(&credentials), "duck.jpg");
+        let _ = bucket.delete_object(Some(&credentials), "duck.jpg");
+
+        let _ = bucket.create_multipart_upload(Some(&credentials), "duck.jpg");
+        let _ = bucket.upload_part(Some(&credentials), "duck.jpg", 1, "abcd");
+        let _ = bucket.complete_multipart_upload(
+            Some(&credentials),
+            "duck.jpg",
+            "abcd",
+            ["1234"].iter().copied(),
+        );
+        let _ = bucket.abort_multipart_upload(Some(&credentials), "duck.jpg", "abcd");
     }
 }
