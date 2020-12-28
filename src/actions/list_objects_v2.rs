@@ -10,7 +10,7 @@ use crate::actions::S3Action;
 use crate::signing::sign;
 use crate::{Bucket, Credentials, Map};
 
-/// List all objects in the bucket
+/// List all objects in the bucket.
 ///
 /// If `next_continuation_token` is `Some` the response is truncated, and the
 /// rest of the list can be retrieved by reusing the `ListObjectV2` action

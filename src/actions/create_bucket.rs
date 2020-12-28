@@ -9,7 +9,7 @@ use crate::actions::S3Action;
 use crate::signing::sign;
 use crate::{Bucket, Credentials, Map};
 
-/// Create a new bucket
+/// Create a new bucket.
 ///
 /// Find out more about `CreateBucket` from the [AWS API Reference][api]
 ///
