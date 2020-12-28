@@ -10,7 +10,8 @@
 //!
 //! ```rust
 //! use std::env;
-//! use rusty_s3::{Bucket, Credentials};
+//! use std::time::Duration;
+//! use rusty_s3::{Bucket, Credentials, S3Action};
 //! # env::set_var("AWS_ACCESS_KEY_ID", "key");
 //! # env::set_var("AWS_SECRET_ACCESS_KEY", "secret");
 //!
@@ -23,6 +24,10 @@
 //! let key = env::var("AWS_ACCESS_KEY_ID").expect("AWS_ACCESS_KEY_ID is set and a valid String");
 //! let secret = env::var("AWS_SECRET_ACCESS_KEY").expect("AWS_ACCESS_KEY_ID is set and a valid String");
 //! let credentials = Credentials::new(key, secret);
+//!
+//! let presigned_url_duration = Duration::from_secs(60 * 60);
+//! let action = bucket.get_object(Some(&credentials), "duck.jpg");
+//! println!("GET {}", action.sign(presigned_url_duration));
 //! ```
 
 #![deny(
