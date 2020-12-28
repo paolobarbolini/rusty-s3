@@ -1,18 +1,41 @@
 use std::env;
 use std::fmt::{self, Debug, Formatter};
 
+pub use self::rotating::RotatingCredentials;
+
+mod rotating;
+
 /// S3 credentials
 #[derive(Clone, PartialEq, Eq)]
 pub struct Credentials {
     key: String,
     secret: String,
+    token: Option<String>,
 }
 
 impl Credentials {
     /// Construct a new `Credentials` using the provided key and secret
     #[inline]
     pub fn new(key: String, secret: String) -> Self {
-        Self { key, secret }
+        Self {
+            key,
+            secret,
+            token: None,
+        }
+    }
+
+    /// Construct a new `Credentials` using the provided key, secret and token
+    #[inline]
+    pub fn new_with_token(key: String, secret: String, token: String) -> Self {
+        Self {
+            key,
+            secret,
+            token: Some(token),
+        }
+    }
+
+    pub(super) fn empty() -> Self {
+        Self::new(String::new(), String::new())
     }
 
     /// Construct a new `Credentials` using AWS's default environment variables
@@ -36,6 +59,12 @@ impl Credentials {
     #[inline]
     pub fn secret(&self) -> &str {
         &self.secret
+    }
+
+    /// Get the token of this `Credentials`, if present
+    #[inline]
+    pub fn token(&self) -> Option<&str> {
+        self.token.as_deref()
     }
 }
 

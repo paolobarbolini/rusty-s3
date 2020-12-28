@@ -41,7 +41,7 @@
 
 pub use self::actions::S3Action;
 pub use self::bucket::Bucket;
-pub use self::credentials::Credentials;
+pub use self::credentials::{Credentials, RotatingCredentials};
 pub use self::map::Map;
 pub use self::method::Method;
 
