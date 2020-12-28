@@ -2,8 +2,10 @@ use std::env;
 use std::fmt::{self, Debug, Formatter};
 
 pub use self::rotating::RotatingCredentials;
+pub use self::serde::Ec2SecurityCredentialsMetadataResponse;
 
 mod rotating;
+mod serde;
 
 /// S3 credentials
 #[derive(Clone, PartialEq, Eq)]
