@@ -5,6 +5,7 @@ use time::PrimitiveDateTime;
 
 use crate::{Credentials, RotatingCredentials};
 
+/// Parser for responses received from the EC2 security-credentials metadata service.
 #[derive(Clone, Deserialize)]
 pub struct Ec2SecurityCredentialsMetadataResponse {
     #[serde(rename = "AccessKeyId")]
@@ -26,30 +27,46 @@ where
 }
 
 impl Ec2SecurityCredentialsMetadataResponse {
+    /// Deserialize a JSON response received from the EC2 metadata service.
+    ///
+    /// Parses the credentials from a response received from
+    /// `http://169.254.169.254/latest/meta-data/iam/security-credentials/{name-of-IAM-role}`.
     pub fn deserialize(s: &str) -> Result<Self, serde_json::Error> {
         serde_json::from_str(s)
     }
 
+    /// Get the key of this `Ec2SecurityCredentialsMetadataResponse`
+    #[inline]
     pub fn key(&self) -> &str {
         &self.key
     }
 
+    /// Get the secret of this `Ec2SecurityCredentialsMetadataResponse`
+    #[inline]
     pub fn secret(&self) -> &str {
         &self.secret
     }
 
+    /// Get the token of this `Ec2SecurityCredentialsMetadataResponse`
+    #[inline]
     pub fn token(&self) -> &str {
         &self.token
     }
 
+    /// Get the expiration of the credentials of this `Ec2SecurityCredentialsMetadataResponse`
+    #[inline]
     pub fn expiration(&self) -> PrimitiveDateTime {
         self.expiration
     }
 
+    /// Convert this `Ec2SecurityCredentialsMetadataResponse` into [`Credentials`]
+    #[inline]
     pub fn into_credentials(self) -> Credentials {
         Credentials::new_(self.key, self.secret, Some(self.token))
     }
 
+    /// Update a [`RotatingCredentials`] with the credentials of this `Ec2SecurityCredentialsMetadataResponse`
+    #[inline]
     pub fn rotate_credentials(self, rotating: &RotatingCredentials) {
         rotating.update(self.key, self.secret, Some(self.token));
     }
