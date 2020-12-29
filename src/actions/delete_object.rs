@@ -41,6 +41,7 @@ impl<'a> DeleteObject<'a> {
                 url,
                 credentials.key(),
                 credentials.secret(),
+                credentials.token(),
                 self.bucket.region(),
                 expires_in.as_secs(),
                 iter::empty(),

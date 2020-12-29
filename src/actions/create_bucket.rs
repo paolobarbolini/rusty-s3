@@ -47,6 +47,7 @@ impl<'a> CreateBucket<'a> {
                 url,
                 credentials.key(),
                 credentials.secret(),
+                credentials.token(),
                 self.bucket.region(),
                 expires_in.as_secs(),
                 self.query.iter(),

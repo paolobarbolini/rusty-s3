@@ -18,6 +18,7 @@ pub fn sign<'a, Q, H>(
     mut url: Url,
     key: &str,
     secret: &str,
+    token: Option<&str>,
     region: &str,
     expires_seconds: u64,
 
@@ -58,15 +59,33 @@ where
     let standard_headers = iter::once(("host", host_header.as_str()));
     let headers = SortingIterator::new(standard_headers, headers);
 
-    let standard_query = [
-        ("X-Amz-Algorithm", "AWS4-HMAC-SHA256"),
-        ("X-Amz-Credential", credential.as_str()),
-        ("X-Amz-Date", date_str.as_str()),
-        ("X-Amz-Expires", expires_seconds_string.as_str()),
-        ("X-Amz-SignedHeaders", "host"),
-    ];
+    let a1;
+    let a2;
+    let standard_query = match token {
+        Some(token) => {
+            a1 = [
+                ("X-Amz-Algorithm", "AWS4-HMAC-SHA256"),
+                ("X-Amz-Credential", credential.as_str()),
+                ("X-Amz-Date", date_str.as_str()),
+                ("X-Amz-Expires", expires_seconds_string.as_str()),
+                ("X-Amz-Security-Token", token),
+                ("X-Amz-SignedHeaders", "host"),
+            ];
+            a1.iter()
+        }
+        None => {
+            a2 = [
+                ("X-Amz-Algorithm", "AWS4-HMAC-SHA256"),
+                ("X-Amz-Credential", credential.as_str()),
+                ("X-Amz-Date", date_str.as_str()),
+                ("X-Amz-Expires", expires_seconds_string.as_str()),
+                ("X-Amz-SignedHeaders", "host"),
+            ];
+            a2.iter()
+        }
+    };
 
-    let query_string = SortingIterator::new(standard_query.iter().copied(), query_string);
+    let query_string = SortingIterator::new(standard_query.copied(), query_string);
 
     {
         let mut query_pairs = url.query_pairs_mut();
@@ -125,6 +144,7 @@ mod tests {
             url,
             key,
             secret,
+            None,
             region,
             expires_seconds,
             iter::empty(),

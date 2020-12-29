@@ -46,11 +46,13 @@ impl Credentials {
     ///
     /// Reads the key from the `AWS_ACCESS_KEY_ID` environment variable and the secret
     /// from the `AWS_SECRET_ACCESS_KEY` environment variable.
+    /// If `AWS_SESSION_TOKEN` is set a token is also read.
     /// Returns `None` if either environment variables aren't set or they aren't valid utf-8.
     pub fn from_env() -> Option<Self> {
         let key = env::var("AWS_ACCESS_KEY_ID").ok()?;
         let secret = env::var("AWS_SECRET_ACCESS_KEY").ok()?;
-        Some(Self::new(key, secret))
+        let token = env::var("AWS_SESSION_TOKEN").ok();
+        Some(Self::new_(key, secret, token))
     }
 
     /// Get the key of this `Credentials`
