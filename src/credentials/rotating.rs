@@ -4,6 +4,12 @@ use std::sync::{Arc, RwLock};
 use super::Credentials;
 
 /// Credentials that can be rotated
+///
+/// This struct can be cloned and shared around the rest of
+/// the application and will always yield the latest credentials,
+/// by calling [`RotatingCredentials::get`].
+///
+/// Credentials can be updated by calling [`RotatingCredentials::update`].
 pub struct RotatingCredentials {
     inner: Arc<RwLock<Arc<Credentials>>>,
 }
@@ -18,11 +24,13 @@ impl RotatingCredentials {
         }
     }
 
-    pub fn current_credentials(&self) -> Arc<Credentials> {
+    /// Get the latest credentials inside this `RotatingCredentials`
+    pub fn get(&self) -> Arc<Credentials> {
         let lock = self.inner.read().expect("can't be poisoned");
         Arc::clone(&lock)
     }
 
+    /// Update the credentials inside this `RotatingCredentials`
     pub fn update(&self, key: String, secret: String, token: String) {
         let credentials = Credentials::new_with_token(key, secret, token);
 
@@ -36,7 +44,7 @@ impl RotatingCredentials {
 
 impl Debug for RotatingCredentials {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        let current = self.current_credentials();
+        let current = self.get();
         Debug::fmt(&*current, f)
     }
 }
@@ -55,8 +63,8 @@ impl Clone for RotatingCredentials {
 
 impl PartialEq for RotatingCredentials {
     fn eq(&self, other: &RotatingCredentials) -> bool {
-        let current1 = self.current_credentials();
-        let current2 = other.current_credentials();
+        let current1 = self.get();
+        let current2 = other.get();
         *current1 == *current2
     }
 }
@@ -71,7 +79,7 @@ mod tests {
     fn rotate() {
         let credentials = RotatingCredentials::new("abcd".into(), "1234".into(), "xyz".into());
 
-        let current = credentials.current_credentials();
+        let current = credentials.get();
         assert_eq!(current.key(), "abcd");
         assert_eq!(current.secret(), "1234");
         assert_eq!(current.token(), Some("xyz"));
@@ -79,7 +87,7 @@ mod tests {
 
         credentials.update("1234".into(), "5678".into(), "9012".into());
 
-        let current = credentials.current_credentials();
+        let current = credentials.get();
         assert_eq!(current.key(), "1234");
         assert_eq!(current.secret(), "5678");
         assert_eq!(current.token(), Some("9012"));
@@ -87,7 +95,7 @@ mod tests {
 
         credentials.update("dcba".into(), "4321".into(), "yxz".into());
 
-        let current = credentials.current_credentials();
+        let current = credentials.get();
         assert_eq!(current.key(), "dcba");
         assert_eq!(current.secret(), "4321");
         assert_eq!(current.token(), Some("yxz"));
@@ -98,7 +106,7 @@ mod tests {
     fn rotate_cloned() {
         let credentials = RotatingCredentials::new("abcd".into(), "1234".into(), "xyz".into());
 
-        let current = credentials.current_credentials();
+        let current = credentials.get();
         assert_eq!(current.key(), "abcd");
         assert_eq!(current.secret(), "1234");
         assert_eq!(current.token(), Some("xyz"));
@@ -108,7 +116,7 @@ mod tests {
 
         credentials.update("1234".into(), "5678".into(), "9012".into());
 
-        let current = credentials2.current_credentials();
+        let current = credentials2.get();
         assert_eq!(current.key(), "1234");
         assert_eq!(current.secret(), "5678");
         assert_eq!(current.token(), Some("9012"));
@@ -118,7 +126,7 @@ mod tests {
 
         credentials.update("dcba".into(), "4321".into(), "yxz".into());
 
-        let current = credentials.current_credentials();
+        let current = credentials.get();
         assert_eq!(current.key(), "dcba");
         assert_eq!(current.secret(), "4321");
         assert_eq!(current.token(), Some("yxz"));
