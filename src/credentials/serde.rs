@@ -47,11 +47,11 @@ impl Ec2SecurityCredentialsMetadataResponse {
     }
 
     pub fn into_credentials(self) -> Credentials {
-        Credentials::new_with_token(self.key, self.secret, self.token)
+        Credentials::new_(self.key, self.secret, Some(self.token))
     }
 
     pub fn rotate_credentials(self, rotating: &RotatingCredentials) {
-        rotating.update(self.key, self.secret, self.token);
+        rotating.update(self.key, self.secret, Some(self.token));
     }
 }
 

@@ -15,9 +15,9 @@ pub struct RotatingCredentials {
 }
 
 impl RotatingCredentials {
-    /// Construct a new `RotatingCredentials` using the provided key and secret
-    pub fn new(key: String, secret: String, token: String) -> Self {
-        let credentials = Credentials::new_with_token(key, secret, token);
+    /// Construct a new `RotatingCredentials` using the provided key, secret and token
+    pub fn new(key: String, secret: String, token: Option<String>) -> Self {
+        let credentials = Credentials::new_(key, secret, token);
 
         Self {
             inner: Arc::new(RwLock::new(Arc::new(credentials))),
@@ -31,8 +31,8 @@ impl RotatingCredentials {
     }
 
     /// Update the credentials inside this `RotatingCredentials`
-    pub fn update(&self, key: String, secret: String, token: String) {
-        let credentials = Credentials::new_with_token(key, secret, token);
+    pub fn update(&self, key: String, secret: String, token: Option<String>) {
+        let credentials = Credentials::new_(key, secret, token);
 
         let mut lock = self.inner.write().expect("can't be poisoned");
         match Arc::get_mut(&mut lock) {
@@ -77,7 +77,8 @@ mod tests {
 
     #[test]
     fn rotate() {
-        let credentials = RotatingCredentials::new("abcd".into(), "1234".into(), "xyz".into());
+        let credentials =
+            RotatingCredentials::new("abcd".into(), "1234".into(), Some("xyz".into()));
 
         let current = credentials.get();
         assert_eq!(current.key(), "abcd");
@@ -85,7 +86,7 @@ mod tests {
         assert_eq!(current.token(), Some("xyz"));
         drop(current);
 
-        credentials.update("1234".into(), "5678".into(), "9012".into());
+        credentials.update("1234".into(), "5678".into(), Some("9012".into()));
 
         let current = credentials.get();
         assert_eq!(current.key(), "1234");
@@ -93,7 +94,7 @@ mod tests {
         assert_eq!(current.token(), Some("9012"));
         drop(current);
 
-        credentials.update("dcba".into(), "4321".into(), "yxz".into());
+        credentials.update("dcba".into(), "4321".into(), Some("yxz".into()));
 
         let current = credentials.get();
         assert_eq!(current.key(), "dcba");
@@ -104,7 +105,8 @@ mod tests {
 
     #[test]
     fn rotate_cloned() {
-        let credentials = RotatingCredentials::new("abcd".into(), "1234".into(), "xyz".into());
+        let credentials =
+            RotatingCredentials::new("abcd".into(), "1234".into(), Some("xyz".into()));
 
         let current = credentials.get();
         assert_eq!(current.key(), "abcd");
@@ -114,7 +116,7 @@ mod tests {
 
         let credentials2 = credentials.clone();
 
-        credentials.update("1234".into(), "5678".into(), "9012".into());
+        credentials.update("1234".into(), "5678".into(), Some("9012".into()));
 
         let current = credentials2.get();
         assert_eq!(current.key(), "1234");
@@ -124,7 +126,7 @@ mod tests {
 
         assert_eq!(credentials, credentials2);
 
-        credentials.update("dcba".into(), "4321".into(), "yxz".into());
+        credentials.update("dcba".into(), "4321".into(), Some("yxz".into()));
 
         let current = credentials.get();
         assert_eq!(current.key(), "dcba");
@@ -137,7 +139,8 @@ mod tests {
 
     #[test]
     fn debug() {
-        let credentials = RotatingCredentials::new("abcd".into(), "1234".into(), "xyz".into());
+        let credentials =
+            RotatingCredentials::new("abcd".into(), "1234".into(), Some("xyz".into()));
         let debug_output = format!("{:?}", credentials);
         assert_eq!(debug_output, "Credentials { key: \"abcd\" }");
     }

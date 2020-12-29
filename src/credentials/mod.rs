@@ -19,21 +19,16 @@ impl Credentials {
     /// Construct a new `Credentials` using the provided key and secret
     #[inline]
     pub fn new(key: String, secret: String) -> Self {
-        Self {
-            key,
-            secret,
-            token: None,
-        }
+        Self::new_(key, secret, None)
     }
 
     /// Construct a new `Credentials` using the provided key, secret and token
+    ///
+    /// For backwards compatibility this method was named `new_`, and will replace
+    /// the current `new` implementation in the 0.2.0 release.
     #[inline]
-    pub fn new_with_token(key: String, secret: String, token: String) -> Self {
-        Self {
-            key,
-            secret,
-            token: Some(token),
-        }
+    pub fn new_(key: String, secret: String, token: Option<String>) -> Self {
+        Self { key, secret, token }
     }
 
     /// Construct a new `Credentials` using AWS's default environment variables
@@ -90,7 +85,7 @@ mod tests {
 
     #[test]
     fn key_secret_token() {
-        let credentials = Credentials::new_with_token("abcd".into(), "1234".into(), "xyz".into());
+        let credentials = Credentials::new_("abcd".into(), "1234".into(), Some("xyz".into()));
         assert_eq!(credentials.key(), "abcd");
         assert_eq!(credentials.secret(), "1234");
         assert_eq!(credentials.token(), Some("xyz"));
@@ -105,7 +100,7 @@ mod tests {
 
     #[test]
     fn debug_token() {
-        let credentials = Credentials::new_with_token("abcd".into(), "1234".into(), "xyz".into());
+        let credentials = Credentials::new_("abcd".into(), "1234".into(), Some("xyz".into()));
         let debug_output = format!("{:?}", credentials);
         assert_eq!(debug_output, "Credentials { key: \"abcd\" }");
     }
