@@ -37,7 +37,7 @@ impl<'a> CreateBucket<'a> {
         &mut self.query
     }
 
-    fn sign_with_time(&self, expires_at: Duration, time: &OffsetDateTime) -> Url {
+    fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url {
         let url = self.bucket.base_url().clone();
 
         match self.credentials {
@@ -48,7 +48,7 @@ impl<'a> CreateBucket<'a> {
                 credentials.key(),
                 credentials.secret(),
                 self.bucket.region(),
-                expires_at.as_secs(),
+                expires_in.as_secs(),
                 self.query.iter(),
                 iter::empty(),
             ),
@@ -60,9 +60,9 @@ impl<'a> CreateBucket<'a> {
 impl<'a> S3Action for CreateBucket<'a> {
     const METHOD: Method = Method::Put;
 
-    fn sign(&self, expires_at: Duration) -> Url {
+    fn sign(&self, expires_in: Duration) -> Url {
         let now = OffsetDateTime::now_utc();
-        self.sign_with_time(expires_at, &now)
+        self.sign_with_time(expires_in, &now)
     }
 }
 
@@ -83,7 +83,7 @@ mod tests {
         )
         .unwrap()
         .assume_utc();
-        let expires_at = Duration::from_secs(86400);
+        let expires_in = Duration::from_secs(86400);
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
         let bucket =
@@ -95,7 +95,7 @@ mod tests {
 
         let action = CreateBucket::new(&bucket, Some(&credentials));
 
-        let url = action.sign_with_time(expires_at, &date);
+        let url = action.sign_with_time(expires_in, &date);
         let expected = "https://examplebucket.s3.amazonaws.com/?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&X-Amz-Signature=fb5c8ab11e9fd9d3c54ea0293e1df0820feef6c1f2de12e5fe00636e3f0cf9d2";
 
         assert_eq!(expected, url.as_str());
@@ -103,7 +103,7 @@ mod tests {
 
     #[test]
     fn anonymous_custom_query() {
-        let expires_at = Duration::from_secs(86400);
+        let expires_in = Duration::from_secs(86400);
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
         let bucket =
@@ -112,7 +112,7 @@ mod tests {
         let mut action = CreateBucket::new(&bucket, None);
         action.query_mut().insert("x-amz-grant-read", "things");
 
-        let url = action.sign(expires_at);
+        let url = action.sign(expires_in);
         let expected = "https://examplebucket.s3.amazonaws.com/?x-amz-grant-read=things";
 
         assert_eq!(expected, url.as_str());

@@ -28,5 +28,5 @@ pub trait S3Action {
     const METHOD: Method;
 
     /// Sign a request for this action, using `METHOD` for the [`Method`]
-    fn sign(&self, expires_at: Duration) -> Url;
+    fn sign(&self, expires_in: Duration) -> Url;
 }

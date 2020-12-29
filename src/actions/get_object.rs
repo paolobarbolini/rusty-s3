@@ -39,7 +39,7 @@ impl<'a> GetObject<'a> {
         &mut self.query
     }
 
-    fn sign_with_time(&self, expires_at: Duration, time: &OffsetDateTime) -> Url {
+    fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url {
         let url = self.bucket.object_url(self.object).unwrap();
 
         match self.credentials {
@@ -50,7 +50,7 @@ impl<'a> GetObject<'a> {
                 credentials.key(),
                 credentials.secret(),
                 self.bucket.region(),
-                expires_at.as_secs(),
+                expires_in.as_secs(),
                 self.query.iter(),
                 iter::empty(),
             ),
@@ -62,9 +62,9 @@ impl<'a> GetObject<'a> {
 impl<'a> S3Action for GetObject<'a> {
     const METHOD: Method = Method::Get;
 
-    fn sign(&self, expires_at: Duration) -> Url {
+    fn sign(&self, expires_in: Duration) -> Url {
         let now = OffsetDateTime::now_utc();
-        self.sign_with_time(expires_at, &now)
+        self.sign_with_time(expires_in, &now)
     }
 }
 
@@ -85,7 +85,7 @@ mod tests {
         )
         .unwrap()
         .assume_utc();
-        let expires_at = Duration::from_secs(86400);
+        let expires_in = Duration::from_secs(86400);
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
         let bucket =
@@ -97,7 +97,7 @@ mod tests {
 
         let action = GetObject::new(&bucket, Some(&credentials), "test.txt");
 
-        let url = action.sign_with_time(expires_at, &date);
+        let url = action.sign_with_time(expires_in, &date);
         let expected = "https://examplebucket.s3.amazonaws.com/test.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&X-Amz-Signature=aeeed9bbccd4d02ee5c0109b86d86835f995330da4c265957d157751f604d404";
 
         assert_eq!(expected, url.as_str());
@@ -111,7 +111,7 @@ mod tests {
         )
         .unwrap()
         .assume_utc();
-        let expires_at = Duration::from_secs(86400);
+        let expires_in = Duration::from_secs(86400);
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
         let bucket =
@@ -126,7 +126,7 @@ mod tests {
             .query_mut()
             .insert("response-content-type", "text/plain");
 
-        let url = action.sign_with_time(expires_at, &date);
+        let url = action.sign_with_time(expires_in, &date);
         let expected = "https://examplebucket.s3.amazonaws.com/test.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&response-content-type=text%2Fplain&X-Amz-Signature=9cee3ba363b3a52fed152d18bb250d52a459d0905600d9b032825a3794ffd2cb";
 
         assert_eq!(expected, url.as_str());
@@ -134,7 +134,7 @@ mod tests {
 
     #[test]
     fn anonymous_custom_query() {
-        let expires_at = Duration::from_secs(86400);
+        let expires_in = Duration::from_secs(86400);
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
         let bucket =
@@ -145,7 +145,7 @@ mod tests {
             .query_mut()
             .insert("response-content-type", "text/plain");
 
-        let url = action.sign(expires_at);
+        let url = action.sign(expires_in);
         let expected =
             "https://examplebucket.s3.amazonaws.com/test.txt?response-content-type=text%2Fplain";
 

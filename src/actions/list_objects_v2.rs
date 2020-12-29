@@ -120,7 +120,7 @@ impl<'a> ListObjectsV2<'a> {
         Ok(parsed)
     }
 
-    fn sign_with_time(&self, expires_at: Duration, time: &OffsetDateTime) -> Url {
+    fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url {
         let url = self.bucket.base_url().clone();
 
         match self.credentials {
@@ -131,7 +131,7 @@ impl<'a> ListObjectsV2<'a> {
                 credentials.key(),
                 credentials.secret(),
                 self.bucket.region(),
-                expires_at.as_secs(),
+                expires_in.as_secs(),
                 self.query.iter(),
                 iter::empty(),
             ),
@@ -143,9 +143,9 @@ impl<'a> ListObjectsV2<'a> {
 impl<'a> S3Action for ListObjectsV2<'a> {
     const METHOD: Method = Method::Get;
 
-    fn sign(&self, expires_at: Duration) -> Url {
+    fn sign(&self, expires_in: Duration) -> Url {
         let now = OffsetDateTime::now_utc();
-        self.sign_with_time(expires_at, &now)
+        self.sign_with_time(expires_in, &now)
     }
 }
 
@@ -166,7 +166,7 @@ mod tests {
         )
         .unwrap()
         .assume_utc();
-        let expires_at = Duration::from_secs(86400);
+        let expires_in = Duration::from_secs(86400);
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
         let bucket =
@@ -178,7 +178,7 @@ mod tests {
 
         let action = ListObjectsV2::new(&bucket, Some(&credentials));
 
-        let url = action.sign_with_time(expires_at, &date);
+        let url = action.sign_with_time(expires_in, &date);
         let expected = "https://examplebucket.s3.amazonaws.com/?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&encoding-type=url&list-type=2&X-Amz-Signature=58e7f65928710f045f6a7e1f7a32b3426b4895900fad799db66faa3ff8b18bd5";
 
         assert_eq!(expected, url.as_str());
@@ -186,7 +186,7 @@ mod tests {
 
     #[test]
     fn anonymous_custom_query() {
-        let expires_at = Duration::from_secs(86400);
+        let expires_in = Duration::from_secs(86400);
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
         let bucket =
@@ -195,7 +195,7 @@ mod tests {
         let mut action = ListObjectsV2::new(&bucket, None);
         action.query_mut().insert("continuation-token", "duck");
 
-        let url = action.sign(expires_at);
+        let url = action.sign(expires_in);
         let expected = "https://examplebucket.s3.amazonaws.com/?continuation-token=duck&encoding-type=url&list-type=2";
 
         assert_eq!(expected, url.as_str());
