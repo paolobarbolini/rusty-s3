@@ -36,10 +36,6 @@ impl Credentials {
         }
     }
 
-    pub(super) fn empty() -> Self {
-        Self::new(String::new(), String::new())
-    }
-
     /// Construct a new `Credentials` using AWS's default environment variables
     ///
     /// Reads the key from the `AWS_ACCESS_KEY_ID` environment variable and the secret

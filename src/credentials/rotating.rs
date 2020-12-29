@@ -1,58 +1,36 @@
-use std::cell::{Cell, Ref, RefCell};
 use std::fmt::{Debug, Formatter, Result as FmtResult};
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 use super::Credentials;
 
-/// S3 credentials
+/// Credentials that can be rotated
 pub struct RotatingCredentials {
-    inner: Arc<RotatingCredentialsInner>,
-}
-
-struct RotatingCredentialsInner {
-    creds1: RefCell<Credentials>,
-    creds2: RefCell<Credentials>,
-    in_use: Cell<InUse>,
-}
-
-#[derive(Copy, Clone)]
-enum InUse {
-    Creds1,
-    Creds2,
+    inner: Arc<RwLock<Arc<Credentials>>>,
 }
 
 impl RotatingCredentials {
     /// Construct a new `RotatingCredentials` using the provided key and secret
     pub fn new(key: String, secret: String, token: String) -> Self {
+        let credentials = Credentials::new_with_token(key, secret, token);
+
         Self {
-            inner: Arc::new(RotatingCredentialsInner {
-                creds1: RefCell::new(Credentials::new_with_token(key, secret, token)),
-                creds2: RefCell::new(Credentials::empty()),
-                in_use: Cell::new(InUse::Creds1),
-            }),
+            inner: Arc::new(RwLock::new(Arc::new(credentials))),
         }
     }
 
-    pub fn current_credentials(&self) -> Ref<'_, Credentials> {
-        match self.inner.in_use.get() {
-            InUse::Creds1 => self.inner.creds1.borrow(),
-            InUse::Creds2 => self.inner.creds2.borrow(),
-        }
+    pub fn current_credentials(&self) -> Arc<Credentials> {
+        let lock = self.inner.read().expect("can't be poisoned");
+        Arc::clone(&lock)
     }
 
     pub fn update(&self, key: String, secret: String, token: String) {
         let credentials = Credentials::new_with_token(key, secret, token);
 
-        match self.inner.in_use.get() {
-            InUse::Creds1 => {
-                self.inner.creds2.replace(credentials);
-                self.inner.in_use.set(InUse::Creds2);
-            }
-            InUse::Creds2 => {
-                self.inner.creds1.replace(credentials);
-                self.inner.in_use.set(InUse::Creds1);
-            }
-        }
+        let mut lock = self.inner.write().expect("can't be poisoned");
+        match Arc::get_mut(&mut lock) {
+            Some(arc) => *arc = credentials,
+            None => *lock = Arc::new(credentials),
+        };
     }
 }
 
