@@ -41,15 +41,13 @@
 
 pub use self::actions::S3Action;
 pub use self::bucket::Bucket;
-pub use self::credentials::{
-    Credentials, Ec2SecurityCredentialsMetadataResponse, RotatingCredentials,
-};
+pub use self::credentials::Credentials;
 pub use self::map::Map;
 pub use self::method::Method;
 
 pub mod actions;
 mod bucket;
-mod credentials;
+pub mod credentials;
 mod map;
 mod method;
 mod signing;

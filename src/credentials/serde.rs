@@ -3,7 +3,7 @@ use std::fmt::{self, Debug, Formatter};
 use serde::{Deserialize, Deserializer};
 use time::PrimitiveDateTime;
 
-use crate::{Credentials, RotatingCredentials};
+use super::{Credentials, RotatingCredentials};
 
 /// Parser for responses received from the EC2 security-credentials metadata service.
 #[derive(Clone, Deserialize)]

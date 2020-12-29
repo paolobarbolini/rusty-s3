@@ -1,3 +1,14 @@
+//! Credentials management types
+//!
+//! [`RotatingCredentials`] wraps [`Credentials`] and gives the ability to
+//! rotate them at any point in the program, keeping all copies of the same
+//! [`RotatingCredentials`] in sync with the latest version.
+//!
+//! [`Ec2SecurityCredentialsMetadataResponse`] parses the response from the
+//! [EC2 metadata service](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instancedata-data-retrieval.html),
+//! which provides an endpoint for retrieving credentials using the permissions
+//! for the [attached IAM roles](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/iam-roles-for-amazon-ec2.html).
+
 use std::env;
 use std::fmt::{self, Debug, Formatter};
 
