@@ -26,3 +26,8 @@ tokio = { version = "0.2.23", features = ["macros", "fs", "rt-core"] }
 reqwest = "0.10.9"
 getrandom = "0.2"
 pretty_assertions = "0.6.1"
+criterion = "0.3.3"
+
+[[bench]]
+name = "actions"
+harness = false
