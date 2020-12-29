@@ -153,4 +153,40 @@ mod tests {
 
         assert_eq!(expected, got.as_str());
     }
+
+    #[test]
+    fn aws_example_token() {
+        let date = PrimitiveDateTime::parse(
+            "Fri, 24 May 2013 00:00:00 GMT",
+            "%a, %d %b %Y %-H:%M:%S GMT",
+        )
+        .unwrap()
+        .assume_utc();
+        let method = Method::Get;
+        let url = "https://examplebucket.s3.amazonaws.com/test.txt"
+            .parse()
+            .unwrap();
+        let key = "AKIAIOSFODNN7EXAMPLE";
+        let secret = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
+        let token = "oej5cie4uctureturdtuc5dctd";
+        let region = "us-east-1";
+        let expires_seconds = 86400;
+
+        let expected = "https://examplebucket.s3.amazonaws.com/test.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-Security-Token=oej5cie4uctureturdtuc5dctd&X-Amz-SignedHeaders=host&X-Amz-Signature=bf77b83a7135594046c90a7e7e10cf1a4c8f8ecc1d541d0f42bea6b7670870c7";
+
+        let got = sign(
+            &date,
+            method,
+            url,
+            key,
+            secret,
+            Some(token),
+            region,
+            expires_seconds,
+            iter::empty(),
+            iter::empty(),
+        );
+
+        assert_eq!(expected, got.as_str());
+    }
 }
