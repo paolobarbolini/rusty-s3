@@ -1,5 +1,6 @@
-use serde::{Deserialize, Deserializer};
+use std::fmt::{self, Debug, Formatter};
 
+use serde::{Deserialize, Deserializer};
 use time::PrimitiveDateTime;
 
 use crate::{Credentials, RotatingCredentials};
@@ -54,6 +55,14 @@ impl Ec2SecurityCredentialsMetadataResponse {
     }
 }
 
+impl Debug for Ec2SecurityCredentialsMetadataResponse {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Ec2SecurityCredentialsMetadataResponse")
+            .field("key", &self.key)
+            .finish()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
@@ -79,6 +88,12 @@ mod tests {
         assert_eq!(
             deserialized.expiration().format("%Y-%m-%dT%H:%M:%SZ"),
             "2020-12-28T23:10:09Z"
+        );
+
+        let debug_output = format!("{:?}", deserialized);
+        assert_eq!(
+            debug_output,
+            "Ec2SecurityCredentialsMetadataResponse { key: \"some_access_key\" }"
         );
     }
 }
