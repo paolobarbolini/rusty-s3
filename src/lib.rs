@@ -6,7 +6,7 @@
 //! send any of the requests. It's the reposibility of the user to choose an
 //! HTTP client, be it synchronous or asynchronous, and use it to send the requests.
 //!
-//! ## Building a Bucket and Credentials
+//! ## Basic getting started example
 //!
 //! ```rust
 //! use std::env;
@@ -15,16 +15,19 @@
 //! # env::set_var("AWS_ACCESS_KEY_ID", "key");
 //! # env::set_var("AWS_SECRET_ACCESS_KEY", "secret");
 //!
+//! // setting up a bucket
 //! let endpoint = "https://s3-eu-west-1.amazonaws.com".parse().expect("endpoint is a valid Url");
 //! let path_style = true;
 //! let name = String::from("rusty-s3");
 //! let region = String::from("eu-west-1");
 //! let bucket = Bucket::new(endpoint, path_style, name, region).expect("Url has a valid scheme and host");
 //!
+//! // setting up the credentials
 //! let key = env::var("AWS_ACCESS_KEY_ID").expect("AWS_ACCESS_KEY_ID is set and a valid String");
 //! let secret = env::var("AWS_SECRET_ACCESS_KEY").expect("AWS_ACCESS_KEY_ID is set and a valid String");
 //! let credentials = Credentials::new(key, secret);
 //!
+//! // signing a request
 //! let presigned_url_duration = Duration::from_secs(60 * 60);
 //! let action = bucket.get_object(Some(&credentials), "duck.jpg");
 //! println!("GET {}", action.sign(presigned_url_duration));

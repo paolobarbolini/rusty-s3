@@ -11,11 +11,36 @@ Simple pure Rust AWS S3 Client following a Sans-IO approach, with a modern
 and rusty take onto s3's APIs.
 
 Request signing and response parsing capabilities are provided for the
-most commons S3 actions.
-
-See https://docs.rs/rusty-s3 or look at the `examples` folder for more examples.
+most common S3 actions, using AWS Signature Version 4.
 
 Minio compatibility tested on every commit by GitHub Actions.
+
+## Examples
+
+```rust
+use std::env;
+use std::time::Duration;
+use rusty_s3::{Bucket, Credentials, S3Action};
+
+// setting up a bucket
+let endpoint = "https://s3-eu-west-1.amazonaws.com".parse().expect("endpoint is a valid Url");
+let path_style = true;
+let name = String::from("rusty-s3");
+let region = String::from("eu-west-1");
+let bucket = Bucket::new(endpoint, path_style, name, region).expect("Url has a valid scheme and host");
+
+// setting up the credentials
+let key = env::var("AWS_ACCESS_KEY_ID").expect("AWS_ACCESS_KEY_ID is set and a valid String");
+let secret = env::var("AWS_SECRET_ACCESS_KEY").expect("AWS_ACCESS_KEY_ID is set and a valid String");
+let credentials = Credentials::new(key, secret);
+
+// signing a request
+let presigned_url_duration = Duration::from_secs(60 * 60);
+let action = bucket.get_object(Some(&credentials), "duck.jpg");
+println!("GET {}", action.sign(presigned_url_duration));
+```
+
+More examples can be found in the examples directory on GitHub.
 
 ## Supported S3 actions
 
