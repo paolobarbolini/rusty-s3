@@ -75,6 +75,11 @@ jobs:
     - name: Install Rust
       run: rustup default 1.42.0
 
+    - name: Remove unused dev-dependencies breaking MSRV
+      run: |
+        sed -i '/tokio/d' Cargo.toml
+        sed -i '/reqwest/d' Cargo.toml
+
     - name: Run tests
       run: cargo test --lib
 
