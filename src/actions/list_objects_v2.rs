@@ -33,6 +33,7 @@ pub struct ListObjectsV2Response {
     // #[serde(rename = "IsTruncated")]
     // is_truncated: bool,
     #[serde(rename = "Contents")]
+    #[serde(default)]
     pub contents: Vec<ListObjectsContent>,
 
     // #[serde(rename = "Name")]
@@ -276,6 +277,30 @@ mod tests {
         assert!(item_3.owner.is_none());
         assert_eq!(item_3.size, 41259);
         assert_eq!(item_3.storage_class, "STANDARD");
+
+        assert_eq!(parsed.max_keys, 4500);
+        assert!(parsed.common_prefixes.is_empty());
+        assert!(parsed.next_continuation_token.is_none());
+        assert!(parsed.start_after.is_none());
+    }
+
+    #[test]
+    fn parse_no_contents() {
+        let input = r#"
+        <?xml version="1.0" encoding="UTF-8"?>
+        <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+            <Name>test</Name>
+            <Prefix></Prefix>
+            <KeyCount>0</KeyCount>
+            <MaxKeys>4500</MaxKeys>
+            <Delimiter></Delimiter>
+            <IsTruncated>false</IsTruncated>
+            <EncodingType>url</EncodingType>
+        </ListBucketResult>
+        "#;
+
+        let parsed = ListObjectsV2::parse_response(input).unwrap();
+        assert_eq!(parsed.contents.is_empty(), true);
 
         assert_eq!(parsed.max_keys, 4500);
         assert!(parsed.common_prefixes.is_empty());
