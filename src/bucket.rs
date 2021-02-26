@@ -2,7 +2,7 @@ use url::{ParseError, Url};
 
 use crate::actions::{
     AbortMultipartUpload, CompleteMultipartUpload, CreateBucket, CreateMultipartUpload,
-    DeleteObject, GetObject, ListObjectsV2, PutObject, UploadPart,
+    DeleteBucket, DeleteObject, GetObject, ListObjectsV2, PutObject, UploadPart,
 };
 use crate::signing::util::percent_encode_path;
 use crate::Credentials;
@@ -110,6 +110,13 @@ impl Bucket {
     /// See [`CreateBucket`] for more details.
     pub fn create_bucket<'a>(&'a self, credentials: &'a Credentials) -> CreateBucket<'a> {
         CreateBucket::new(self, Some(credentials))
+    }
+
+    /// Delete a bucket.
+    ///
+    /// See [`DeleteBucket`] for more details.
+    pub fn delete_bucket<'a>(&'a self, credentials: &'a Credentials) -> DeleteBucket<'a> {
+        DeleteBucket::new(self, credentials)
     }
 }
 
