@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use rusty_s3::actions::{GetObject, PutObject, S3Action};
+use rusty_s3::actions::S3Action;
 
 mod common;
 
@@ -10,7 +10,7 @@ async fn test1() {
 
     let body = vec![b'r'; 1024];
 
-    let action = PutObject::new(&bucket, Some(&credentials), "test.txt");
+    let action = bucket.put_object(Some(&credentials), "test.txt");
     let url = action.sign(Duration::from_secs(60));
     client
         .put(url)
@@ -21,7 +21,7 @@ async fn test1() {
         .error_for_status()
         .expect("PutObject unexpected status code");
 
-    let action = GetObject::new(&bucket, Some(&credentials), "test.txt");
+    let action = bucket.get_object(Some(&credentials), "test.txt");
     let url = action.sign(Duration::from_secs(60));
 
     let resp = client
