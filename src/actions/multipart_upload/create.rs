@@ -28,6 +28,7 @@ pub struct CreateMultipartUpload<'a> {
     object: &'a str,
 
     query: Map<'a>,
+    headers: Map<'a>,
 }
 
 #[derive(Debug, Clone)]
@@ -48,6 +49,7 @@ impl<'a> CreateMultipartUpload<'a> {
             object,
 
             query: Map::new(),
+            headers: Map::new(),
         }
     }
 
@@ -71,7 +73,7 @@ impl<'a> CreateMultipartUpload<'a> {
                 self.bucket.region(),
                 expires_in.as_secs(),
                 SortingIterator::new(query, self.query.iter()),
-                iter::empty(),
+                self.headers.iter(),
             ),
             None => crate::signing::util::add_query_params(url, query),
         }
@@ -94,6 +96,10 @@ impl<'a> S3Action<'a> for CreateMultipartUpload<'a> {
 
     fn query_mut(&mut self) -> &mut Map<'a> {
         &mut self.query
+    }
+
+    fn headers_mut(&mut self) -> &mut Map<'a> {
+        &mut self.headers
     }
 }
 

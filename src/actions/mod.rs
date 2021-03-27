@@ -34,4 +34,10 @@ pub trait S3Action<'a> {
 
     /// Get a mutable reference to the query string of this action
     fn query_mut(&mut self) -> &mut Map<'a>;
+
+    /// Get a mutable reference to the signed headers of this action
+    ///
+    /// Headers specified here must also be present in the final request,
+    /// with the same value specified, otherwise the S3 API will return an error.
+    fn headers_mut(&mut self) -> &mut Map<'a>;
 }

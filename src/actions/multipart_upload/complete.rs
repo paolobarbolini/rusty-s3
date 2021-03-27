@@ -26,6 +26,7 @@ pub struct CompleteMultipartUpload<'a, I> {
     etags: I,
 
     query: Map<'a>,
+    headers: Map<'a>,
 }
 
 impl<'a, I> CompleteMultipartUpload<'a, I> {
@@ -46,6 +47,7 @@ impl<'a, I> CompleteMultipartUpload<'a, I> {
             etags,
 
             query: Map::new(),
+            headers: Map::new(),
         }
     }
 }
@@ -69,7 +71,7 @@ where
                 self.bucket.region(),
                 expires_in.as_secs(),
                 SortingIterator::new(query, self.query.iter()),
-                iter::empty(),
+                self.headers.iter(),
             ),
             None => crate::signing::util::add_query_params(url, query),
         }
@@ -122,6 +124,10 @@ where
 
     fn query_mut(&mut self) -> &mut Map<'a> {
         &mut self.query
+    }
+
+    fn headers_mut(&mut self) -> &mut Map<'a> {
+        &mut self.headers
     }
 }
 

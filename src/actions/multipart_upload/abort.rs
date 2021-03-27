@@ -26,6 +26,7 @@ pub struct AbortMultipartUpload<'a> {
     upload_id: &'a str,
 
     query: Map<'a>,
+    headers: Map<'a>,
 }
 
 impl<'a> AbortMultipartUpload<'a> {
@@ -44,6 +45,7 @@ impl<'a> AbortMultipartUpload<'a> {
             upload_id,
 
             query: Map::new(),
+            headers: Map::new(),
         }
     }
 
@@ -62,7 +64,7 @@ impl<'a> AbortMultipartUpload<'a> {
                 self.bucket.region(),
                 expires_in.as_secs(),
                 SortingIterator::new(query, self.query.iter()),
-                iter::empty(),
+                self.headers.iter(),
             ),
             None => crate::signing::util::add_query_params(url, query),
         }
@@ -79,6 +81,10 @@ impl<'a> S3Action<'a> for AbortMultipartUpload<'a> {
 
     fn query_mut(&mut self) -> &mut Map<'a> {
         &mut self.query
+    }
+
+    fn headers_mut(&mut self) -> &mut Map<'a> {
+        &mut self.headers
     }
 }
 

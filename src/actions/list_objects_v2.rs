@@ -1,4 +1,3 @@
-use std::iter;
 use std::time::Duration;
 
 use serde::Deserialize;
@@ -26,6 +25,7 @@ pub struct ListObjectsV2<'a> {
     credentials: Option<&'a Credentials>,
 
     query: Map<'a>,
+    headers: Map<'a>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -99,6 +99,7 @@ impl<'a> ListObjectsV2<'a> {
             credentials,
 
             query,
+            headers: Map::new(),
         }
     }
 
@@ -131,7 +132,7 @@ impl<'a> ListObjectsV2<'a> {
                 self.bucket.region(),
                 expires_in.as_secs(),
                 self.query.iter(),
-                iter::empty(),
+                self.headers.iter(),
             ),
             None => crate::signing::util::add_query_params(url, self.query.iter()),
         }
@@ -148,6 +149,10 @@ impl<'a> S3Action<'a> for ListObjectsV2<'a> {
 
     fn query_mut(&mut self) -> &mut Map<'a> {
         &mut self.query
+    }
+
+    fn headers_mut(&mut self) -> &mut Map<'a> {
+        &mut self.headers
     }
 }
 

@@ -1,4 +1,3 @@
-use std::iter;
 use std::time::Duration;
 
 use time::OffsetDateTime;
@@ -20,6 +19,7 @@ pub struct CreateBucket<'a> {
     credentials: &'a Credentials,
 
     query: Map<'a>,
+    headers: Map<'a>,
 }
 
 impl<'a> CreateBucket<'a> {
@@ -29,6 +29,7 @@ impl<'a> CreateBucket<'a> {
             credentials,
 
             query: Map::new(),
+            headers: Map::new(),
         }
     }
 
@@ -45,7 +46,7 @@ impl<'a> CreateBucket<'a> {
             self.bucket.region(),
             expires_in.as_secs(),
             self.query.iter(),
-            iter::empty(),
+            self.headers.iter(),
         )
     }
 }
@@ -60,6 +61,10 @@ impl<'a> S3Action<'a> for CreateBucket<'a> {
 
     fn query_mut(&mut self) -> &mut Map<'a> {
         &mut self.query
+    }
+
+    fn headers_mut(&mut self) -> &mut Map<'a> {
+        &mut self.headers
     }
 }
 
