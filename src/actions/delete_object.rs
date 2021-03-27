@@ -7,7 +7,7 @@ use url::Url;
 use super::S3Action;
 use crate::actions::Method;
 use crate::signing::sign;
-use crate::{Bucket, Credentials};
+use crate::{Bucket, Credentials, Map};
 
 /// Delete an object from S3, using a `DELETE` request.
 ///
@@ -19,6 +19,8 @@ pub struct DeleteObject<'a> {
     bucket: &'a Bucket,
     credentials: Option<&'a Credentials>,
     object: &'a str,
+
+    query: Map<'a>,
 }
 
 impl<'a> DeleteObject<'a> {
@@ -28,6 +30,8 @@ impl<'a> DeleteObject<'a> {
             bucket,
             credentials,
             object,
+
+            query: Map::new(),
         }
     }
 
@@ -44,7 +48,7 @@ impl<'a> DeleteObject<'a> {
                 credentials.token(),
                 self.bucket.region(),
                 expires_in.as_secs(),
-                iter::empty(),
+                self.query.iter(),
                 iter::empty(),
             ),
             None => url,
@@ -52,12 +56,16 @@ impl<'a> DeleteObject<'a> {
     }
 }
 
-impl<'a> S3Action for DeleteObject<'a> {
+impl<'a> S3Action<'a> for DeleteObject<'a> {
     const METHOD: Method = Method::Delete;
 
     fn sign(&self, expires_in: Duration) -> Url {
         let now = OffsetDateTime::now_utc();
         self.sign_with_time(expires_in, &now)
+    }
+
+    fn query_mut(&mut self) -> &mut Map<'a> {
+        &mut self.query
     }
 }
 

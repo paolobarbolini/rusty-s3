@@ -32,10 +32,6 @@ impl<'a> CreateBucket<'a> {
         }
     }
 
-    pub fn query_mut(&mut self) -> &mut Map<'a> {
-        &mut self.query
-    }
-
     fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url {
         let url = self.bucket.base_url().clone();
 
@@ -54,12 +50,16 @@ impl<'a> CreateBucket<'a> {
     }
 }
 
-impl<'a> S3Action for CreateBucket<'a> {
+impl<'a> S3Action<'a> for CreateBucket<'a> {
     const METHOD: Method = Method::Put;
 
     fn sign(&self, expires_in: Duration) -> Url {
         let now = OffsetDateTime::now_utc();
         self.sign_with_time(expires_in, &now)
+    }
+
+    fn query_mut(&mut self) -> &mut Map<'a> {
+        &mut self.query
     }
 }
 

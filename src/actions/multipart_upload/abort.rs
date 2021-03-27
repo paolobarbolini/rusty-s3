@@ -7,7 +7,8 @@ use url::Url;
 use crate::actions::Method;
 use crate::actions::S3Action;
 use crate::signing::sign;
-use crate::{Bucket, Credentials};
+use crate::sorting_iter::SortingIterator;
+use crate::{Bucket, Credentials, Map};
 
 /// Abort multipart upload.
 ///
@@ -23,6 +24,8 @@ pub struct AbortMultipartUpload<'a> {
     object: &'a str,
 
     upload_id: &'a str,
+
+    query: Map<'a>,
 }
 
 impl<'a> AbortMultipartUpload<'a> {
@@ -39,6 +42,8 @@ impl<'a> AbortMultipartUpload<'a> {
             object,
 
             upload_id,
+
+            query: Map::new(),
         }
     }
 
@@ -56,7 +61,7 @@ impl<'a> AbortMultipartUpload<'a> {
                 credentials.token(),
                 self.bucket.region(),
                 expires_in.as_secs(),
-                query,
+                SortingIterator::new(query, self.query.iter()),
                 iter::empty(),
             ),
             None => crate::signing::util::add_query_params(url, query),
@@ -64,12 +69,16 @@ impl<'a> AbortMultipartUpload<'a> {
     }
 }
 
-impl<'a> S3Action for AbortMultipartUpload<'a> {
+impl<'a> S3Action<'a> for AbortMultipartUpload<'a> {
     const METHOD: Method = Method::Delete;
 
     fn sign(&self, expires_in: Duration) -> Url {
         let now = OffsetDateTime::now_utc();
         self.sign_with_time(expires_in, &now)
+    }
+
+    fn query_mut(&mut self) -> &mut Map<'a> {
+        &mut self.query
     }
 }
 

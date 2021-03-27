@@ -7,7 +7,7 @@ use url::Url;
 use super::S3Action;
 use crate::actions::Method;
 use crate::signing::sign;
-use crate::{Bucket, Credentials};
+use crate::{Bucket, Credentials, Map};
 
 /// Upload a file to S3, using a `PUT` request.
 ///
@@ -19,6 +19,8 @@ pub struct PutObject<'a> {
     bucket: &'a Bucket,
     credentials: Option<&'a Credentials>,
     object: &'a str,
+
+    query: Map<'a>,
 }
 
 impl<'a> PutObject<'a> {
@@ -28,6 +30,8 @@ impl<'a> PutObject<'a> {
             bucket,
             credentials,
             object,
+
+            query: Map::new(),
         }
     }
 
@@ -44,7 +48,7 @@ impl<'a> PutObject<'a> {
                 credentials.token(),
                 self.bucket.region(),
                 expires_in.as_secs(),
-                iter::empty(),
+                self.query.iter(),
                 iter::empty(),
             ),
             None => url,
@@ -52,12 +56,16 @@ impl<'a> PutObject<'a> {
     }
 }
 
-impl<'a> S3Action for PutObject<'a> {
+impl<'a> S3Action<'a> for PutObject<'a> {
     const METHOD: Method = Method::Put;
 
     fn sign(&self, expires_in: Duration) -> Url {
         let now = OffsetDateTime::now_utc();
         self.sign_with_time(expires_in, &now)
+    }
+
+    fn query_mut(&mut self) -> &mut Map<'a> {
+        &mut self.query
     }
 }
 

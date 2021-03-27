@@ -15,7 +15,7 @@ pub use self::multipart_upload::complete::CompleteMultipartUpload;
 pub use self::multipart_upload::create::CreateMultipartUpload;
 pub use self::multipart_upload::upload::UploadPart;
 pub use self::put_object::PutObject;
-use crate::Method;
+use crate::{Map, Method};
 
 mod create_bucket;
 mod delete_bucket;
@@ -26,9 +26,12 @@ mod multipart_upload;
 mod put_object;
 
 /// A request which can be signed
-pub trait S3Action {
+pub trait S3Action<'a> {
     const METHOD: Method;
 
     /// Sign a request for this action, using `METHOD` for the [`Method`]
     fn sign(&self, expires_in: Duration) -> Url;
+
+    /// Get a mutable reference to the query string of this action
+    fn query_mut(&mut self) -> &mut Map<'a>;
 }

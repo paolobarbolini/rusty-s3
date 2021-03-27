@@ -102,10 +102,6 @@ impl<'a> ListObjectsV2<'a> {
         }
     }
 
-    pub fn query_mut(&mut self) -> &mut Map<'a> {
-        &mut self.query
-    }
-
     pub fn parse_response(s: &str) -> Result<ListObjectsV2Response, quick_xml::DeError> {
         let mut parsed: ListObjectsV2Response = quick_xml::de::from_str(s)?;
 
@@ -142,12 +138,16 @@ impl<'a> ListObjectsV2<'a> {
     }
 }
 
-impl<'a> S3Action for ListObjectsV2<'a> {
+impl<'a> S3Action<'a> for ListObjectsV2<'a> {
     const METHOD: Method = Method::Get;
 
     fn sign(&self, expires_in: Duration) -> Url {
         let now = OffsetDateTime::now_utc();
         self.sign_with_time(expires_in, &now)
+    }
+
+    fn query_mut(&mut self) -> &mut Map<'a> {
+        &mut self.query
     }
 }
 
