@@ -20,7 +20,7 @@ pub async fn bucket() -> (Bucket, Credentials, Client) {
     let credentials = Credentials::new(key.into(), secret.into());
 
     let client = Client::new();
-    let action = CreateBucket::new(&bucket, Some(&credentials));
+    let action = CreateBucket::new(&bucket, &credentials);
     let url = action.sign(Duration::from_secs(60));
     client
         .put(url)
