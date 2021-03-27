@@ -17,14 +17,13 @@ use crate::{Bucket, Credentials, Map};
 #[derive(Debug, Clone)]
 pub struct CreateBucket<'a> {
     bucket: &'a Bucket,
-    credentials: Option<&'a Credentials>,
+    credentials: &'a Credentials,
 
     query: Map<'a>,
 }
 
 impl<'a> CreateBucket<'a> {
-    // TODO: don't take an Option for Credentials, since CreateBucket requests must be authenticated.
-    pub fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>) -> Self {
+    pub fn new(bucket: &'a Bucket, credentials: &'a Credentials) -> Self {
         Self {
             bucket,
             credentials,
@@ -40,21 +39,18 @@ impl<'a> CreateBucket<'a> {
     fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url {
         let url = self.bucket.base_url().clone();
 
-        match self.credentials {
-            Some(credentials) => sign(
-                time,
-                Method::Put,
-                url,
-                credentials.key(),
-                credentials.secret(),
-                credentials.token(),
-                self.bucket.region(),
-                expires_in.as_secs(),
-                self.query.iter(),
-                iter::empty(),
-            ),
-            None => crate::signing::util::add_query_params(url, self.query.iter()),
-        }
+        sign(
+            time,
+            Method::Put,
+            url,
+            self.credentials.key(),
+            self.credentials.secret(),
+            self.credentials.token(),
+            self.bucket.region(),
+            expires_in.as_secs(),
+            self.query.iter(),
+            iter::empty(),
+        )
     }
 }
 

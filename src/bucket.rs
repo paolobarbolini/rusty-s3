@@ -109,7 +109,7 @@ impl Bucket {
     ///
     /// See [`CreateBucket`] for more details.
     pub fn create_bucket<'a>(&'a self, credentials: &'a Credentials) -> CreateBucket<'a> {
-        CreateBucket::new(self, Some(credentials))
+        CreateBucket::new(self, credentials)
     }
 
     /// Delete a bucket.
