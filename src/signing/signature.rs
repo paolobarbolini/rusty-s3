@@ -12,25 +12,26 @@ pub fn signature(
 ) -> String {
     let yyyymmdd = date.format("%Y%m%d");
 
-    let mut mac = HmacSha256::new_varkey(format!("AWS4{}", secret).as_bytes())
+    let mut mac = HmacSha256::new_from_slice(format!("AWS4{}", secret).as_bytes())
         .expect("HMAC can take keys of any size");
     mac.update(yyyymmdd.as_bytes());
     let date_key = mac.finalize().into_bytes();
 
-    let mut mac = HmacSha256::new_varkey(&date_key).expect("HMAC can take keys of any size");
+    let mut mac = HmacSha256::new_from_slice(&date_key).expect("HMAC can take keys of any size");
     mac.update(region.as_bytes());
     let date_region_key = mac.finalize().into_bytes();
 
-    let mut mac = HmacSha256::new_varkey(&date_region_key).expect("HMAC can take keys of any size");
+    let mut mac =
+        HmacSha256::new_from_slice(&date_region_key).expect("HMAC can take keys of any size");
     mac.update(b"s3");
     let date_region_service_key = mac.finalize().into_bytes();
 
-    let mut mac =
-        HmacSha256::new_varkey(&date_region_service_key).expect("HMAC can take keys of any size");
+    let mut mac = HmacSha256::new_from_slice(&date_region_service_key)
+        .expect("HMAC can take keys of any size");
     mac.update(b"aws4_request");
     let signing_key = mac.finalize().into_bytes();
 
-    let mut mac = HmacSha256::new_varkey(&signing_key).expect("HMAC can take keys of any size");
+    let mut mac = HmacSha256::new_from_slice(&signing_key).expect("HMAC can take keys of any size");
     mac.update(string_to_sign.as_bytes());
     hex::encode(mac.finalize().into_bytes())
 }
