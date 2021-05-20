@@ -53,5 +53,5 @@ mod bucket;
 pub mod credentials;
 mod map;
 mod method;
-mod signing;
+pub mod signing;
 pub(crate) mod sorting_iter;
