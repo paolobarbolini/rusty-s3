@@ -33,7 +33,7 @@ pub fn signature(
 
     let mut mac = HmacSha256::new_from_slice(&signing_key).expect("HMAC can take keys of any size");
     mac.update(string_to_sign.as_bytes());
-    hex::encode(mac.finalize().into_bytes())
+    format!("{:x}", mac.finalize().into_bytes())
 }
 
 #[cfg(test)]

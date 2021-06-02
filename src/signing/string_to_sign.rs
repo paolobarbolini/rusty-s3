@@ -5,12 +5,9 @@ pub fn string_to_sign(date: &OffsetDateTime, region: &str, canonical_request: &s
     let iso8601 = date.lazy_format("%Y%m%dT%H%M%SZ");
     let yyyymmdd = date.lazy_format("%Y%m%d");
     let scope = format!("{}/{}/s3/aws4_request", yyyymmdd, region);
-    let mut hasher = Sha256::new();
-    hasher.update(canonical_request.as_bytes());
-    let hash = hasher.finalize();
-    let hash = hex::encode(hash);
 
-    format!("AWS4-HMAC-SHA256\n{}\n{}\n{}", iso8601, scope, hash)
+    let hash = Sha256::digest(canonical_request.as_bytes());
+    format!("AWS4-HMAC-SHA256\n{}\n{}\n{:x}", iso8601, scope, hash)
 }
 
 #[cfg(test)]
