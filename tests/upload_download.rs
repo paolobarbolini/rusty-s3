@@ -20,7 +20,7 @@ async fn test1() {
     let text = resp.text().await.expect("ListObjectsV2 read respose body");
     let list = ListObjectsV2::parse_response(&text).expect("ListObjectsV2 parse response");
 
-    assert_eq!(list.contents.is_empty(), true);
+    assert!(list.contents.is_empty());
 
     assert_eq!(list.max_keys, 4500);
     assert!(list.common_prefixes.is_empty());
@@ -71,7 +71,7 @@ async fn test_headers() {
     let text = resp.text().await.expect("ListObjectsV2 read respose body");
     let list = ListObjectsV2::parse_response(&text).expect("ListObjectsV2 parse response");
 
-    assert_eq!(list.contents.is_empty(), true);
+    assert!(list.contents.is_empty());
 
     assert_eq!(list.max_keys, 4500);
     assert!(list.common_prefixes.is_empty());
