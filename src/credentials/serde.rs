@@ -1,7 +1,7 @@
 use std::fmt::{self, Debug, Formatter};
 
 use serde::{Deserialize, Deserializer};
-use time::PrimitiveDateTime;
+use time::{format_description, PrimitiveDateTime};
 
 use super::{Credentials, RotatingCredentials};
 
@@ -23,7 +23,10 @@ where
     D: Deserializer<'de>,
 {
     let s: &str = Deserialize::deserialize(deserializer)?;
-    PrimitiveDateTime::parse(s, "%Y-%m-%dT%H:%M:%SZ").map_err(serde::de::Error::custom)
+
+    let format = format_description::parse("[year]-[month]-[day]T[hour]:[minute]:[second]Z")
+        .expect("invalid format");
+    PrimitiveDateTime::parse(s, &format).map_err(serde::de::Error::custom)
 }
 
 impl Ec2SecurityCredentialsMetadataResponse {
@@ -102,9 +105,10 @@ mod tests {
         assert_eq!(deserialized.key(), "some_access_key");
         assert_eq!(deserialized.secret(), "some_secret_key");
         assert_eq!(deserialized.token(), "some_token");
+        //                                                                  2020-12-28T23:10:09Z
         assert_eq!(
-            deserialized.expiration().format("%Y-%m-%dT%H:%M:%SZ"),
-            "2020-12-28T23:10:09Z"
+            deserialized.expiration().assume_utc().unix_timestamp(),
+            1609197009
         );
 
         let debug_output = format!("{:?}", deserialized);

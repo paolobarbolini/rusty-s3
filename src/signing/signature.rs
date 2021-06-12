@@ -1,6 +1,6 @@
 use hmac::{Hmac, Mac, NewMac};
 use sha2::Sha256;
-use time::OffsetDateTime;
+use time::{format_description, OffsetDateTime};
 
 type HmacSha256 = Hmac<Sha256>;
 
@@ -10,7 +10,8 @@ pub fn signature(
     region: &str,
     string_to_sign: &str,
 ) -> String {
-    let yyyymmdd = date.format("%Y%m%d");
+    let yyyymmdd_format = format_description::parse("[year][month][day]").expect("invalid format");
+    let yyyymmdd = date.format(&yyyymmdd_format).expect("invalid format");
 
     let mut mac = HmacSha256::new_from_slice(format!("AWS4{}", secret).as_bytes())
         .expect("HMAC can take keys of any size");
@@ -39,18 +40,14 @@ pub fn signature(
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use time::PrimitiveDateTime;
+    use time::OffsetDateTime;
 
     use super::*;
 
     #[test]
     fn aws_example() {
-        let date = PrimitiveDateTime::parse(
-            "Fri, 24 May 2013 00:00:00 GMT",
-            "%a, %d %b %Y %-H:%M:%S GMT",
-        )
-        .unwrap()
-        .assume_utc();
+        // Fri, 24 May 2013 00:00:00 GMT
+        let date = OffsetDateTime::from_unix_timestamp(1369353600).unwrap();
 
         let secret = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
         let region = "us-east-1";
