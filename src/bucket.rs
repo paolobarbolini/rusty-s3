@@ -49,7 +49,8 @@ pub struct Bucket {
 
 impl Bucket {
     /// Construct a new S3 bucket
-    pub fn new(endpoint: Url, path_style: bool, name: String, region: String) -> Option<Self> {
+    // 这里可以有 pr
+    pub fn new<S: AsRef<str>>(endpoint: Url, path_style: bool, name: S, region: S) -> Option<Self> {
         let _ = endpoint.host_str()?;
 
         match endpoint.scheme() {
@@ -57,12 +58,12 @@ impl Bucket {
             _ => return None,
         };
 
-        let base_url = base_url(endpoint, &name, path_style);
+        let base_url = base_url(endpoint, name.as_ref(), path_style);
 
         Some(Self {
             base_url,
-            name,
-            region,
+            name: String::from(name.as_ref()),
+            region: String::from(region.as_ref()),
         })
     }
 
@@ -234,7 +235,7 @@ mod tests {
             .unwrap();
         let name = "rusty-s3";
         let region = "eu-west-1";
-        let bucket = Bucket::new(endpoint, true, name.into(), region.into()).unwrap();
+        let bucket = Bucket::new(endpoint, true, name, region).unwrap();
 
         assert_eq!(bucket.base_url(), &base_url);
         assert_eq!(bucket.name(), name);
@@ -249,7 +250,7 @@ mod tests {
             .unwrap();
         let name = "rusty-s3";
         let region = "eu-west-1";
-        let bucket = Bucket::new(endpoint, false, name.into(), region.into()).unwrap();
+        let bucket = Bucket::new(endpoint, false, name, region).unwrap();
 
         assert_eq!(bucket.base_url(), &base_url);
         assert_eq!(bucket.name(), name);
@@ -261,7 +262,7 @@ mod tests {
         let endpoint = "file:///home/something".parse().unwrap();
         let name = "rusty-s3";
         let region = "eu-west-1";
-        assert!(Bucket::new(endpoint, true, name.into(), region.into()).is_none());
+        assert!(Bucket::new(endpoint, true, name, region).is_none());
     }
 
     #[test]
@@ -269,7 +270,7 @@ mod tests {
         let endpoint: Url = "https://s3-eu-west-1.amazonaws.com".parse().unwrap();
         let name = "rusty-s3";
         let region = "eu-west-1";
-        let bucket = Bucket::new(endpoint, true, name.into(), region.into()).unwrap();
+        let bucket = Bucket::new(endpoint, true, name, region).unwrap();
 
         let path_style = bucket.object_url("something/cat.jpg").unwrap();
         assert_eq!(
@@ -283,7 +284,7 @@ mod tests {
         let endpoint: Url = "https://s3-eu-west-1.amazonaws.com".parse().unwrap();
         let name = "rusty-s3";
         let region = "eu-west-1";
-        let bucket = Bucket::new(endpoint, false, name.into(), region.into()).unwrap();
+        let bucket = Bucket::new(endpoint, false, name, region).unwrap();
 
         let domain_style = bucket.object_url("something/cat.jpg").unwrap();
         assert_eq!(
@@ -298,7 +299,7 @@ mod tests {
 
         let name = "rusty-s3";
         let region = "eu-west-1";
-        let bucket = Bucket::new(endpoint, true, name.into(), region.into()).unwrap();
+        let bucket = Bucket::new(endpoint, true, name, region).unwrap();
 
         let credentials = Credentials::new(
             "AKIAIOSFODNN7EXAMPLE".into(),

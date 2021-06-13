@@ -13,7 +13,7 @@ fn criterion_benchmark(c: &mut Criterion) {
         let region = "us-east-1";
 
         let credentials = Credentials::new(key.into(), secret.into());
-        let bucket = Bucket::new(url, true, name.into(), region.into()).unwrap();
+        let bucket = Bucket::new(url, true, name, region).unwrap();
 
         b.iter(|| {
             let object = "text.txt";

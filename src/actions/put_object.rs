@@ -95,7 +95,7 @@ mod tests {
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
         let bucket =
-            Bucket::new(endpoint, false, "examplebucket".into(), "us-east-1".into()).unwrap();
+            Bucket::new(endpoint, false, "examplebucket", "us-east-1").unwrap();
         let credentials = Credentials::new(
             "AKIAIOSFODNN7EXAMPLE".into(),
             "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY".into(),
@@ -115,7 +115,7 @@ mod tests {
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
         let bucket =
-            Bucket::new(endpoint, false, "examplebucket".into(), "us-east-1".into()).unwrap();
+            Bucket::new(endpoint, false, "examplebucket", "us-east-1").unwrap();
 
         let action = PutObject::new(&bucket, None, "test.txt");
         let url = action.sign(expires_in);

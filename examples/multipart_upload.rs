@@ -13,12 +13,12 @@ const ONE_HOUR: Duration = Duration::from_secs(3600);
 async fn main() -> Result<(), Box<dyn StdError>> {
     let client = Client::new();
 
-    let url = "http://172.22.98.45:9000".parse().unwrap();
-    let key = "ccc";
-    let secret = "WXZFwxzf123";
+    let url = "http://localhost:9000".parse().unwrap();
+    let key = "minioadmin";
+    let secret = "minioadmin";
     let region = "minio";
 
-    let bucket = Bucket::new(url, true, "test".into(), region.into()).unwrap();
+    let bucket = Bucket::new(url, true, "test", region).unwrap();
     let credential = Credentials::new(key.into(), secret.into());
 
     let action = CreateMultipartUpload::new(&bucket, Some(&credential), "idk.txt");
