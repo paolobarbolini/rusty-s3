@@ -94,8 +94,7 @@ mod tests {
         let expires_in = Duration::from_secs(86400);
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
-        let bucket =
-            Bucket::new(endpoint, false, "examplebucket", "us-east-1").unwrap();
+        let bucket = Bucket::new(endpoint, false, "examplebucket", "us-east-1").unwrap();
         let credentials = Credentials::new(
             "AKIAIOSFODNN7EXAMPLE",
             "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
@@ -114,8 +113,7 @@ mod tests {
         let expires_in = Duration::from_secs(86400);
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
-        let bucket =
-            Bucket::new(endpoint, false, "examplebucket", "us-east-1").unwrap();
+        let bucket = Bucket::new(endpoint, false, "examplebucket", "us-east-1").unwrap();
 
         let action = DeleteObject::new(&bucket, None, "test.txt");
         let url = action.sign(expires_in);

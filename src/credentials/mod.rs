@@ -42,7 +42,7 @@ impl Credentials {
         Self {
             key: String::from(key.as_ref()),
             secret: secret.as_ref().into(),
-            token: token.map(|s| s.as_ref().into())
+            token: token.map(|s| s.as_ref().into()),
         }
     }
 

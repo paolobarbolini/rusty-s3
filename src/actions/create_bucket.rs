@@ -88,8 +88,7 @@ mod tests {
         let expires_in = Duration::from_secs(86400);
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
-        let bucket =
-            Bucket::new(endpoint, false, "examplebucket", "us-east-1").unwrap();
+        let bucket = Bucket::new(endpoint, false, "examplebucket", "us-east-1").unwrap();
         let credentials = Credentials::new(
             "AKIAIOSFODNN7EXAMPLE",
             "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
