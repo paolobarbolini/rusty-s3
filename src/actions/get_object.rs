@@ -97,8 +97,8 @@ mod tests {
         let bucket =
             Bucket::new(endpoint, false, "examplebucket", "us-east-1").unwrap();
         let credentials = Credentials::new(
-            "AKIAIOSFODNN7EXAMPLE".into(),
-            "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY".into(),
+            "AKIAIOSFODNN7EXAMPLE",
+            "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
         );
 
         let action = GetObject::new(&bucket, Some(&credentials), "test.txt");
@@ -123,8 +123,8 @@ mod tests {
         let bucket =
             Bucket::new(endpoint, false, "examplebucket", "us-east-1").unwrap();
         let credentials = Credentials::new(
-            "AKIAIOSFODNN7EXAMPLE".into(),
-            "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY".into(),
+            "AKIAIOSFODNN7EXAMPLE",
+            "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
         );
 
         let mut action = GetObject::new(&bucket, Some(&credentials), "test.txt");

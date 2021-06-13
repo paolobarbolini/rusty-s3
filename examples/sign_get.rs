@@ -12,7 +12,7 @@ fn main() {
     let region = "minio";
 
     let bucket = Bucket::new(url, true, "test", region).unwrap();
-    let credential = Credentials::new(key.into(), secret.into());
+    let credential = Credentials::new(key, secret);
 
     let mut action = GetObject::new(&bucket, Some(&credential), "img.jpg");
     action

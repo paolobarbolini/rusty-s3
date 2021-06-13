@@ -19,7 +19,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     let region = "minio";
 
     let bucket = Bucket::new(url, true, "test", region).unwrap();
-    let credential = Credentials::new(key.into(), secret.into());
+    let credential = Credentials::new(key, secret);
 
     let action = CreateMultipartUpload::new(&bucket, Some(&credential), "idk.txt");
     let url = action.sign(ONE_HOUR);

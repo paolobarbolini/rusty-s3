@@ -29,7 +29,7 @@ pub struct Credentials {
 impl Credentials {
     /// Construct a new `Credentials` using the provided key and secret
     #[inline]
-    pub fn new(key: String, secret: String) -> Self {
+    pub fn new<S: AsRef<str>>(key: S, secret: S) -> Self {
         Self::new_(key, secret, None)
     }
 
@@ -38,8 +38,12 @@ impl Credentials {
     /// For backwards compatibility this method was named `new_`, and will replace
     /// the current `new` implementation in the 0.2.0 release.
     #[inline]
-    pub fn new_(key: String, secret: String, token: Option<String>) -> Self {
-        Self { key, secret, token }
+    pub fn new_<S: AsRef<str>>(key: S, secret: S, token: Option<S>) -> Self {
+        Self {
+            key: String::from(key.as_ref()),
+            secret: secret.as_ref().into(),
+            token: token.map(|s| s.as_ref().into())
+        }
     }
 
     /// Construct a new `Credentials` using AWS's default environment variables
@@ -90,7 +94,7 @@ mod tests {
 
     #[test]
     fn key_secret() {
-        let credentials = Credentials::new("abcd".into(), "1234".into());
+        let credentials = Credentials::new("abcd", "1234");
         assert_eq!(credentials.key(), "abcd");
         assert_eq!(credentials.secret(), "1234");
         assert!(credentials.token().is_none());
@@ -98,7 +102,7 @@ mod tests {
 
     #[test]
     fn key_secret_token() {
-        let credentials = Credentials::new_("abcd".into(), "1234".into(), Some("xyz".into()));
+        let credentials = Credentials::new_("abcd", "1234", Some("xyz"));
         assert_eq!(credentials.key(), "abcd");
         assert_eq!(credentials.secret(), "1234");
         assert_eq!(credentials.token(), Some("xyz"));
@@ -106,14 +110,14 @@ mod tests {
 
     #[test]
     fn debug() {
-        let credentials = Credentials::new("abcd".into(), "1234".into());
+        let credentials = Credentials::new("abcd", "1234");
         let debug_output = format!("{:?}", credentials);
         assert_eq!(debug_output, "Credentials { key: \"abcd\" }");
     }
 
     #[test]
     fn debug_token() {
-        let credentials = Credentials::new_("abcd".into(), "1234".into(), Some("xyz".into()));
+        let credentials = Credentials::new_("abcd", "1234", Some("xyz"));
         let debug_output = format!("{:?}", credentials);
         assert_eq!(debug_output, "Credentials { key: \"abcd\" }");
     }

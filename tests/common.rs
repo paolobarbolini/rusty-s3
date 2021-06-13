@@ -17,7 +17,7 @@ pub async fn bucket() -> (Bucket, Credentials, Client) {
     let region = "minio";
 
     let bucket = Bucket::new(url, true, name, region.into()).unwrap();
-    let credentials = Credentials::new(key.into(), secret.into());
+    let credentials = Credentials::new(key, secret);
 
     let client = Client::new();
     let action = CreateBucket::new(&bucket, &credentials);

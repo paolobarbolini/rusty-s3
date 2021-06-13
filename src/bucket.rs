@@ -49,7 +49,6 @@ pub struct Bucket {
 
 impl Bucket {
     /// Construct a new S3 bucket
-    // 这里可以有 pr
     pub fn new<S: AsRef<str>>(endpoint: Url, path_style: bool, name: S, region: S) -> Option<Self> {
         let _ = endpoint.host_str()?;
 
@@ -302,8 +301,8 @@ mod tests {
         let bucket = Bucket::new(endpoint, true, name, region).unwrap();
 
         let credentials = Credentials::new(
-            "AKIAIOSFODNN7EXAMPLE".into(),
-            "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY".into(),
+            "AKIAIOSFODNN7EXAMPLE",
+            "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
         );
 
         let _ = bucket.create_bucket(&credentials);
