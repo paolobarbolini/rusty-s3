@@ -29,7 +29,7 @@ pub struct Credentials {
 impl Credentials {
     /// Construct a new `Credentials` using the provided key and secret
     #[inline]
-    pub fn new<S: AsRef<str>>(key: S, secret: S) -> Self {
+    pub fn new<S: Into<String>>(key: S, secret: S) -> Self {
         Self::new_(key, secret, None)
     }
 
@@ -38,11 +38,11 @@ impl Credentials {
     /// For backwards compatibility this method was named `new_`, and will replace
     /// the current `new` implementation in the 0.2.0 release.
     #[inline]
-    pub fn new_<S: AsRef<str>>(key: S, secret: S, token: Option<S>) -> Self {
+    pub fn new_<S: Into<String>>(key: S, secret: S, token: Option<S>) -> Self {
         Self {
-            key: String::from(key.as_ref()),
-            secret: secret.as_ref().into(),
-            token: token.map(|s| s.as_ref().into()),
+            key: key.into(),
+            secret: secret.into(),
+            token: token.map(|s| s.into()),
         }
     }
 

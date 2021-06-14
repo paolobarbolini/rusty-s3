@@ -49,20 +49,20 @@ pub struct Bucket {
 
 impl Bucket {
     /// Construct a new S3 bucket
-    pub fn new<S: AsRef<str>>(endpoint: Url, path_style: bool, name: S, region: S) -> Option<Self> {
+    pub fn new<S: Into<String>>(endpoint: Url, path_style: bool, name: S, region: S) -> Option<Self> {
         let _ = endpoint.host_str()?;
 
         match endpoint.scheme() {
             "http" | "https" => {}
             _ => return None,
         };
-
-        let base_url = base_url(endpoint, name.as_ref(), path_style);
+        let name: String = name.into();
+        let base_url = base_url(endpoint, &name, path_style);
 
         Some(Self {
             base_url,
-            name: String::from(name.as_ref()),
-            region: String::from(region.as_ref()),
+            name,
+            region: region.into(),
         })
     }
 
