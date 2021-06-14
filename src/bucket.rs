@@ -49,7 +49,12 @@ pub struct Bucket {
 
 impl Bucket {
     /// Construct a new S3 bucket
-    pub fn new<S: Into<String>>(endpoint: Url, path_style: bool, name: S, region: S) -> Option<Self> {
+    pub fn new<S: Into<String>>(
+        endpoint: Url,
+        path_style: bool,
+        name: S,
+        region: S,
+    ) -> Option<Self> {
         let _ = endpoint.host_str()?;
 
         match endpoint.scheme() {
