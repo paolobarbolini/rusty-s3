@@ -1,10 +1,10 @@
 use std::{iter, str};
 
-use time::format_description;
 use time::OffsetDateTime;
 use url::Url;
 
 use crate::sorting_iter::SortingIterator;
+use crate::time_::{ISO8601, YYYYMMDD};
 use crate::Method;
 
 mod canonical_request;
@@ -37,16 +37,13 @@ where
     let query_string = query_string.map(|(key, value)| (key, value));
     let headers = headers.map(|(key, value)| (key, value));
 
-    let yyyymmdd_format = format_description::parse("[year][month][day]").expect("invalid format");
-    let yyyymmdd = date.format(&yyyymmdd_format).expect("invalid format");
+    let yyyymmdd = date.format(&YYYYMMDD).expect("invalid format");
 
     let credential = format!(
         "{}/{}/{}/{}/{}",
         key, yyyymmdd, region, "s3", "aws4_request"
     );
-    let iso8601_format = format_description::parse("[year][month][day]T[hour][minute][second]Z")
-        .expect("invalid format");
-    let date_str = date.format(&iso8601_format).expect("invalid format");
+    let date_str = date.format(&ISO8601).expect("invalid format");
     let expires_seconds_string = expires_seconds.to_string();
 
     let host = url.host_str().expect("host is known");

@@ -1,7 +1,9 @@
 use std::fmt::{self, Debug, Formatter};
 
 use serde::{Deserialize, Deserializer};
-use time::{format_description, PrimitiveDateTime};
+use time::PrimitiveDateTime;
+
+use crate::time_::ISO8601_EXT;
 
 use super::{Credentials, RotatingCredentials};
 
@@ -24,9 +26,7 @@ where
 {
     let s: &str = Deserialize::deserialize(deserializer)?;
 
-    let format = format_description::parse("[year]-[month]-[day]T[hour]:[minute]:[second]Z")
-        .expect("invalid format");
-    PrimitiveDateTime::parse(s, &format).map_err(serde::de::Error::custom)
+    PrimitiveDateTime::parse(s, &ISO8601_EXT).map_err(serde::de::Error::custom)
 }
 
 impl Ec2SecurityCredentialsMetadataResponse {

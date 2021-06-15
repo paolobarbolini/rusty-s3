@@ -1,6 +1,8 @@
 use hmac::{Hmac, Mac, NewMac};
 use sha2::Sha256;
-use time::{format_description, OffsetDateTime};
+use time::OffsetDateTime;
+
+use crate::time_::YYYYMMDD;
 
 type HmacSha256 = Hmac<Sha256>;
 
@@ -10,8 +12,7 @@ pub fn signature(
     region: &str,
     string_to_sign: &str,
 ) -> String {
-    let yyyymmdd_format = format_description::parse("[year][month][day]").expect("invalid format");
-    let yyyymmdd = date.format(&yyyymmdd_format).expect("invalid format");
+    let yyyymmdd = date.format(&YYYYMMDD).expect("invalid format");
 
     let mut mac = HmacSha256::new_from_slice(format!("AWS4{}", secret).as_bytes())
         .expect("HMAC can take keys of any size");

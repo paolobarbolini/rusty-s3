@@ -1,13 +1,11 @@
 use sha2::{Digest, Sha256};
-use time::{format_description, OffsetDateTime};
+use time::OffsetDateTime;
+
+use crate::time_::{ISO8601, YYYYMMDD};
 
 pub fn string_to_sign(date: &OffsetDateTime, region: &str, canonical_request: &str) -> String {
-    let iso8601_format = format_description::parse("[year][month][day]T[hour][minute][second]Z")
-        .expect("invalid format");
-    let iso8601 = date.format(&iso8601_format).expect("invalid format");
-
-    let yyyymmdd_format = format_description::parse("[year][month][day]").expect("invalid format");
-    let yyyymmdd = date.format(&yyyymmdd_format).expect("invalid format");
+    let iso8601 = date.format(&ISO8601).expect("invalid format");
+    let yyyymmdd = date.format(&YYYYMMDD).expect("invalid format");
 
     let scope = format!("{}/{}/s3/aws4_request", yyyymmdd, region);
 
