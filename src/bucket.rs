@@ -2,7 +2,7 @@ use url::{ParseError, Url};
 
 use crate::actions::{
     AbortMultipartUpload, CompleteMultipartUpload, CreateBucket, CreateMultipartUpload,
-    DeleteBucket, DeleteObject, GetObject, ListObjectsV2, PutObject, UploadPart,
+    DeleteBucket, DeleteObject, GetObject, HeadObject, ListObjectsV2, PutObject, UploadPart,
 };
 use crate::signing::util::percent_encode_path;
 use crate::Credentials;
@@ -128,6 +128,17 @@ impl Bucket {
 // === Basic actions ===
 
 impl Bucket {
+    /// Retrieve an object's metadata from S3, using a `HEAD` request.
+    ///
+    /// See [`HeadObject`] for more details.
+    pub fn head_object<'a>(
+        &'a self,
+        credentials: Option<&'a Credentials>,
+        object: &'a str,
+    ) -> HeadObject<'a> {
+        HeadObject::new(self, credentials, object)
+    }
+
     /// Retrieve an object from S3, using a `GET` request.
     ///
     /// See [`GetObject`] for more details.
@@ -311,7 +322,9 @@ mod tests {
         );
 
         let _ = bucket.create_bucket(&credentials);
+        let _ = bucket.delete_bucket(&credentials);
 
+        let _ = bucket.head_object(Some(&credentials), "duck.jpg");
         let _ = bucket.get_object(Some(&credentials), "duck.jpg");
         let _ = bucket.list_objects_v2(Some(&credentials));
         let _ = bucket.put_object(Some(&credentials), "duck.jpg");
