@@ -322,7 +322,9 @@ mod tests {
         );
 
         let _ = bucket.create_bucket(&credentials);
+        let _ = bucket.delete_bucket(&credentials);
 
+        let _ = bucket.head_object(Some(&credentials), "duck.jpg");
         let _ = bucket.get_object(Some(&credentials), "duck.jpg");
         let _ = bucket.list_objects_v2(Some(&credentials));
         let _ = bucket.put_object(Some(&credentials), "duck.jpg");
