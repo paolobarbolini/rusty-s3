@@ -11,8 +11,8 @@ fn main() {
     let secret = "minioadmin";
     let region = "minio";
 
-    let bucket = Bucket::new(url, true, "test".into(), region.into()).unwrap();
-    let credential = Credentials::new(key.into(), secret.into());
+    let bucket = Bucket::new(url, true, "test123", region).unwrap();
+    let credential = Credentials::new(key, secret);
 
     let action = PutObject::new(&bucket, Some(&credential), "duck.jpg");
     let signed_url = action.sign(ONE_HOUR);
