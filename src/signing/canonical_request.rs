@@ -90,19 +90,14 @@ where
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use time::PrimitiveDateTime;
 
     use super::*;
     use crate::Method;
 
     #[test]
     fn aws_example() {
-        let date = PrimitiveDateTime::parse(
-            "Fri, 24 May 2013 00:00:00 GMT",
-            "%a, %d %b %Y %-H:%M:%S GMT",
-        )
-        .unwrap()
-        .assume_utc();
+        // Fri, 24 May 2013 00:00:00 GMT
+
         let method = Method::Get;
         let url = "https://examplebucket.s3.amazonaws.com/test.txt"
             .parse()
@@ -111,8 +106,8 @@ mod tests {
         let key = "AKIAIOSFODNN7EXAMPLE";
         let expires_seconds = 86400;
 
-        let date_str = date.format("%Y%m%dT%H%M%SZ");
-        let yyyymmdd = date.format("%Y%m%d");
+        let date_str = "20130524T000000Z";
+        let yyyymmdd = "20130524";
 
         let credential = format!(
             "{}/{}/{}/{}/{}",
@@ -136,7 +131,7 @@ mod tests {
             vec![
                 ("X-Amz-Algorithm", "AWS4-HMAC-SHA256"),
                 ("X-Amz-Credential", &credential),
-                ("X-Amz-Date", &date_str),
+                ("X-Amz-Date", date_str),
                 ("X-Amz-Expires", &expires_seconds.to_string()),
                 ("X-Amz-SignedHeaders", signed_headers_str),
             ]

@@ -4,6 +4,7 @@ use time::OffsetDateTime;
 use url::Url;
 
 use crate::sorting_iter::SortingIterator;
+use crate::time_::{ISO8601, YYYYMMDD};
 use crate::Method;
 
 mod canonical_request;
@@ -36,13 +37,13 @@ where
     let query_string = query_string.map(|(key, value)| (key, value));
     let headers = headers.map(|(key, value)| (key, value));
 
-    let yyyymmdd = date.format("%Y%m%d");
+    let yyyymmdd = date.format(&YYYYMMDD).expect("invalid format");
 
     let credential = format!(
         "{}/{}/{}/{}/{}",
         key, yyyymmdd, region, "s3", "aws4_request"
     );
-    let date_str = date.format("%Y%m%dT%H%M%SZ");
+    let date_str = date.format(&ISO8601).expect("invalid format");
     let expires_seconds_string = expires_seconds.to_string();
 
     let host = url.host_str().expect("host is known");
@@ -118,19 +119,16 @@ mod tests {
     use std::iter;
 
     use pretty_assertions::assert_eq;
-    use time::PrimitiveDateTime;
+    use time::OffsetDateTime;
 
     use super::Method;
     use super::*;
 
     #[test]
     fn aws_example() {
-        let date = PrimitiveDateTime::parse(
-            "Fri, 24 May 2013 00:00:00 GMT",
-            "%a, %d %b %Y %-H:%M:%S GMT",
-        )
-        .unwrap()
-        .assume_utc();
+        // Fri, 24 May 2013 00:00:00 GMT
+        let date = OffsetDateTime::from_unix_timestamp(1369353600).unwrap();
+
         let method = Method::Get;
         let url = "https://examplebucket.s3.amazonaws.com/test.txt"
             .parse()
@@ -160,12 +158,9 @@ mod tests {
 
     #[test]
     fn aws_example_token() {
-        let date = PrimitiveDateTime::parse(
-            "Fri, 24 May 2013 00:00:00 GMT",
-            "%a, %d %b %Y %-H:%M:%S GMT",
-        )
-        .unwrap()
-        .assume_utc();
+        // Fri, 24 May 2013 00:00:00 GMT
+        let date = OffsetDateTime::from_unix_timestamp(1369353600).unwrap();
+
         let method = Method::Get;
         let url = "https://examplebucket.s3.amazonaws.com/test.txt"
             .parse()
@@ -196,12 +191,9 @@ mod tests {
 
     #[test]
     fn aws_headers_example() {
-        let date = PrimitiveDateTime::parse(
-            "Fri, 24 May 2013 00:00:00 GMT",
-            "%a, %d %b %Y %-H:%M:%S GMT",
-        )
-        .unwrap()
-        .assume_utc();
+        // Fri, 24 May 2013 00:00:00 GMT
+        let date = OffsetDateTime::from_unix_timestamp(1369353600).unwrap();
+
         let method = Method::Get;
         let url = "https://examplebucket.s3.amazonaws.com/test.txt"
             .parse()
