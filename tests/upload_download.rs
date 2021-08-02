@@ -40,6 +40,25 @@ async fn test1() {
         .error_for_status()
         .expect("PutObject unexpected status code");
 
+    let action = bucket.head_object(Some(&credentials), "test.txt");
+    let url = action.sign(Duration::from_secs(60));
+
+    let resp = client
+        .head(url)
+        .send()
+        .await
+        .expect("send HeadObject")
+        .error_for_status()
+        .expect("HeadObject unexpected status code");
+
+    let content_length = resp
+        .headers()
+        .get("content-length")
+        .expect("Content-Length header")
+        .to_str()
+        .expect("Content-Length to_str()");
+    assert_eq!(content_length, "1024");
+
     let action = bucket.get_object(Some(&credentials), "test.txt");
     let url = action.sign(Duration::from_secs(60));
 

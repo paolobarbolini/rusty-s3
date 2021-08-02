@@ -16,8 +16,8 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     let secret = "minioadmin";
     let region = "minio";
 
-    let bucket = Bucket::new(url, true, "test".into(), region.into()).unwrap();
-    let credential = Credentials::new(key.into(), secret.into());
+    let bucket = Bucket::new(url, true, "test", region).unwrap();
+    let credential = Credentials::new(key, secret);
 
     let action = ListObjectsV2::new(&bucket, Some(&credential));
     let signed_url = action.sign(ONE_HOUR);
