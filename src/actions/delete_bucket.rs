@@ -72,7 +72,7 @@ impl<'a> S3Action<'a> for DeleteBucket<'a> {
 
 #[cfg(test)]
 mod tests {
-    use time::PrimitiveDateTime;
+    use time::OffsetDateTime;
 
     use pretty_assertions::assert_eq;
 
@@ -81,12 +81,8 @@ mod tests {
 
     #[test]
     fn aws_example() {
-        let date = PrimitiveDateTime::parse(
-            "Fri, 24 May 2013 00:00:00 GMT",
-            "%a, %d %b %Y %-H:%M:%S GMT",
-        )
-        .unwrap()
-        .assume_utc();
+        // Fri, 24 May 2013 00:00:00 GMT
+        let date = OffsetDateTime::from_unix_timestamp(1369353600).unwrap();
         let expires_in = Duration::from_secs(86400);
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();

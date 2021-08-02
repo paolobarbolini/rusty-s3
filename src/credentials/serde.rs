@@ -3,6 +3,8 @@ use std::fmt::{self, Debug, Formatter};
 use serde::{Deserialize, Deserializer};
 use time::PrimitiveDateTime;
 
+use crate::time_::ISO8601_EXT;
+
 use super::{Credentials, RotatingCredentials};
 
 /// Parser for responses received from the EC2 security-credentials metadata service.
@@ -23,7 +25,8 @@ where
     D: Deserializer<'de>,
 {
     let s: &str = Deserialize::deserialize(deserializer)?;
-    PrimitiveDateTime::parse(s, "%Y-%m-%dT%H:%M:%SZ").map_err(serde::de::Error::custom)
+
+    PrimitiveDateTime::parse(s, &ISO8601_EXT).map_err(serde::de::Error::custom)
 }
 
 impl Ec2SecurityCredentialsMetadataResponse {
@@ -102,9 +105,10 @@ mod tests {
         assert_eq!(deserialized.key(), "some_access_key");
         assert_eq!(deserialized.secret(), "some_secret_key");
         assert_eq!(deserialized.token(), "some_token");
+        //                                                                  2020-12-28T23:10:09Z
         assert_eq!(
-            deserialized.expiration().format("%Y-%m-%dT%H:%M:%SZ"),
-            "2020-12-28T23:10:09Z"
+            deserialized.expiration().assume_utc().unix_timestamp(),
+            1609197009
         );
 
         let debug_output = format!("{:?}", deserialized);
