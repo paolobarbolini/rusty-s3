@@ -13,7 +13,7 @@ edition = "2018"
 [dependencies]
 hmac = "0.11"
 sha2 = "0.9.2"
-time = { version = "=0.3.0-alpha-2", default-features = false, features = ["macros", "formatting", "parsing"] }
+time = { version = "0.3", default-features = false, features = ["macros", "formatting", "parsing"] }
 url = "2.2.0"
 percent-encoding = "2.1.0"
 serde = { version = "1", features = ["derive"] }
