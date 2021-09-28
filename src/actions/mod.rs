@@ -7,6 +7,7 @@ use url::Url;
 pub use self::create_bucket::CreateBucket;
 pub use self::delete_bucket::DeleteBucket;
 pub use self::delete_object::DeleteObject;
+pub use self::delete_objects::{DeleteObjects, ObjectIdentifier};
 pub use self::get_object::GetObject;
 pub use self::head_object::HeadObject;
 #[doc(inline)]
@@ -21,6 +22,7 @@ use crate::{Map, Method};
 mod create_bucket;
 mod delete_bucket;
 mod delete_object;
+mod delete_objects;
 mod get_object;
 mod head_object;
 pub mod list_objects_v2;

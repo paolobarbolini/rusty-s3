@@ -2,7 +2,8 @@ use url::{ParseError, Url};
 
 use crate::actions::{
     AbortMultipartUpload, CompleteMultipartUpload, CreateBucket, CreateMultipartUpload,
-    DeleteBucket, DeleteObject, GetObject, HeadObject, ListObjectsV2, PutObject, UploadPart,
+    DeleteBucket, DeleteObject, DeleteObjects, GetObject, HeadObject, ListObjectsV2, PutObject,
+    UploadPart,
 };
 use crate::signing::util::percent_encode_path;
 use crate::Credentials;
@@ -180,6 +181,17 @@ impl Bucket {
         object: &'a str,
     ) -> DeleteObject<'a> {
         DeleteObject::new(self, credentials, object)
+    }
+
+    /// Delete multiple objects from S3 using a single `POST` request.
+    ///
+    /// See [`DeleteObjects`] for more details.
+    pub fn delete_objects<'a, I>(
+        &'a self,
+        credentials: Option<&'a Credentials>,
+        objects: I,
+    ) -> DeleteObjects<'a, I> {
+        DeleteObjects::new(self, credentials, objects)
     }
 }
 
