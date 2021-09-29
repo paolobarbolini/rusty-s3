@@ -73,7 +73,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Install Rust
-      run: rustup default 1.48.0
+      run: rustup default 1.52.1
 
     - name: Remove unused dev-dependencies breaking MSRV
       run: |
