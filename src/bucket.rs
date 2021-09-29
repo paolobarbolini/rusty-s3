@@ -2,8 +2,8 @@ use url::{ParseError, Url};
 
 use crate::actions::{
     AbortMultipartUpload, CompleteMultipartUpload, CreateBucket, CreateMultipartUpload,
-    DeleteBucket, DeleteObject, DeleteObjects, GetObject, HeadObject, ListObjectsV2, PutObject,
-    UploadPart,
+    DeleteBucket, DeleteObject, DeleteObjects, GetObject, HeadObject, ListObjectsV2, ListParts,
+    PutObject, UploadPart,
 };
 use crate::signing::util::percent_encode_path;
 use crate::Credentials;
@@ -245,6 +245,18 @@ impl Bucket {
         upload_id: &'a str,
     ) -> AbortMultipartUpload<'a> {
         AbortMultipartUpload::new(self, credentials, object, upload_id)
+    }
+
+    /// Lists the parts that have been uploaded for a specific multipart upload.
+    ///
+    /// See [`ListParts`] for more details.
+    pub fn list_parts<'a>(
+        &'a self,
+        credentials: Option<&'a Credentials>,
+        object: &'a str,
+        upload_id: &'a str,
+    ) -> ListParts<'a> {
+        ListParts::new(self, credentials, object, upload_id)
     }
 }
 

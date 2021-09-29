@@ -57,11 +57,13 @@ More examples can be found in the examples directory on GitHub.
 * Multipart upload
     * [`CreateMultipartUpload`][completemultipart]
     * [`UploadPart`][uploadpart]
+    * [`ListParts`][listparts]
     * [`CompleteMultipartUpload`][completemultipart]
     * [`AbortMultipartUpload`][abortmultipart]
 
 [abortmultipart]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_AbortMultipartUpload.html
 [completemultipart]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateMultipartUpload.html
+[listparts]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListParts.html
 [createbucket]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateBucket.html
 [deletebucket]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucket.html
 [createmultipart]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateMultipartUpload.html

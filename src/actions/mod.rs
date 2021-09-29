@@ -15,6 +15,7 @@ pub use self::list_objects_v2::{ListObjectsV2, ListObjectsV2Response};
 pub use self::multipart_upload::abort::AbortMultipartUpload;
 pub use self::multipart_upload::complete::CompleteMultipartUpload;
 pub use self::multipart_upload::create::CreateMultipartUpload;
+pub use self::multipart_upload::list_parts::{ListParts, ListPartsResponse};
 pub use self::multipart_upload::upload::UploadPart;
 pub use self::put_object::PutObject;
 use crate::{Map, Method};
