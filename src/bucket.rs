@@ -262,6 +262,7 @@ impl Bucket {
 
 #[cfg(test)]
 mod tests {
+    use crate::actions::ObjectIdentifier;
     use pretty_assertions::assert_eq;
 
     use super::*;
@@ -353,6 +354,7 @@ mod tests {
         let _ = bucket.list_objects_v2(Some(&credentials));
         let _ = bucket.put_object(Some(&credentials), "duck.jpg");
         let _ = bucket.delete_object(Some(&credentials), "duck.jpg");
+        let _ = bucket.delete_objects(Some(&credentials), std::iter::empty::<ObjectIdentifier>());
 
         let _ = bucket.create_multipart_upload(Some(&credentials), "duck.jpg");
         let _ = bucket.upload_part(Some(&credentials), "duck.jpg", 1, "abcd");
@@ -363,5 +365,6 @@ mod tests {
             ["1234"].iter().copied(),
         );
         let _ = bucket.abort_multipart_upload(Some(&credentials), "duck.jpg", "abcd");
+        let _ = bucket.list_parts(Some(&credentials), "duck.jpg", "abcd");
     }
 }
