@@ -111,7 +111,7 @@ impl<'a> ListParts<'a> {
             ),
             None => crate::signing::util::add_query_params(
                 url,
-                SortingIterator::new(query.into_iter(), self.query.iter()),
+                SortingIterator::new(query, self.query.iter()),
             ),
         }
     }
