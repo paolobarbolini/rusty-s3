@@ -37,7 +37,7 @@
     missing_debug_implementations,
     missing_copy_implementations,
     rust_2018_idioms,
-    broken_intra_doc_links
+    rustdoc::broken_intra_doc_links
 )]
 #![forbid(unsafe_code)]
 #![doc(html_root_url = "https://docs.rs/rusty-s3/0.1.2")]

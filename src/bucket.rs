@@ -2,8 +2,8 @@ use url::{ParseError, Url};
 
 use crate::actions::{
     AbortMultipartUpload, CompleteMultipartUpload, CreateBucket, CreateMultipartUpload,
-    DeleteBucket, DeleteObject, DeleteObjects, GetObject, HeadObject, ListObjectsV2, PutObject,
-    UploadPart,
+    DeleteBucket, DeleteObject, DeleteObjects, GetObject, HeadObject, ListObjectsV2, ListParts,
+    PutObject, UploadPart,
 };
 use crate::signing::util::percent_encode_path;
 use crate::Credentials;
@@ -246,10 +246,23 @@ impl Bucket {
     ) -> AbortMultipartUpload<'a> {
         AbortMultipartUpload::new(self, credentials, object, upload_id)
     }
+
+    /// Lists the parts that have been uploaded for a specific multipart upload.
+    ///
+    /// See [`ListParts`] for more details.
+    pub fn list_parts<'a>(
+        &'a self,
+        credentials: Option<&'a Credentials>,
+        object: &'a str,
+        upload_id: &'a str,
+    ) -> ListParts<'a> {
+        ListParts::new(self, credentials, object, upload_id)
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::actions::ObjectIdentifier;
     use pretty_assertions::assert_eq;
 
     use super::*;
@@ -341,6 +354,7 @@ mod tests {
         let _ = bucket.list_objects_v2(Some(&credentials));
         let _ = bucket.put_object(Some(&credentials), "duck.jpg");
         let _ = bucket.delete_object(Some(&credentials), "duck.jpg");
+        let _ = bucket.delete_objects(Some(&credentials), std::iter::empty::<ObjectIdentifier>());
 
         let _ = bucket.create_multipart_upload(Some(&credentials), "duck.jpg");
         let _ = bucket.upload_part(Some(&credentials), "duck.jpg", 1, "abcd");
@@ -351,5 +365,6 @@ mod tests {
             ["1234"].iter().copied(),
         );
         let _ = bucket.abort_multipart_upload(Some(&credentials), "duck.jpg", "abcd");
+        let _ = bucket.list_parts(Some(&credentials), "duck.jpg", "abcd");
     }
 }
