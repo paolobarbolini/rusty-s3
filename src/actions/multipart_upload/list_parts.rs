@@ -94,7 +94,8 @@ impl<'a> ListParts<'a> {
 
     fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url {
         let url = self.bucket.object_url(self.object).unwrap();
-        let query = iter::once(("uploadId", self.upload_id));
+        let query =
+            SortingIterator::new(iter::once(("uploadId", self.upload_id)), self.query.iter());
 
         match self.credentials {
             Some(credentials) => sign(
@@ -106,13 +107,10 @@ impl<'a> ListParts<'a> {
                 credentials.token(),
                 self.bucket.region(),
                 expires_in.as_secs(),
-                SortingIterator::new(query, self.query.iter()),
+                query,
                 self.headers.iter(),
             ),
-            None => crate::signing::util::add_query_params(
-                url,
-                SortingIterator::new(query, self.query.iter()),
-            ),
+            None => crate::signing::util::add_query_params(url, query),
         }
     }
 }

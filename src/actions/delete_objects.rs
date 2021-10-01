@@ -70,7 +70,7 @@ where
 {
     fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url {
         let url = self.bucket.base_url().clone();
-        let query = iter::once(("delete", "1"));
+        let query = SortingIterator::new(iter::once(("delete", "1")), self.query.iter());
 
         match self.credentials {
             Some(credentials) => sign(
@@ -82,7 +82,7 @@ where
                 credentials.token(),
                 self.bucket.region(),
                 expires_in.as_secs(),
-                SortingIterator::new(query, self.query.iter()),
+                query,
                 self.headers.iter(),
             ),
             None => crate::signing::util::add_query_params(url, query),
