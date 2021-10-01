@@ -1,3 +1,4 @@
+use std::iter;
 use std::time::Duration;
 
 use serde::Deserialize;
@@ -26,8 +27,6 @@ pub struct ListParts<'a> {
     credentials: Option<&'a Credentials>,
     object: &'a str,
     upload_id: &'a str,
-    max_parts: Option<u16>,
-    part_number_marker: Option<u16>,
 
     query: Map<'a>,
     headers: Map<'a>,
@@ -70,8 +69,6 @@ impl<'a> ListParts<'a> {
             credentials,
             object,
             upload_id,
-            max_parts: None,
-            part_number_marker: None,
 
             query: Map::new(),
             headers: Map::new(),
@@ -79,11 +76,12 @@ impl<'a> ListParts<'a> {
     }
 
     pub fn set_max_parts(&mut self, max_parts: u16) {
-        self.max_parts = Some(max_parts);
+        self.query.insert("max-parts", max_parts.to_string());
     }
 
     pub fn set_part_number_marker(&mut self, part_number_marker: u16) {
-        self.part_number_marker = Some(part_number_marker);
+        self.query
+            .insert("part-number-marker", part_number_marker.to_string());
     }
 
     pub fn parse_response(s: &str) -> Result<ListPartsResponse, quick_xml::DeError> {
@@ -96,18 +94,7 @@ impl<'a> ListParts<'a> {
 
     fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url {
         let url = self.bucket.object_url(self.object).unwrap();
-        let mut query = vec![];
-        let max_parts_str;
-        if let Some(max_parts) = self.max_parts {
-            max_parts_str = max_parts.to_string();
-            query.push(("max-parts", max_parts_str.as_str()))
-        }
-        let part_number_marker_str;
-        if let Some(part_number_marker) = self.part_number_marker {
-            part_number_marker_str = part_number_marker.to_string();
-            query.push(("part-number-marker", part_number_marker_str.as_str()))
-        }
-        query.push(("uploadId", self.upload_id));
+        let query = iter::once(("uploadId", self.upload_id));
 
         match self.credentials {
             Some(credentials) => sign(
@@ -119,7 +106,7 @@ impl<'a> ListParts<'a> {
                 credentials.token(),
                 self.bucket.region(),
                 expires_in.as_secs(),
-                SortingIterator::new(query.into_iter(), self.query.iter()),
+                SortingIterator::new(query, self.query.iter()),
                 self.headers.iter(),
             ),
             None => crate::signing::util::add_query_params(
@@ -171,10 +158,15 @@ mod tests {
 
         let mut action = ListParts::new(&bucket, Some(&credentials), "test.txt", "abcd");
         action.set_max_parts(100);
-
         let url = action.sign_with_time(expires_in, &date);
         let expected = "https://examplebucket.s3.amazonaws.com/test.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&max-parts=100&uploadId=abcd&X-Amz-Signature=10a814258808a79054a80e2aff66e95faba686648eb50bd143fe7fe7d6d7b6ce";
+        assert_eq!(expected, url.as_str());
 
+        let mut action = ListParts::new(&bucket, Some(&credentials), "test.txt", "abcd");
+        action.set_max_parts(50);
+        action.set_part_number_marker(100);
+        let url = action.sign_with_time(expires_in, &date);
+        let expected = "https://examplebucket.s3.amazonaws.com/test.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&max-parts=50&part-number-marker=100&uploadId=abcd&X-Amz-Signature=ea8eecb4f2534d606474497e6088ceb262081bf7c5a289ff0598aafdd66055da";
         assert_eq!(expected, url.as_str());
     }
 
@@ -187,11 +179,17 @@ mod tests {
 
         let mut action = ListParts::new(&bucket, None, "test.txt", "abcd");
         action.set_max_parts(100);
-
         let url = action.sign(expires_in);
         let expected =
             "https://examplebucket.s3.amazonaws.com/test.txt?max-parts=100&uploadId=abcd";
+        assert_eq!(expected, url.as_str());
 
+        let mut action = ListParts::new(&bucket, None, "test.txt", "abcd");
+        action.set_max_parts(50);
+        action.set_part_number_marker(100);
+        let url = action.sign(expires_in);
+        let expected =
+            "https://examplebucket.s3.amazonaws.com/test.txt?max-parts=50&part-number-marker=100&uploadId=abcd";
         assert_eq!(expected, url.as_str());
     }
 
