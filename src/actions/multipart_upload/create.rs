@@ -57,6 +57,24 @@ impl<'a> CreateMultipartUpload<'a> {
         let parsed = quick_xml::de::from_str(s)?;
         Ok(CreateMultipartUploadResponse(parsed))
     }
+}
+
+impl CreateMultipartUploadResponse {
+    pub fn upload_id(&self) -> &str {
+        &self.0.upload_id
+    }
+}
+
+impl<'a> S3Action<'a> for CreateMultipartUpload<'a> {
+    const METHOD: Method = Method::Post;
+
+    fn query_mut(&mut self) -> &mut Map<'a> {
+        &mut self.query
+    }
+
+    fn headers_mut(&mut self) -> &mut Map<'a> {
+        &mut self.headers
+    }
 
     fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url {
         let url = self.bucket.object_url(self.object).unwrap();
@@ -77,29 +95,6 @@ impl<'a> CreateMultipartUpload<'a> {
             ),
             None => crate::signing::util::add_query_params(url, query),
         }
-    }
-}
-
-impl CreateMultipartUploadResponse {
-    pub fn upload_id(&self) -> &str {
-        &self.0.upload_id
-    }
-}
-
-impl<'a> S3Action<'a> for CreateMultipartUpload<'a> {
-    const METHOD: Method = Method::Post;
-
-    fn sign(&self, expires_in: Duration) -> Url {
-        let now = OffsetDateTime::now_utc();
-        self.sign_with_time(expires_in, &now)
-    }
-
-    fn query_mut(&mut self) -> &mut Map<'a> {
-        &mut self.query
-    }
-
-    fn headers_mut(&mut self) -> &mut Map<'a> {
-        &mut self.headers
     }
 }
 

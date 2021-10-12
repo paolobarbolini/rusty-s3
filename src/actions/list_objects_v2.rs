@@ -117,6 +117,18 @@ impl<'a> ListObjectsV2<'a> {
 
         Ok(parsed)
     }
+}
+
+impl<'a> S3Action<'a> for ListObjectsV2<'a> {
+    const METHOD: Method = Method::Get;
+
+    fn query_mut(&mut self) -> &mut Map<'a> {
+        &mut self.query
+    }
+
+    fn headers_mut(&mut self) -> &mut Map<'a> {
+        &mut self.headers
+    }
 
     fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url {
         let url = self.bucket.base_url().clone();
@@ -136,23 +148,6 @@ impl<'a> ListObjectsV2<'a> {
             ),
             None => crate::signing::util::add_query_params(url, self.query.iter()),
         }
-    }
-}
-
-impl<'a> S3Action<'a> for ListObjectsV2<'a> {
-    const METHOD: Method = Method::Get;
-
-    fn sign(&self, expires_in: Duration) -> Url {
-        let now = OffsetDateTime::now_utc();
-        self.sign_with_time(expires_in, &now)
-    }
-
-    fn query_mut(&mut self) -> &mut Map<'a> {
-        &mut self.query
-    }
-
-    fn headers_mut(&mut self) -> &mut Map<'a> {
-        &mut self.headers
     }
 }
 

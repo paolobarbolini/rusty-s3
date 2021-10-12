@@ -34,6 +34,18 @@ impl<'a> DeleteBucket<'a> {
             headers: Map::new(),
         }
     }
+}
+
+impl<'a> S3Action<'a> for DeleteBucket<'a> {
+    const METHOD: Method = Method::Delete;
+
+    fn query_mut(&mut self) -> &mut Map<'a> {
+        &mut self.query
+    }
+
+    fn headers_mut(&mut self) -> &mut Map<'a> {
+        &mut self.headers
+    }
 
     fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url {
         let url = self.bucket.base_url().clone();
@@ -50,23 +62,6 @@ impl<'a> DeleteBucket<'a> {
             self.query.iter(),
             self.headers.iter(),
         )
-    }
-}
-
-impl<'a> S3Action<'a> for DeleteBucket<'a> {
-    const METHOD: Method = Method::Delete;
-
-    fn sign(&self, expires_in: Duration) -> Url {
-        let now = OffsetDateTime::now_utc();
-        self.sign_with_time(expires_in, &now)
-    }
-
-    fn query_mut(&mut self) -> &mut Map<'a> {
-        &mut self.query
-    }
-
-    fn headers_mut(&mut self) -> &mut Map<'a> {
-        &mut self.headers
     }
 }
 

@@ -68,27 +68,6 @@ impl<'a, I> DeleteObjects<'a, I>
 where
     I: Iterator<Item = &'a ObjectIdentifier>,
 {
-    fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url {
-        let url = self.bucket.base_url().clone();
-        let query = SortingIterator::new(iter::once(("delete", "1")), self.query.iter());
-
-        match self.credentials {
-            Some(credentials) => sign(
-                time,
-                Method::Post,
-                url,
-                credentials.key(),
-                credentials.secret(),
-                credentials.token(),
-                self.bucket.region(),
-                expires_in.as_secs(),
-                query,
-                self.headers.iter(),
-            ),
-            None => crate::signing::util::add_query_params(url, query),
-        }
-    }
-
     pub fn body_with_md5(self) -> (String, String) {
         #[derive(Serialize)]
         #[serde(rename = "Delete")]
@@ -98,7 +77,6 @@ where
             #[serde(rename = "Quiet")]
             quiet: Option<bool>,
         }
-
         #[derive(Serialize)]
         #[serde(rename = "Delete")]
         struct Object<'a> {
@@ -129,6 +107,7 @@ where
         };
 
         let body = quick_xml::se::to_string(&req).unwrap();
+
         let content_md5 = base64::encode(md5::compute(body.as_bytes()).as_ref());
         (body, content_md5)
     }
@@ -140,17 +119,33 @@ where
 {
     const METHOD: Method = Method::Post;
 
-    fn sign(&self, expires_in: Duration) -> Url {
-        let now = OffsetDateTime::now_utc();
-        self.sign_with_time(expires_in, &now)
-    }
-
     fn query_mut(&mut self) -> &mut Map<'a> {
         &mut self.query
     }
 
     fn headers_mut(&mut self) -> &mut Map<'a> {
         &mut self.headers
+    }
+
+    fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url {
+        let url = self.bucket.base_url().clone();
+        let query = SortingIterator::new(iter::once(("delete", "1")), self.query.iter());
+
+        match self.credentials {
+            Some(credentials) => sign(
+                time,
+                Method::Post,
+                url,
+                credentials.key(),
+                credentials.secret(),
+                credentials.token(),
+                self.bucket.region(),
+                expires_in.as_secs(),
+                query,
+                self.headers.iter(),
+            ),
+            None => crate::signing::util::add_query_params(url, query),
+        }
     }
 }
 

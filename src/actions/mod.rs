@@ -30,12 +30,17 @@ pub mod list_objects_v2;
 mod multipart_upload;
 mod put_object;
 
+use time::OffsetDateTime;
+
 /// A request which can be signed
 pub trait S3Action<'a> {
     const METHOD: Method;
 
     /// Sign a request for this action, using `METHOD` for the [`Method`]
-    fn sign(&self, expires_in: Duration) -> Url;
+    fn sign(&self, expires_in: Duration) -> Url {
+        let now = OffsetDateTime::now_utc();
+        self.sign_with_time(expires_in, &now)
+    }
 
     /// Get a mutable reference to the query string of this action
     fn query_mut(&mut self) -> &mut Map<'a>;
@@ -45,4 +50,8 @@ pub trait S3Action<'a> {
     /// Headers specified here must also be present in the final request,
     /// with the same value specified, otherwise the S3 API will return an error.
     fn headers_mut(&mut self) -> &mut Map<'a>;
+
+    /// Takes the time at which the URL should be signed
+    /// Used for testing purposes
+    fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url;
 }

@@ -56,27 +56,6 @@ impl<'a, I> CompleteMultipartUpload<'a, I>
 where
     I: Iterator<Item = &'a str>,
 {
-    fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url {
-        let url = self.bucket.object_url(self.object).unwrap();
-        let query = iter::once(("uploadId", self.upload_id));
-
-        match self.credentials {
-            Some(credentials) => sign(
-                time,
-                Method::Post,
-                url,
-                credentials.key(),
-                credentials.secret(),
-                credentials.token(),
-                self.bucket.region(),
-                expires_in.as_secs(),
-                SortingIterator::new(query, self.query.iter()),
-                self.headers.iter(),
-            ),
-            None => crate::signing::util::add_query_params(url, query),
-        }
-    }
-
     pub fn body(self) -> String {
         #[derive(Serialize)]
         #[serde(rename = "CompleteMultipartUpload")]
@@ -117,17 +96,33 @@ where
 {
     const METHOD: Method = Method::Post;
 
-    fn sign(&self, expires_in: Duration) -> Url {
-        let now = OffsetDateTime::now_utc();
-        self.sign_with_time(expires_in, &now)
-    }
-
     fn query_mut(&mut self) -> &mut Map<'a> {
         &mut self.query
     }
 
     fn headers_mut(&mut self) -> &mut Map<'a> {
         &mut self.headers
+    }
+
+    fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url {
+        let url = self.bucket.object_url(self.object).unwrap();
+        let query = iter::once(("uploadId", self.upload_id));
+
+        match self.credentials {
+            Some(credentials) => sign(
+                time,
+                Method::Post,
+                url,
+                credentials.key(),
+                credentials.secret(),
+                credentials.token(),
+                self.bucket.region(),
+                expires_in.as_secs(),
+                SortingIterator::new(query, self.query.iter()),
+                self.headers.iter(),
+            ),
+            None => crate::signing::util::add_query_params(url, query),
+        }
     }
 }
 
