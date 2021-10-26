@@ -35,6 +35,18 @@ impl<'a> GetObject<'a> {
             headers: Map::new(),
         }
     }
+}
+
+impl<'a> S3Action<'a> for GetObject<'a> {
+    const METHOD: Method = Method::Get;
+
+    fn query_mut(&mut self) -> &mut Map<'a> {
+        &mut self.query
+    }
+
+    fn headers_mut(&mut self) -> &mut Map<'a> {
+        &mut self.headers
+    }
 
     fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url {
         let url = self.bucket.object_url(self.object).unwrap();
@@ -54,23 +66,6 @@ impl<'a> GetObject<'a> {
             ),
             None => crate::signing::util::add_query_params(url, self.query.iter()),
         }
-    }
-}
-
-impl<'a> S3Action<'a> for GetObject<'a> {
-    const METHOD: Method = Method::Get;
-
-    fn sign(&self, expires_in: Duration) -> Url {
-        let now = OffsetDateTime::now_utc();
-        self.sign_with_time(expires_in, &now)
-    }
-
-    fn query_mut(&mut self) -> &mut Map<'a> {
-        &mut self.query
-    }
-
-    fn headers_mut(&mut self) -> &mut Map<'a> {
-        &mut self.headers
     }
 }
 
