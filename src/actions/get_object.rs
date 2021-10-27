@@ -76,7 +76,7 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     use super::*;
-    use crate::{Bucket, Credentials};
+    use crate::{Bucket, Credentials, UrlStyle};
 
     #[test]
     fn aws_example() {
@@ -85,7 +85,13 @@ mod tests {
         let expires_in = Duration::from_secs(86400);
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
-        let bucket = Bucket::new(endpoint, false, "examplebucket", "us-east-1").unwrap();
+        let bucket = Bucket::new(
+            endpoint,
+            UrlStyle::VirtualHost,
+            "examplebucket",
+            "us-east-1",
+        )
+        .unwrap();
         let credentials = Credentials::new(
             "AKIAIOSFODNN7EXAMPLE",
             "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
@@ -106,7 +112,13 @@ mod tests {
         let expires_in = Duration::from_secs(86400);
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
-        let bucket = Bucket::new(endpoint, false, "examplebucket", "us-east-1").unwrap();
+        let bucket = Bucket::new(
+            endpoint,
+            UrlStyle::VirtualHost,
+            "examplebucket",
+            "us-east-1",
+        )
+        .unwrap();
         let credentials = Credentials::new(
             "AKIAIOSFODNN7EXAMPLE",
             "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
@@ -128,7 +140,13 @@ mod tests {
         let expires_in = Duration::from_secs(86400);
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
-        let bucket = Bucket::new(endpoint, false, "examplebucket", "us-east-1").unwrap();
+        let bucket = Bucket::new(
+            endpoint,
+            UrlStyle::VirtualHost,
+            "examplebucket",
+            "us-east-1",
+        )
+        .unwrap();
 
         let mut action = GetObject::new(&bucket, None, "test.txt");
         action

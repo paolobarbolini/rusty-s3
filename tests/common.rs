@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use reqwest::Client;
 use rusty_s3::actions::{CreateBucket, S3Action};
-use rusty_s3::{Bucket, Credentials};
+use rusty_s3::{Bucket, Credentials, UrlStyle};
 
 pub async fn bucket() -> (Bucket, Credentials, Client) {
     let mut buf = [0; 8];
@@ -16,7 +16,7 @@ pub async fn bucket() -> (Bucket, Credentials, Client) {
     let secret = "minioadmin";
     let region = "minio";
 
-    let bucket = Bucket::new(url, true, name, region.into()).unwrap();
+    let bucket = Bucket::new(url, UrlStyle::Path, name, region.into()).unwrap();
     let credentials = Credentials::new(key, secret);
 
     let client = Client::new();

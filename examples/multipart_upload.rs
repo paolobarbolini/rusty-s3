@@ -5,7 +5,7 @@ use std::time::Duration;
 use reqwest::header::ETAG;
 use reqwest::Client;
 use rusty_s3::actions::{CompleteMultipartUpload, CreateMultipartUpload, S3Action, UploadPart};
-use rusty_s3::{Bucket, Credentials};
+use rusty_s3::{Bucket, Credentials, UrlStyle};
 
 const ONE_HOUR: Duration = Duration::from_secs(3600);
 
@@ -18,7 +18,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     let secret = "minioadmin";
     let region = "minio";
 
-    let bucket = Bucket::new(url, true, "test", region).unwrap();
+    let bucket = Bucket::new(url, UrlStyle::Path, "test", region).unwrap();
     let credential = Credentials::new(key, secret);
 
     let action = CreateMultipartUpload::new(&bucket, Some(&credential), "idk.txt");
