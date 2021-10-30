@@ -15,7 +15,7 @@ use crate::Credentials;
 /// ```rust
 /// # use rusty_s3::{Bucket, UrlStyle};
 /// let endpoint = "https://s3-eu-west-1.amazonaws.com".parse().expect("endpoint is a valid Url");
-/// let path_style = UrlStyle::VirtualHost;
+/// let path_style = UrlStyle::Path;
 /// let name = String::from("rusty-s3");
 /// let region = String::from("eu-west-1");
 ///
@@ -29,9 +29,9 @@ use crate::Credentials;
 /// ## Domain style url
 ///
 /// ```rust
-/// # use rusty_s3::Bucket;
+/// # use rusty_s3::{Bucket, UrlStyle};
 /// let endpoint = "https://s3-eu-west-1.amazonaws.com".parse().expect("endpoint is a valid Url");
-/// let path_style = UrlStyle::Path;
+/// let path_style = UrlStyle::VirtualHost;
 /// let name = String::from("rusty-s3");
 /// let region = String::from("eu-west-1");
 ///
@@ -48,9 +48,17 @@ pub struct Bucket {
     region: String,
 }
 
+/// The request url format of a S3 bucket.
 #[derive(Debug, Clone, Copy)]
 pub enum UrlStyle {
+    /// requests use the following format
+    /// `https://s3.Region.amazonaws.com/bucket-name/key_name`.
+    ///
+    /// Path style requests are strongly not raccomended,
+    /// AWS is plannnig to deprecate them, see [Virtual hosting of buckets](https://docs.aws.amazon.com/AmazonS3/latest/userguide/VirtualHosting.html#virtual-hosted-style-access) for more information.
     Path,
+    /// requests use the following format
+    /// `https://bucket-name.s3.Region.amazonaws.com/key_name`.
     VirtualHost,
 }
 
