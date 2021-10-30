@@ -23,7 +23,11 @@ use std::time::Duration;
 use rusty_s3::{Bucket, Credentials, S3Action, UrlStyle};
 
 // setting up a bucket
+<<<<<<< HEAD
 let endpoint = "https://s3.dualstack.eu-west-1.amazonaws.com".parse().expect("endpoint is a valid Url");
+=======
+let endpoint = "https://s3-eu-west-1.amazonaws.com".parse().expect("endpoint is a valid Url");
+>>>>>>> 46feb37ffa45cc4cb6ce41cf06797917d8a31fbe
 let path_style = UrlStyle::VirtualHost;
 let name = String::from("rusty-s3");
 let region = String::from("eu-west-1");
