@@ -1,3 +1,6 @@
+use std::error::Error as StdError;
+use std::fmt::{self, Display},
+
 use url::{ParseError, Url};
 
 use crate::actions::{
@@ -266,6 +269,17 @@ impl Bucket {
         ListParts::new(self, credentials, object, upload_id)
     }
 }
+
+impl Display for BucketError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::UnsupportedScheme => f.write_str("unsupported Url scheme"),
+            Self::MissingHost => f.write_str("Url is missing the `host`"),
+        }
+    }
+}
+
+impl StdError for BucketError {}
 
 #[cfg(test)]
 mod tests {
