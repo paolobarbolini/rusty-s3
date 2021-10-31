@@ -345,7 +345,7 @@ mod tests {
         let name = "rusty-s3";
         let region = "eu-west-1";
         assert_eq!(
-            Bucket::new(endpoint, true, name, region),
+            Bucket::new(endpoint, UrlStyle::Path, name, region),
             Err(BucketError::UnsupportedScheme)
         );
     }
