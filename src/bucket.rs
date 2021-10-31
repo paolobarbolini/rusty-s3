@@ -16,9 +16,9 @@ use crate::Credentials;
 /// ## Path style url
 ///
 /// ```rust
-/// # use rusty_s3::Bucket;
+/// # use rusty_s3::{Bucket, UrlStyle};
 /// let endpoint = "https://s3.dualstack.eu-west-1.amazonaws.com".parse().expect("endpoint is a valid Url");
-/// let path_style = true;
+/// let path_style = UrlStyle::Path;
 /// let name = String::from("rusty-s3");
 /// let region = String::from("eu-west-1");
 ///
@@ -32,9 +32,9 @@ use crate::Credentials;
 /// ## Domain style url
 ///
 /// ```rust
-/// # use rusty_s3::Bucket;
+/// # use rusty_s3::{Bucket, UrlStyle};
 /// let endpoint = "https://s3.dualstack.eu-west-1.amazonaws.com".parse().expect("endpoint is a valid Url");
-/// let path_style = false;
+/// let path_style = UrlStyle::VirtualHost;
 /// let name = String::from("rusty-s3");
 /// let region = String::from("eu-west-1");
 ///
@@ -51,6 +51,20 @@ pub struct Bucket {
     region: String,
 }
 
+/// The request url format of a S3 bucket.
+#[derive(Debug, Clone, Copy)]
+pub enum UrlStyle {
+    /// requests use the following format
+    /// `https://s3.Region.amazonaws.com/bucket-name/key_name`.
+    ///
+    /// Path style requests are strongly not raccomended,
+    /// AWS is plannnig to deprecate them, see [Virtual hosting of buckets](https://docs.aws.amazon.com/AmazonS3/latest/userguide/VirtualHosting.html#virtual-hosted-style-access) for more information.
+    Path,
+    /// requests use the following format
+    /// `https://bucket-name.s3.Region.amazonaws.com/key_name`.
+    VirtualHost,
+}
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum BucketError {
     UnsupportedScheme,
@@ -61,7 +75,7 @@ impl Bucket {
     /// Construct a new S3 bucket
     pub fn new<S: Into<String>>(
         endpoint: Url,
-        path_style: bool,
+        path_style: UrlStyle,
         name: S,
         region: S,
     ) -> Result<Self, BucketError> {
@@ -107,14 +121,17 @@ impl Bucket {
     }
 }
 
-fn base_url(mut endpoint: Url, name: &str, path_style: bool) -> Url {
-    if path_style {
-        let path = format!("{}/", name);
-        endpoint.join(&path).unwrap()
-    } else {
-        let host = format!("{}.{}", name, endpoint.host_str().unwrap());
-        endpoint.set_host(Some(&host)).unwrap();
-        endpoint
+fn base_url(mut endpoint: Url, name: &str, path_style: UrlStyle) -> Url {
+    match path_style {
+        UrlStyle::Path => {
+            let path = format!("{}/", name);
+            endpoint.join(&path).unwrap()
+        }
+        UrlStyle::VirtualHost => {
+            let host = format!("{}.{}", name, endpoint.host_str().unwrap());
+            endpoint.set_host(Some(&host)).unwrap();
+            endpoint
+        }
     }
 }
 
@@ -298,7 +315,7 @@ mod tests {
             .unwrap();
         let name = "rusty-s3";
         let region = "eu-west-1";
-        let bucket = Bucket::new(endpoint, true, name, region).unwrap();
+        let bucket = Bucket::new(endpoint, UrlStyle::Path, name, region).unwrap();
 
         assert_eq!(bucket.base_url(), &base_url);
         assert_eq!(bucket.name(), name);
@@ -315,7 +332,7 @@ mod tests {
             .unwrap();
         let name = "rusty-s3";
         let region = "eu-west-1";
-        let bucket = Bucket::new(endpoint, false, name, region).unwrap();
+        let bucket = Bucket::new(endpoint, UrlStyle::VirtualHost, name, region).unwrap();
 
         assert_eq!(bucket.base_url(), &base_url);
         assert_eq!(bucket.name(), name);
@@ -328,7 +345,7 @@ mod tests {
         let name = "rusty-s3";
         let region = "eu-west-1";
         assert_eq!(
-            Bucket::new(endpoint, true, name, region),
+            Bucket::new(endpoint, UrlStyle::Path, name, region),
             Err(BucketError::UnsupportedScheme)
         );
     }
@@ -339,7 +356,7 @@ mod tests {
         let name = "rusty-s3";
         let region = "eu-west-1";
         assert_eq!(
-            Bucket::new(endpoint, true, name, region),
+            Bucket::new(endpoint, UrlStyle::Path, name, region),
             Err(BucketError::MissingHost)
         );
     }
@@ -351,7 +368,7 @@ mod tests {
             .unwrap();
         let name = "rusty-s3";
         let region = "eu-west-1";
-        let bucket = Bucket::new(endpoint, true, name, region).unwrap();
+        let bucket = Bucket::new(endpoint, UrlStyle::Path, name, region).unwrap();
 
         let path_style = bucket.object_url("something/cat.jpg").unwrap();
         assert_eq!(
@@ -367,7 +384,7 @@ mod tests {
             .unwrap();
         let name = "rusty-s3";
         let region = "eu-west-1";
-        let bucket = Bucket::new(endpoint, false, name, region).unwrap();
+        let bucket = Bucket::new(endpoint, UrlStyle::VirtualHost, name, region).unwrap();
 
         let domain_style = bucket.object_url("something/cat.jpg").unwrap();
         assert_eq!(
@@ -384,7 +401,7 @@ mod tests {
 
         let name = "rusty-s3";
         let region = "eu-west-1";
-        let bucket = Bucket::new(endpoint, true, name, region).unwrap();
+        let bucket = Bucket::new(endpoint, UrlStyle::Path, name, region).unwrap();
 
         let credentials = Credentials::new(
             "AKIAIOSFODNN7EXAMPLE",
