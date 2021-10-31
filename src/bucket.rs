@@ -47,6 +47,7 @@ pub struct Bucket {
     name: String,
     region: String,
 }
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum BucketError {
     UnsupportedScheme,
