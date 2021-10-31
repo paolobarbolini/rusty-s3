@@ -1,3 +1,6 @@
+use std::error::Error as StdError;
+use std::fmt::{self, Display};
+
 use url::{ParseError, Url};
 
 use crate::actions::{
@@ -41,11 +44,17 @@ use crate::Credentials;
 /// assert_eq!(bucket.region(), "eu-west-1");
 /// assert_eq!(bucket.object_url("duck.jpg").expect("url is valid").as_str(), "https://rusty-s3.s3.dualstack.eu-west-1.amazonaws.com/duck.jpg");
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Bucket {
     base_url: Url,
     name: String,
     region: String,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum BucketError {
+    UnsupportedScheme,
+    MissingHost,
 }
 
 impl Bucket {
@@ -55,17 +64,18 @@ impl Bucket {
         path_style: bool,
         name: S,
         region: S,
-    ) -> Option<Self> {
-        let _ = endpoint.host_str()?;
+    ) -> Result<Self, BucketError> {
+        endpoint.host_str().ok_or(BucketError::MissingHost)?;
 
         match endpoint.scheme() {
             "http" | "https" => {}
-            _ => return None,
+            _ => return Err(BucketError::UnsupportedScheme),
         };
+
         let name: String = name.into();
         let base_url = base_url(endpoint, &name, path_style);
 
-        Some(Self {
+        Ok(Self {
             base_url,
             name,
             region: region.into(),
@@ -260,6 +270,17 @@ impl Bucket {
     }
 }
 
+impl Display for BucketError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::UnsupportedScheme => f.write_str("unsupported Url scheme"),
+            Self::MissingHost => f.write_str("Url is missing the `host`"),
+        }
+    }
+}
+
+impl StdError for BucketError {}
+
 #[cfg(test)]
 mod tests {
     use crate::actions::ObjectIdentifier;
@@ -303,10 +324,24 @@ mod tests {
 
     #[test]
     fn new_bad_scheme() {
+        let endpoint = "ftp://example.com/example".parse().unwrap();
+        let name = "rusty-s3";
+        let region = "eu-west-1";
+        assert_eq!(
+            Bucket::new(endpoint, true, name, region),
+            Err(BucketError::UnsupportedScheme)
+        );
+    }
+
+    #[test]
+    fn new_missing_host() {
         let endpoint = "file:///home/something".parse().unwrap();
         let name = "rusty-s3";
         let region = "eu-west-1";
-        assert!(Bucket::new(endpoint, true, name, region).is_none());
+        assert_eq!(
+            Bucket::new(endpoint, true, name, region),
+            Err(BucketError::MissingHost)
+        );
     }
 
     #[test]
