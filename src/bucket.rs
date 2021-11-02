@@ -95,7 +95,7 @@ impl Bucket {
         Ok(Self {
             base_url,
             name,
-            region: region.into(),
+            region,
         })
     }
 
