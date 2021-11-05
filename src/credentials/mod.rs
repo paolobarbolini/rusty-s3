@@ -13,9 +13,11 @@ use std::env;
 use std::fmt::{self, Debug, Formatter};
 
 pub use self::rotating::RotatingCredentials;
+#[cfg(feature = "full")]
 pub use self::serde::Ec2SecurityCredentialsMetadataResponse;
 
 mod rotating;
+#[cfg(feature = "full")]
 mod serde;
 
 /// S3 credentials
