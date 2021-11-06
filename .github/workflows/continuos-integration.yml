@@ -16,7 +16,7 @@ jobs:
         rustup update --no-self-update stable
         rustup component add rustfmt
 
-    - name: Run clippy
+    - name: Run fmt
       run: cargo fmt -- --check
 
   clippy:
@@ -63,6 +63,9 @@ jobs:
     - name: Run tests
       if: matrix.platform != 'ubuntu-20.04'
       run: cargo test --lib
+
+    - name: Run tests no default features
+      run: cargo test --lib --no-default-features
 
   msrv:
     runs-on: ubuntu-20.04

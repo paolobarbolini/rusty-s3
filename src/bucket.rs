@@ -5,9 +5,12 @@ use std::fmt::{self, Display};
 use url::{ParseError, Url};
 
 use crate::actions::{
-    AbortMultipartUpload, CompleteMultipartUpload, CreateBucket, CreateMultipartUpload,
-    DeleteBucket, DeleteObject, DeleteObjects, GetObject, HeadObject, ListObjectsV2, ListParts,
+    AbortMultipartUpload, CreateBucket, DeleteBucket, DeleteObject, GetObject, HeadObject,
     PutObject, UploadPart,
+};
+#[cfg(feature = "full")]
+use crate::actions::{
+    CompleteMultipartUpload, CreateMultipartUpload, DeleteObjects, ListObjectsV2, ListParts,
 };
 use crate::signing::util::percent_encode_path;
 use crate::Credentials;
@@ -184,6 +187,7 @@ impl Bucket {
     /// List all objects in the bucket.
     ///
     /// See [`ListObjectsV2`] for more details.
+    #[cfg(feature = "full")]
     pub fn list_objects_v2<'a>(
         &'a self,
         credentials: Option<&'a Credentials>,
@@ -216,6 +220,7 @@ impl Bucket {
     /// Delete multiple objects from S3 using a single `POST` request.
     ///
     /// See [`DeleteObjects`] for more details.
+    #[cfg(feature = "full")]
     pub fn delete_objects<'a, I>(
         &'a self,
         credentials: Option<&'a Credentials>,
@@ -231,6 +236,7 @@ impl Bucket {
     /// Create a multipart upload.
     ///
     /// See [`CreateMultipartUpload`] for more details.
+    #[cfg(feature = "full")]
     pub fn create_multipart_upload<'a>(
         &'a self,
         credentials: Option<&'a Credentials>,
@@ -255,6 +261,7 @@ impl Bucket {
     /// Complete a multipart upload.
     ///
     /// See [`CompleteMultipartUpload`] for more details.
+    #[cfg(feature = "full")]
     pub fn complete_multipart_upload<'a, I>(
         &'a self,
         credentials: Option<&'a Credentials>,
@@ -280,6 +287,7 @@ impl Bucket {
     /// Lists the parts that have been uploaded for a specific multipart upload.
     ///
     /// See [`ListParts`] for more details.
+    #[cfg(feature = "full")]
     pub fn list_parts<'a>(
         &'a self,
         credentials: Option<&'a Credentials>,
@@ -303,10 +311,11 @@ impl StdError for BucketError {}
 
 #[cfg(test)]
 mod tests {
-    use crate::actions::ObjectIdentifier;
     use pretty_assertions::assert_eq;
 
     use super::*;
+    #[cfg(feature = "full")]
+    use crate::actions::ObjectIdentifier;
 
     #[test]
     fn new_pathstyle() {
@@ -416,13 +425,17 @@ mod tests {
 
         let _ = bucket.head_object(Some(&credentials), "duck.jpg");
         let _ = bucket.get_object(Some(&credentials), "duck.jpg");
+        #[cfg(feature = "full")]
         let _ = bucket.list_objects_v2(Some(&credentials));
         let _ = bucket.put_object(Some(&credentials), "duck.jpg");
         let _ = bucket.delete_object(Some(&credentials), "duck.jpg");
+        #[cfg(feature = "full")]
         let _ = bucket.delete_objects(Some(&credentials), std::iter::empty::<ObjectIdentifier>());
 
+        #[cfg(feature = "full")]
         let _ = bucket.create_multipart_upload(Some(&credentials), "duck.jpg");
         let _ = bucket.upload_part(Some(&credentials), "duck.jpg", 1, "abcd");
+        #[cfg(feature = "full")]
         let _ = bucket.complete_multipart_upload(
             Some(&credentials),
             "duck.jpg",
@@ -430,6 +443,7 @@ mod tests {
             ["1234"].iter().copied(),
         );
         let _ = bucket.abort_multipart_upload(Some(&credentials), "duck.jpg", "abcd");
+        #[cfg(feature = "full")]
         let _ = bucket.list_parts(Some(&credentials), "duck.jpg", "abcd");
     }
 }
