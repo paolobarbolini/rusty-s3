@@ -15,6 +15,7 @@ use std::fmt::{self, Debug, Formatter};
 pub use self::rotating::RotatingCredentials;
 #[cfg(feature = "full")]
 pub use self::serde::Ec2SecurityCredentialsMetadataResponse;
+use zeroize::Zeroizing;
 
 mod rotating;
 #[cfg(feature = "full")]
@@ -24,7 +25,7 @@ mod serde;
 #[derive(Clone, PartialEq, Eq)]
 pub struct Credentials {
     key: String,
-    secret: String,
+    secret: Zeroizing<String>,
     token: Option<String>,
 }
 
@@ -43,7 +44,7 @@ impl Credentials {
     pub fn new_<S: Into<String>>(key: S, secret: S, token: Option<S>) -> Self {
         Self {
             key: key.into(),
-            secret: secret.into(),
+            secret: Zeroizing::new(secret.into()),
             token: token.map(|s| s.into()),
         }
     }
