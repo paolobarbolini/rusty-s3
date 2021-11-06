@@ -40,7 +40,6 @@
     rustdoc::broken_intra_doc_links
 )]
 #![forbid(unsafe_code)]
-#![doc(html_root_url = "https://docs.rs/rusty-s3/0.2.0")]
 
 pub use self::actions::S3Action;
 pub use self::bucket::{Bucket, UrlStyle};
