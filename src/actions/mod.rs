@@ -7,14 +7,19 @@ use url::Url;
 pub use self::create_bucket::CreateBucket;
 pub use self::delete_bucket::DeleteBucket;
 pub use self::delete_object::DeleteObject;
+#[cfg(feature = "full")]
 pub use self::delete_objects::{DeleteObjects, ObjectIdentifier};
 pub use self::get_object::GetObject;
 pub use self::head_object::HeadObject;
+#[cfg(feature = "full")]
 #[doc(inline)]
 pub use self::list_objects_v2::{ListObjectsV2, ListObjectsV2Response};
 pub use self::multipart_upload::abort::AbortMultipartUpload;
+#[cfg(feature = "full")]
 pub use self::multipart_upload::complete::CompleteMultipartUpload;
+#[cfg(feature = "full")]
 pub use self::multipart_upload::create::CreateMultipartUpload;
+#[cfg(feature = "full")]
 pub use self::multipart_upload::list_parts::{ListParts, ListPartsResponse};
 pub use self::multipart_upload::upload::UploadPart;
 pub use self::put_object::PutObject;
@@ -23,9 +28,11 @@ use crate::{Map, Method};
 mod create_bucket;
 mod delete_bucket;
 mod delete_object;
+#[cfg(feature = "full")]
 mod delete_objects;
 mod get_object;
 mod head_object;
+#[cfg(feature = "full")]
 pub mod list_objects_v2;
 mod multipart_upload;
 mod put_object;
