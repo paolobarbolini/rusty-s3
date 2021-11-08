@@ -1,6 +1,7 @@
 use hmac::{Hmac, Mac, NewMac};
 use sha2::Sha256;
 use time::OffsetDateTime;
+use zeroize::Zeroizing;
 
 use crate::time_::YYYYMMDD;
 
@@ -14,8 +15,13 @@ pub fn signature(
 ) -> String {
     let yyyymmdd = date.format(&YYYYMMDD).expect("invalid format");
 
-    let mut mac = HmacSha256::new_from_slice(format!("AWS4{}", secret).as_bytes())
-        .expect("HMAC can take keys of any size");
+    let mut raw_date = String::with_capacity("AWS4".len() + secret.len());
+    raw_date.push_str("AWS4");
+    raw_date.push_str(secret);
+    let raw_date = Zeroizing::new(raw_date);
+
+    let mut mac =
+        HmacSha256::new_from_slice(raw_date.as_bytes()).expect("HMAC can take keys of any size");
     mac.update(yyyymmdd.as_bytes());
     let date_key = mac.finalize().into_bytes();
 

@@ -1,7 +1,9 @@
 use std::fmt::{self, Debug, Formatter};
+use std::mem;
 
 use serde::{Deserialize, Deserializer};
 use time::PrimitiveDateTime;
+use zeroize::Zeroize;
 
 use crate::time_::ISO8601_EXT;
 
@@ -64,14 +66,20 @@ impl Ec2SecurityCredentialsMetadataResponse {
 
     /// Convert this `Ec2SecurityCredentialsMetadataResponse` into [`Credentials`]
     #[inline]
-    pub fn into_credentials(self) -> Credentials {
-        Credentials::new_(self.key, self.secret, Some(self.token))
+    pub fn into_credentials(mut self) -> Credentials {
+        let key = mem::take(&mut self.key);
+        let secret = mem::take(&mut self.secret);
+        let token = mem::take(&mut self.token);
+        Credentials::new_(key, secret, Some(token))
     }
 
     /// Update a [`RotatingCredentials`] with the credentials of this `Ec2SecurityCredentialsMetadataResponse`
     #[inline]
-    pub fn rotate_credentials(self, rotating: &RotatingCredentials) {
-        rotating.update(self.key, self.secret, Some(self.token));
+    pub fn rotate_credentials(mut self, rotating: &RotatingCredentials) {
+        let key = mem::take(&mut self.key);
+        let secret = mem::take(&mut self.secret);
+        let token = mem::take(&mut self.token);
+        rotating.update(key, secret, Some(token));
     }
 }
 
@@ -80,6 +88,12 @@ impl Debug for Ec2SecurityCredentialsMetadataResponse {
         f.debug_struct("Ec2SecurityCredentialsMetadataResponse")
             .field("key", &self.key)
             .finish()
+    }
+}
+
+impl Drop for Ec2SecurityCredentialsMetadataResponse {
+    fn drop(&mut self) {
+        self.secret.zeroize();
     }
 }
 
