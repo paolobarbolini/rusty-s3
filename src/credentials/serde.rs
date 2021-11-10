@@ -70,7 +70,7 @@ impl Ec2SecurityCredentialsMetadataResponse {
         let key = mem::take(&mut self.key);
         let secret = mem::take(&mut self.secret);
         let token = mem::take(&mut self.token);
-        Credentials::new_(key, secret, Some(token))
+        Credentials::new_with_token(key, secret, token)
     }
 
     /// Update a [`RotatingCredentials`] with the credentials of this `Ec2SecurityCredentialsMetadataResponse`

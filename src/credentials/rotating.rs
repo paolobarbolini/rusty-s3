@@ -17,7 +17,7 @@ pub struct RotatingCredentials {
 impl RotatingCredentials {
     /// Construct a new `RotatingCredentials` using the provided key, secret and token
     pub fn new(key: String, secret: String, token: Option<String>) -> Self {
-        let credentials = Credentials::new_(key, secret, token);
+        let credentials = Credentials::new_with_maybe_token(key, secret, token);
 
         Self {
             inner: Arc::new(RwLock::new(Arc::new(credentials))),
@@ -32,7 +32,7 @@ impl RotatingCredentials {
 
     /// Update the credentials inside this `RotatingCredentials`
     pub fn update(&self, key: String, secret: String, token: Option<String>) {
-        let credentials = Credentials::new_(key, secret, token);
+        let credentials = Credentials::new_with_maybe_token(key, secret, token);
 
         let mut lock = self.inner.write().expect("can't be poisoned");
         match Arc::get_mut(&mut lock) {
