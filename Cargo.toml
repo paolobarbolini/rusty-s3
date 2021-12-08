@@ -21,13 +21,13 @@ zeroize = "1"
 # optional
 base64 = { version = "0.13", optional = true }
 quick-xml = { version = "0.22", features = ["serialize"], optional = true }
-md5 = { version = "0.7", optional = true }
+md-5 = { version = "0.10", optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
 serde_json = { version = "1", optional = true }
 
 [features]
 default = ["full"]
-full = ["base64", "quick-xml", "md5", "serde", "serde_json", "time/parsing"]
+full = ["base64", "quick-xml", "md-5", "serde", "serde_json", "time/parsing"]
 
 [dev-dependencies]
 tokio = { version = "1.0.1", features = ["macros", "fs", "rt-multi-thread"] }
