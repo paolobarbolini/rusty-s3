@@ -1,6 +1,7 @@
 use std::iter;
 use std::time::Duration;
 
+use md5::{Digest, Md5};
 use serde::Serialize;
 use time::OffsetDateTime;
 use url::Url;
@@ -108,7 +109,7 @@ where
 
         let body = quick_xml::se::to_string(&req).unwrap();
 
-        let content_md5 = base64::encode(md5::compute(body.as_bytes()).as_ref());
+        let content_md5 = base64::encode(Md5::digest(body.as_bytes()));
         (body, content_md5)
     }
 }
