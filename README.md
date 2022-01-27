@@ -51,6 +51,7 @@ More examples can be found in the examples directory on GitHub.
     * [`HeadObject`][headobject]
     * [`GetObject`][getobject]
     * [`PutObject`][putobject]
+    * [`CopyObject`][copyobject]
     * [`DeleteObject`][deleteobject]
     * [`DeleteObjects`][deleteobjects]
     * [`ListObjectsV2`][listobjectsv2]
@@ -67,6 +68,7 @@ More examples can be found in the examples directory on GitHub.
 [createbucket]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateBucket.html
 [deletebucket]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucket.html
 [createmultipart]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateMultipartUpload.html
+[copyobject]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CopyObject.html
 [deleteobject]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObject.html
 [deleteobjects]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObjects.html
 [getobject]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html

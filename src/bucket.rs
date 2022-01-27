@@ -5,8 +5,8 @@ use std::fmt::{self, Display};
 use url::{ParseError, Url};
 
 use crate::actions::{
-    AbortMultipartUpload, CreateBucket, DeleteBucket, DeleteObject, GetObject, HeadObject,
-    PutObject, UploadPart,
+    AbortMultipartUpload, CopyObject, CreateBucket, DeleteBucket, DeleteObject, GetObject,
+    HeadObject, PutObject, UploadPart,
 };
 #[cfg(feature = "full")]
 use crate::actions::{
@@ -205,6 +205,32 @@ impl Bucket {
         object: &'a str,
     ) -> PutObject<'a> {
         PutObject::new(self, credentials, object)
+    }
+
+    /// Create a copy of an object in S3 in this bucket, using a `PUT` request.
+    ///
+    /// See [`CopyObject`] for more details.
+    pub fn copy_object<'a>(
+        &'a self,
+        credentials: Option<&'a Credentials>,
+        src_object: &'a str,
+        dst_object: &'a str,
+    ) -> CopyObject<'a> {
+        CopyObject::new(self, credentials, src_object, dst_object, true)
+    }
+
+    /// Create a copy of an object in S3 in a potentially different bucket, using a `PUT` request.
+    ///
+    /// Requires a bucket name to be prepended to `src_object`, separated by a slash.
+    ///
+    /// See [`CopyObject`] for more details.
+    pub fn copy_object_from_bucket<'a>(
+        &'a self,
+        credentials: Option<&'a Credentials>,
+        src_object: &'a str,
+        dst_object: &'a str,
+    ) -> CopyObject<'a> {
+        CopyObject::new(self, credentials, src_object, dst_object, false)
     }
 
     /// Delete an object from S3, using a `DELETE` request.
