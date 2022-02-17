@@ -71,7 +71,7 @@ pub struct ListObjectsContent {
     #[serde(rename = "Size")]
     pub size: u64,
     #[serde(rename = "StorageClass")]
-    pub storage_class: String,
+    pub storage_class: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
