@@ -266,7 +266,7 @@ mod tests {
         assert_eq!(item_1.last_modified, "2020-12-01T20:43:11.794Z");
         assert!(item_1.owner.is_none());
         assert_eq!(item_1.size, 4274);
-        assert_eq!(item_1.storage_class, "STANDARD");
+        assert_eq!(item_1.storage_class, Some("STANDARD".to_string()));
 
         let item_2 = &parsed.contents[1];
         assert_eq!(item_2.etag, "\"5927c5d64d94a5786f90003aa26d0159-1\"");
@@ -274,7 +274,7 @@ mod tests {
         assert_eq!(item_2.last_modified, "2020-12-05T08:23:52.215Z");
         assert!(item_2.owner.is_none());
         assert_eq!(item_2.size, 9);
-        assert_eq!(item_2.storage_class, "STANDARD");
+        assert_eq!(item_2.storage_class, Some("STANDARD".to_string()));
 
         let item_3 = &parsed.contents[2];
         assert_eq!(item_3.etag, "\"f7dbec93a0932ccb4d0f4e512eb1a443\"");
@@ -282,7 +282,7 @@ mod tests {
         assert_eq!(item_3.last_modified, "2020-11-26T20:21:35.858Z");
         assert!(item_3.owner.is_none());
         assert_eq!(item_3.size, 41259);
-        assert_eq!(item_3.storage_class, "STANDARD");
+        assert_eq!(item_3.storage_class, Some("STANDARD".to_string()));
 
         assert_eq!(parsed.max_keys, 4500);
         assert!(parsed.common_prefixes.is_empty());
