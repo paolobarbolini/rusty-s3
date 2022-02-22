@@ -8,7 +8,7 @@ repository = "https://github.com/paolobarbolini/rusty-s3"
 license = "BSD-2-Clause"
 documentation = "https://docs.rs/rusty-s3"
 readme = "README.md"
-edition = "2018"
+edition = "2021"
 rust-version = "1.56"
 
 [dependencies]
