@@ -24,7 +24,7 @@
 //!
 //! // setting up the credentials
 //! let key = env::var("AWS_ACCESS_KEY_ID").expect("AWS_ACCESS_KEY_ID is set and a valid String");
-//! let secret = env::var("AWS_SECRET_ACCESS_KEY").expect("AWS_ACCESS_KEY_ID is set and a valid String");
+//! let secret = env::var("AWS_SECRET_ACCESS_KEY").expect("AWS_SECRET_ACCESS_KEY is set and a valid String");
 //! let credentials = Credentials::new(key, secret);
 //!
 //! // signing a request
