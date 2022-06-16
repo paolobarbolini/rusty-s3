@@ -42,7 +42,7 @@
 #![forbid(unsafe_code)]
 
 pub use self::actions::S3Action;
-pub use self::bucket::{Bucket, UrlStyle};
+pub use self::bucket::{Bucket, BucketError, UrlStyle};
 pub use self::credentials::Credentials;
 pub use self::map::Map;
 pub use self::method::Method;
