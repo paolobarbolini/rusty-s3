@@ -78,8 +78,9 @@ jobs:
     - name: Install Rust
       run: rustup default 1.56
 
-    - name: Remove unused dev-dependencies breaking MSRV
+    - name: Fix dependencies breaking MSRV
       run: |
+        cargo update -p time --precise 0.3.9
         sed -i '/tokio/d' Cargo.toml
         sed -i '/reqwest/d' Cargo.toml
 
