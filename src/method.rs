@@ -1,7 +1,7 @@
 use std::fmt::{self, Display};
 
 /// The HTTP request method for an [`S3Action`](crate::actions::S3Action).
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Method {
     Head,
     Get,
