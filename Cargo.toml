@@ -21,7 +21,7 @@ zeroize = "1"
 
 # optional
 base64 = { version = "0.13", optional = true }
-quick-xml = { version = "0.24", features = ["serialize"], optional = true }
+quick-xml = { version = "0.26", features = ["serialize"], optional = true }
 md-5 = { version = "0.10", optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
 serde_json = { version = "1", optional = true }
