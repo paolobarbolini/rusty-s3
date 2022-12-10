@@ -20,7 +20,7 @@ percent-encoding = "2.1.0"
 zeroize = "1"
 
 # optional
-base64 = { version = "0.13", optional = true }
+base64 = { version = "0.20", optional = true }
 quick-xml = { version = "0.26", features = ["serialize"], optional = true }
 md-5 = { version = "0.10", optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
