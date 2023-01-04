@@ -43,7 +43,7 @@ pub struct ListObjectsV2Response {
     // #[serde(rename = "Delimiter")]
     // delimiter: String,
     #[serde(rename = "MaxKeys")]
-    pub max_keys: u16,
+    pub max_keys: Option<u16>,
     #[serde(rename = "CommonPrefixes", default)]
     pub common_prefixes: Vec<CommonPrefixes>,
     // #[serde(rename = "EncodingType")]
