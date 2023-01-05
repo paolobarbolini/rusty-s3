@@ -284,7 +284,7 @@ mod tests {
         assert_eq!(item_3.size, 41259);
         assert_eq!(item_3.storage_class, Some("STANDARD".to_string()));
 
-        assert_eq!(parsed.max_keys, 4500);
+        assert_eq!(parsed.max_keys, Some(4500));
         assert!(parsed.common_prefixes.is_empty());
         assert!(parsed.next_continuation_token.is_none());
         assert!(parsed.start_after.is_none());
@@ -308,7 +308,7 @@ mod tests {
         let parsed = ListObjectsV2::parse_response(input).unwrap();
         assert_eq!(parsed.contents.is_empty(), true);
 
-        assert_eq!(parsed.max_keys, 4500);
+        assert_eq!(parsed.max_keys, Some(4500));
         assert!(parsed.common_prefixes.is_empty());
         assert!(parsed.next_continuation_token.is_none());
         assert!(parsed.start_after.is_none());
