@@ -131,7 +131,7 @@ impl Bucket {
 fn base_url(mut endpoint: Url, name: &str, path_style: UrlStyle) -> Url {
     match path_style {
         UrlStyle::Path => {
-            let path = format!("{}/", name);
+            let path = format!("{name}/");
             endpoint.join(&path).unwrap()
         }
         UrlStyle::VirtualHost => {

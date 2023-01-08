@@ -20,7 +20,7 @@ async fn delete_objects() {
     let body = vec![b'r'; 1024];
     let mut objects = vec![];
     for i in 0..100 {
-        let key = format!("obj{}.txt", i);
+        let key = format!("obj{i}.txt");
         let action = bucket.put_object(Some(&credentials), &key);
         let url = action.sign(Duration::from_secs(60));
         client

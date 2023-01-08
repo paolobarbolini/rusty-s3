@@ -52,7 +52,7 @@ where
             host.to_string()
         }
         ("http", Some(port)) | ("https", Some(port)) => {
-            format!("{}:{}", host, port)
+            format!("{host}:{port}")
         }
         _ => panic!("unsupported url scheme"),
     };

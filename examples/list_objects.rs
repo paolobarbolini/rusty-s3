@@ -25,10 +25,10 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     let resp = client.get(signed_url).send().await?.error_for_status()?;
     let text = resp.text().await?;
 
-    println!("{}", text);
+    println!("{text}");
 
     let parsed = ListObjectsV2::parse_response(&text)?;
-    println!("{:#?}", parsed);
+    println!("{parsed:#?}");
 
     Ok(())
 }

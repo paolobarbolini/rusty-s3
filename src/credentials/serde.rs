@@ -125,7 +125,7 @@ mod tests {
             1609197009
         );
 
-        let debug_output = format!("{:?}", deserialized);
+        let debug_output = format!("{deserialized:?}");
         assert_eq!(
             debug_output,
             "Ec2SecurityCredentialsMetadataResponse { key: \"some_access_key\" }"
