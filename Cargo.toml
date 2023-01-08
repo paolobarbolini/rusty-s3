@@ -28,7 +28,7 @@ serde_json = { version = "1", optional = true }
 
 [features]
 default = ["full"]
-full = ["base64", "quick-xml", "md-5", "serde", "serde_json", "time/parsing"]
+full = ["dep:base64", "dep:quick-xml", "dep:md-5", "dep:serde", "dep:serde_json", "time/parsing"]
 
 [dev-dependencies]
 tokio = { version = "1.0.1", features = ["macros", "fs", "rt-multi-thread"] }
