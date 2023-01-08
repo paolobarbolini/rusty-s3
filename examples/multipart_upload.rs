@@ -72,7 +72,7 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         .await?
         .error_for_status()?;
     let body = resp.text().await?;
-    println!("it worked! {}", body);
+    println!("it worked! {body}");
 
     Ok(())
 }

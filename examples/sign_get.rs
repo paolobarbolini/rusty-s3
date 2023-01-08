@@ -20,5 +20,5 @@ fn main() {
         .insert("response-cache-control", "no-cache, no-store");
     let signed_url = action.sign(ONE_HOUR);
 
-    println!("url: {}", signed_url);
+    println!("url: {signed_url}");
 }

@@ -120,14 +120,14 @@ mod tests {
     #[test]
     fn debug() {
         let credentials = Credentials::new("abcd", "1234");
-        let debug_output = format!("{:?}", credentials);
+        let debug_output = format!("{credentials:?}");
         assert_eq!(debug_output, "Credentials { key: \"abcd\" }");
     }
 
     #[test]
     fn debug_token() {
         let credentials = Credentials::new_with_token("abcd", "1234", "xyz");
-        let debug_output = format!("{:?}", credentials);
+        let debug_output = format!("{credentials:?}");
         assert_eq!(debug_output, "Credentials { key: \"abcd\" }");
     }
 

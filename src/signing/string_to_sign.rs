@@ -7,10 +7,10 @@ pub fn string_to_sign(date: &OffsetDateTime, region: &str, canonical_request: &s
     let iso8601 = date.format(&ISO8601).expect("invalid format");
     let yyyymmdd = date.format(&YYYYMMDD).expect("invalid format");
 
-    let scope = format!("{}/{}/s3/aws4_request", yyyymmdd, region);
+    let scope = format!("{yyyymmdd}/{region}/s3/aws4_request");
 
     let hash = Sha256::digest(canonical_request.as_bytes());
-    format!("AWS4-HMAC-SHA256\n{}\n{}\n{:x}", iso8601, scope, hash)
+    format!("AWS4-HMAC-SHA256\n{iso8601}\n{scope}\n{hash:x}")
 }
 
 #[cfg(test)]

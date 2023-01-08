@@ -8,8 +8,8 @@ pub async fn bucket() -> (Bucket, Credentials, Client) {
     let mut buf = [0; 8];
     getrandom::getrandom(&mut buf).expect("getrandom");
 
-    let hex = hex::encode(&buf);
-    let name = format!("test-{}", hex);
+    let hex = hex::encode(buf);
+    let name = format!("test-{hex}");
 
     let url = "http://localhost:9000".parse().unwrap();
     let key = "minioadmin";
