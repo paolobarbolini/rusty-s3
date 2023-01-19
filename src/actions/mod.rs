@@ -4,6 +4,7 @@ use std::time::Duration;
 
 use url::Url;
 
+pub use self::copy_object::CopyObject;
 pub use self::create_bucket::CreateBucket;
 pub use self::delete_bucket::DeleteBucket;
 pub use self::delete_object::DeleteObject;
@@ -25,6 +26,7 @@ pub use self::multipart_upload::upload::UploadPart;
 pub use self::put_object::PutObject;
 use crate::{Map, Method};
 
+mod copy_object;
 mod create_bucket;
 mod delete_bucket;
 mod delete_object;
