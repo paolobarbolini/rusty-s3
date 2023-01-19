@@ -153,8 +153,7 @@ mod tests {
             .insert("response-content-type", "text/plain");
 
         let url = action.sign(expires_in);
-        let expected =
-            "https://examplebucket.s3.amazonaws.com/?response-content-type=text%2Fplain";
+        let expected = "https://examplebucket.s3.amazonaws.com/?response-content-type=text%2Fplain";
 
         assert_eq!(expected, url.as_str());
     }

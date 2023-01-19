@@ -47,6 +47,7 @@ More examples can be found in the examples directory on GitHub.
 * Bucket level methods
     * [`CreateBucket`][createbucket]
     * [`DeleteBucket`][deletebucket]
+    * [`HeadBucket`][headbucket]
 * Basic methods
     * [`HeadObject`][headobject]
     * [`GetObject`][getobject]
@@ -66,6 +67,7 @@ More examples can be found in the examples directory on GitHub.
 [listparts]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListParts.html
 [createbucket]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateBucket.html
 [deletebucket]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucket.html
+[headbucket]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadBucket.html
 [createmultipart]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateMultipartUpload.html
 [deleteobject]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObject.html
 [deleteobjects]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObjects.html
