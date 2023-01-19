@@ -4,10 +4,7 @@ use std::fmt::{self, Display};
 
 use url::{ParseError, Url};
 
-use crate::actions::{
-    AbortMultipartUpload, CreateBucket, DeleteBucket, DeleteObject, GetObject, HeadObject,
-    PutObject, UploadPart,
-};
+use crate::actions::{AbortMultipartUpload, CreateBucket, DeleteBucket, DeleteObject, GetObject, HeadBucket, HeadObject, PutObject, UploadPart};
 #[cfg(feature = "full")]
 use crate::actions::{
     CompleteMultipartUpload, CreateMultipartUpload, DeleteObjects, ListObjectsV2, ListParts,
@@ -172,6 +169,16 @@ impl Bucket {
         object: &'a str,
     ) -> HeadObject<'a> {
         HeadObject::new(self, credentials, object)
+    }
+
+    /// Retrieve an bucket's metadata from S3, using a `HEAD` request.
+    ///
+    /// See [`HeadBucket`] for more details.
+    pub fn head_bucket<'a>(
+        &'a self,
+        credentials: Option<&'a Credentials>,
+    ) -> HeadBucket<'a> {
+        HeadBucket::new(self, credentials)
     }
 
     /// Retrieve an object from S3, using a `GET` request.
