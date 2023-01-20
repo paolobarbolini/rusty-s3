@@ -48,6 +48,7 @@ pub use self::map::Map;
 pub use self::method::Method;
 
 pub mod actions;
+#[cfg(feature = "full")]
 pub(crate) mod base64;
 mod bucket;
 pub mod credentials;
