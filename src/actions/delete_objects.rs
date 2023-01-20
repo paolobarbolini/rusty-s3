@@ -109,7 +109,7 @@ where
 
         let body = quick_xml::se::to_string(&req).unwrap();
 
-        let content_md5 = base64::encode(Md5::digest(body.as_bytes()));
+        let content_md5 = crate::base64::encode(Md5::digest(body.as_bytes()));
         (body, content_md5)
     }
 }
