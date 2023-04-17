@@ -100,7 +100,7 @@ jobs:
       run: ./cargo-tarpaulin tarpaulin --lib --out Xml
 
     - name: Upload to codecov.io
-      uses: codecov/codecov-action@v3.1.1
+      uses: codecov/codecov-action@v3.1.2
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         args: '--lib'
