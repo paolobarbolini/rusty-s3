@@ -19,7 +19,7 @@ pub use self::multipart_upload::abort::AbortMultipartUpload;
 #[cfg(feature = "full")]
 pub use self::multipart_upload::complete::CompleteMultipartUpload;
 #[cfg(feature = "full")]
-pub use self::multipart_upload::create::CreateMultipartUpload;
+pub use self::multipart_upload::create::{CreateMultipartUpload, CreateMultipartUploadResponse};
 #[cfg(feature = "full")]
 pub use self::multipart_upload::list_parts::{ListParts, ListPartsResponse};
 pub use self::multipart_upload::upload::UploadPart;
