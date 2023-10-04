@@ -50,7 +50,7 @@ jobs:
     - name: Install and run minio
       if: matrix.platform == 'ubuntu-22.04'
       run: |
-        MINIO_RELEASE="2021-03-26T00-00-41Z"
+        MINIO_RELEASE="2023-09-30T07-02-29Z"
         LINK="https://dl.min.io/server/minio/release/linux-amd64/archive/"
         curl --output minio "$LINK/minio.RELEASE.$MINIO_RELEASE"
         chmod +x minio
@@ -91,7 +91,7 @@ jobs:
 
     - name: Install cargo-tarpaulin
       run: |
-        LINK="https://github.com/xd009642/tarpaulin/releases/download/0.20.1/cargo-tarpaulin-0.20.1-travis.tar.gz"
+        LINK="https://github.com/xd009642/tarpaulin/releases/download/0.27.1/cargo-tarpaulin-x86_64-unknown-linux-musl.tar.gz"
         curl -L --output tarpaulin.tar.gz "$LINK"
         tar -xzvf tarpaulin.tar.gz
         chmod +x cargo-tarpaulin
