@@ -3,7 +3,7 @@
 [![crates.io](https://img.shields.io/crates/v/rusty-s3.svg)](https://crates.io/crates/rusty-s3)
 [![Documentation](https://docs.rs/rusty-s3/badge.svg)](https://docs.rs/rusty-s3)
 [![dependency status](https://deps.rs/crate/rusty-s3/0.4.1/status.svg)](https://deps.rs/crate/rusty-s3/0.4.1)
-[![Rustc Version 1.61+](https://img.shields.io/badge/rustc-1.61+-lightgray.svg)](https://blog.rust-lang.org/2022/05/19/Rust-1.61.0.html)
+[![Rustc Version 1.67+](https://img.shields.io/badge/rustc-1.67+-lightgray.svg)](https://blog.rust-lang.org/2023/01/26/Rust-1.67.0.html)
 [![CI](https://github.com/paolobarbolini/rusty-s3/workflows/CI/badge.svg)](https://github.com/paolobarbolini/rusty-s3/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/paolobarbolini/rusty-s3/branch/main/graph/badge.svg?token=K0YPC21N8D)](https://codecov.io/gh/paolobarbolini/rusty-s3)
 
