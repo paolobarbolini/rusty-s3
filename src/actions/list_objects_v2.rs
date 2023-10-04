@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::time::Duration;
 
 use serde::Deserialize;
@@ -101,6 +102,64 @@ impl<'a> ListObjectsV2<'a> {
             query,
             headers: Map::new(),
         }
+    }
+
+    /// Limits the response to keys that begin with the specified prefix.
+    ///
+    /// See https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax for more infos.
+    /// # Example
+    /// ```
+    /// # let bucket = rusty_s3::Bucket::new(url::Url::parse("http://rusty_s3/").unwrap(), rusty_s3::UrlStyle::Path, "doggo", "doggoland").unwrap();
+    /// let mut list = bucket.list_objects_v2(None);
+    /// list.with_prefix("tamo");
+    /// ```
+    pub fn with_prefix(&mut self, prefix: impl Into<Cow<'a, str>>) {
+        self.query_mut().insert("prefix", prefix);
+    }
+
+    /// StartAfter is where you want Amazon S3 to start listing from.
+    /// Amazon S3 starts listing after this specified key.
+    /// StartAfter can be any key in the bucket.
+    ///
+    /// See https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax for more infos.
+    /// # Example
+    /// ```
+    /// # let bucket = rusty_s3::Bucket::new(url::Url::parse("http://rusty_s3/").unwrap(), rusty_s3::UrlStyle::Path, "doggo", "doggoland").unwrap();
+    /// let mut list = bucket.list_objects_v2(None);
+    /// list.with_start_after("tamo"); // <- This token should come from a previous call to the list API.
+    /// ```
+    pub fn with_start_after(&mut self, start_after: impl Into<Cow<'a, str>>) {
+        self.query_mut().insert("start-after", start_after);
+    }
+
+    /// ContinuationToken indicates to Amazon S3 that the list is being continued on this bucket with a token.
+    /// ContinuationToken is obfuscated and is not a real key.
+    ///
+    /// See https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax for more infos.
+    /// # Example
+    /// ```
+    /// # let bucket = rusty_s3::Bucket::new(url::Url::parse("http://rusty_s3/").unwrap(), rusty_s3::UrlStyle::Path, "doggo", "doggoland").unwrap();
+    /// let mut list = bucket.list_objects_v2(None);
+    /// list.with_continuation_token("tamo"); // <- This token should come from a previous call to the list API.
+    /// ```
+    pub fn with_continuation_token(&mut self, continuation_token: impl Into<Cow<'a, str>>) {
+        self.query_mut()
+            .insert("continuation-token", continuation_token);
+    }
+
+    /// Sets the maximum number of keys returned in the response.
+    /// By default, the action returns up to 1,000 key names.
+    /// The response might contain fewer keys but will never contain more.
+    ///
+    /// See https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax for more infos.
+    /// # Example
+    /// ```
+    /// # let bucket = rusty_s3::Bucket::new(url::Url::parse("http://rusty_s3/").unwrap(), rusty_s3::UrlStyle::Path, "doggo", "doggoland").unwrap();
+    /// let mut list = bucket.list_objects_v2(None);
+    /// list.with_continuation_token("tamo"); // <- This token should come from a previous call to the list API.
+    /// ```
+    pub fn with_max_keys(&mut self, max_keys: usize) {
+        self.query_mut().insert("max-keys", max_keys.to_string());
     }
 
     pub fn parse_response(s: &str) -> Result<ListObjectsV2Response, quick_xml::DeError> {
