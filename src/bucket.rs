@@ -318,7 +318,7 @@ impl Display for BucketError {
         match self {
             Self::UnsupportedScheme => f.write_str("unsupported Url scheme"),
             Self::MissingHost => f.write_str("Url is missing the `host`"),
-            Self::ParseError(e) => f.write_str(&e.to_string()),
+            Self::ParseError(e) => e.fmt(f),
         }
     }
 }
