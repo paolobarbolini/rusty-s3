@@ -74,6 +74,13 @@ pub enum UrlStyle {
 pub enum BucketError {
     UnsupportedScheme,
     MissingHost,
+    ParseError(ParseError),
+}
+
+impl From<ParseError> for BucketError {
+    fn from(error: ParseError) -> Self {
+        BucketError::ParseError(error)
+    }
 }
 
 impl Bucket {
@@ -94,7 +101,7 @@ impl Bucket {
         let name = name.into();
         let region = region.into();
 
-        let base_url = base_url(endpoint, &name, path_style);
+        let base_url = base_url(endpoint, &name, path_style)?;
 
         Ok(Self {
             base_url,
@@ -128,16 +135,16 @@ impl Bucket {
     }
 }
 
-fn base_url(mut endpoint: Url, name: &str, path_style: UrlStyle) -> Url {
+fn base_url(mut endpoint: Url, name: &str, path_style: UrlStyle) -> Result<Url, ParseError> {
     match path_style {
         UrlStyle::Path => {
             let path = format!("{name}/");
-            endpoint.join(&path).unwrap()
+            endpoint.join(&path)
         }
         UrlStyle::VirtualHost => {
             let host = format!("{}.{}", name, endpoint.host_str().unwrap());
-            endpoint.set_host(Some(&host)).unwrap();
-            endpoint
+            endpoint.set_host(Some(&host))?;
+            Ok(endpoint)
         }
     }
 }
@@ -311,6 +318,7 @@ impl Display for BucketError {
         match self {
             Self::UnsupportedScheme => f.write_str("unsupported Url scheme"),
             Self::MissingHost => f.write_str("Url is missing the `host`"),
+            Self::ParseError(e) => e.fmt(f),
         }
     }
 }
