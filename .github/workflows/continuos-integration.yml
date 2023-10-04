@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   fmt:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
 
@@ -20,7 +20,7 @@ jobs:
       run: cargo fmt -- --check
 
   clippy:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
 
@@ -38,7 +38,7 @@ jobs:
   test:
     strategy:
       matrix:
-        platform: [ubuntu-20.04, windows-latest, macos-latest]
+        platform: [ubuntu-22.04, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.platform }}
 
@@ -48,7 +48,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Install and run minio
-      if: matrix.platform == 'ubuntu-20.04'
+      if: matrix.platform == 'ubuntu-22.04'
       run: |
         MINIO_RELEASE="2021-03-26T00-00-41Z"
         LINK="https://dl.min.io/server/minio/release/linux-amd64/archive/"
@@ -57,18 +57,18 @@ jobs:
         ./minio server minio_data/ &
 
     - name: Run tests
-      if: matrix.platform == 'ubuntu-20.04'
+      if: matrix.platform == 'ubuntu-22.04'
       run: cargo test
 
     - name: Run tests
-      if: matrix.platform != 'ubuntu-20.04'
+      if: matrix.platform != 'ubuntu-22.04'
       run: cargo test --lib
 
     - name: Run tests no default features
       run: cargo test --lib --no-default-features
 
   msrv:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
 
@@ -82,7 +82,7 @@ jobs:
       run: cargo test --lib
 
   coverage:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
 
