@@ -1,3 +1,4 @@
+use std::io::BufRead;
 use std::iter;
 use std::time::Duration;
 
@@ -84,8 +85,14 @@ impl<'a> ListParts<'a> {
             .insert("part-number-marker", part_number_marker.to_string());
     }
 
-    pub fn parse_response(s: &str) -> Result<ListPartsResponse, quick_xml::DeError> {
-        let mut parts: ListPartsResponse = quick_xml::de::from_str(s)?;
+    pub fn parse_response(s: impl AsRef<[u8]>) -> Result<ListPartsResponse, quick_xml::DeError> {
+        Self::parse_response_from_reader(&mut s.as_ref())
+    }
+
+    pub fn parse_response_from_reader(
+        s: impl BufRead,
+    ) -> Result<ListPartsResponse, quick_xml::DeError> {
+        let mut parts: ListPartsResponse = quick_xml::de::from_reader(s)?;
         if !parts.is_truncated {
             parts.next_part_number_marker = None;
         }
