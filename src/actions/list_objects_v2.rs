@@ -173,12 +173,10 @@ impl<'a> ListObjectsV2<'a> {
                 if owner.id.is_empty() && owner.display_name.is_empty() {
                     content.owner = None;
                 }
-                if url_encoded {
-                    match percent_decode(content.key.as_bytes()).decode_utf8() {
-                        Ok(Cow::Borrowed(_)) => (),
-                        Ok(Cow::Owned(s)) => content.key = s,
-                        Err(_) => (),
-                    };
+            }
+            if url_encoded {
+                if let Ok(Cow::Owned(s)) = percent_decode(content.key.as_bytes()).decode_utf8() {
+                    content.key = s;
                 }
             }
         }
