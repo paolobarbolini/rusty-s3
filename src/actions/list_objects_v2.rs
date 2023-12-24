@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use std::io::{BufReader, Read};
 use std::time::Duration;
 
 use serde::Deserialize;
@@ -162,8 +163,16 @@ impl<'a> ListObjectsV2<'a> {
         self.query_mut().insert("max-keys", max_keys.to_string());
     }
 
-    pub fn parse_response(s: &str) -> Result<ListObjectsV2Response, quick_xml::DeError> {
-        let mut parsed: ListObjectsV2Response = quick_xml::de::from_str(s)?;
+    pub fn parse_response(
+        s: impl AsRef<[u8]>,
+    ) -> Result<ListObjectsV2Response, quick_xml::DeError> {
+        Self::parse_response_from_reader(&mut s.as_ref())
+    }
+
+    pub fn parse_response_from_reader(
+        s: impl Read,
+    ) -> Result<ListObjectsV2Response, quick_xml::DeError> {
+        let mut parsed: ListObjectsV2Response = quick_xml::de::from_reader(BufReader::new(s))?;
 
         // S3 returns an Owner with an empty DisplayName and ID when fetch-owner is disabled
         for content in parsed.contents.iter_mut() {
