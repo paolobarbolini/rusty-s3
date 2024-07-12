@@ -124,7 +124,7 @@ impl<'a> ListObjectsV2<'a> {
     /// ```
     /// # let bucket = rusty_s3::Bucket::new(url::Url::parse("http://rusty_s3/").unwrap(), rusty_s3::UrlStyle::Path, "doggo", "doggoland").unwrap();
     /// let mut list = bucket.list_objects_v2(None);
-    /// list.delimiter("/");
+    /// list.with_delimiter("/");
     /// ```
     pub fn with_delimiter(&mut self, delimiter: impl Into<Cow<'a, str>>) {
         self.query_mut().insert("delimiter", delimiter);
