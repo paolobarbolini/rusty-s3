@@ -118,6 +118,19 @@ impl<'a> ListObjectsV2<'a> {
         self.query_mut().insert("prefix", prefix);
     }
 
+    /// A delimiter is a character that you use to group keys.
+    ///
+    /// See https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax for more infos.
+    /// # Example
+    /// ```
+    /// # let bucket = rusty_s3::Bucket::new(url::Url::parse("http://rusty_s3/").unwrap(), rusty_s3::UrlStyle::Path, "doggo", "doggoland").unwrap();
+    /// let mut list = bucket.list_objects_v2(None);
+    /// list.with_delimiter("/");
+    /// ```
+    pub fn with_delimiter(&mut self, delimiter: impl Into<Cow<'a, str>>) {
+        self.query_mut().insert("delimiter", delimiter);
+    }
+
     /// StartAfter is where you want Amazon S3 to start listing from.
     /// Amazon S3 starts listing after this specified key.
     /// StartAfter can be any key in the bucket.
