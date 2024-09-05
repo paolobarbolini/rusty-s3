@@ -12,7 +12,7 @@ mod signature;
 mod string_to_sign;
 pub(crate) mod util;
 
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::map_identity)]
 pub fn sign<'a, Q, H>(
     date: &OffsetDateTime,
     method: Method,

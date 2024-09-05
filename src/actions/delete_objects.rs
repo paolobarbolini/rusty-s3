@@ -104,7 +104,7 @@ where
 
         let req = DeleteSerde {
             objects,
-            quiet: self.quiet.then(|| true),
+            quiet: self.quiet.then_some(true),
         };
 
         let body = quick_xml::se::to_string(&req).unwrap();
