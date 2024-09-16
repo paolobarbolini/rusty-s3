@@ -1,3 +1,4 @@
+use std::io::{BufReader, Read};
 use std::iter;
 use std::time::Duration;
 
@@ -53,8 +54,16 @@ impl<'a> CreateMultipartUpload<'a> {
         }
     }
 
-    pub fn parse_response(s: &str) -> Result<CreateMultipartUploadResponse, quick_xml::DeError> {
-        let parsed = quick_xml::de::from_str(s)?;
+    pub fn parse_response(
+        s: impl AsRef<[u8]>,
+    ) -> Result<CreateMultipartUploadResponse, quick_xml::DeError> {
+        Self::parse_response_from_reader(&mut s.as_ref())
+    }
+
+    pub fn parse_response_from_reader(
+        s: impl Read,
+    ) -> Result<CreateMultipartUploadResponse, quick_xml::DeError> {
+        let parsed = quick_xml::de::from_reader(BufReader::new(s))?;
         Ok(CreateMultipartUploadResponse(parsed))
     }
 }
