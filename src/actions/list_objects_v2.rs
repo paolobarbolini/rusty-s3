@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 use std::time::Duration;
 
+use percent_encoding::percent_decode;
 use serde::Deserialize;
 use time::OffsetDateTime;
 use url::Url;
@@ -47,8 +48,8 @@ pub struct ListObjectsV2Response {
     pub max_keys: Option<u16>,
     #[serde(rename = "CommonPrefixes", default)]
     pub common_prefixes: Vec<CommonPrefixes>,
-    // #[serde(rename = "EncodingType")]
-    // encoding_type: String,
+    #[serde(rename = "EncodingType")]
+    encoding_type: String,
     // #[serde(rename = "KeyCount")]
     // key_count: u16,
     // #[serde(rename = "ContinuationToken")]
@@ -177,12 +178,18 @@ impl<'a> ListObjectsV2<'a> {
 
     pub fn parse_response(s: &str) -> Result<ListObjectsV2Response, quick_xml::DeError> {
         let mut parsed: ListObjectsV2Response = quick_xml::de::from_str(s)?;
+        let url_encoded = parsed.encoding_type == "url";
 
         // S3 returns an Owner with an empty DisplayName and ID when fetch-owner is disabled
         for content in parsed.contents.iter_mut() {
             if let Some(owner) = &content.owner {
                 if owner.id.is_empty() && owner.display_name.is_empty() {
                     content.owner = None;
+                }
+            }
+            if url_encoded {
+                if let Ok(Cow::Owned(s)) = percent_decode(content.key.as_bytes()).decode_utf8() {
+                    content.key = s;
                 }
             }
         }
@@ -379,6 +386,42 @@ mod tests {
 
         let parsed = ListObjectsV2::parse_response(input).unwrap();
         assert_eq!(parsed.contents.is_empty(), true);
+
+        assert_eq!(parsed.max_keys, Some(4500));
+        assert!(parsed.common_prefixes.is_empty());
+        assert!(parsed.next_continuation_token.is_none());
+        assert!(parsed.start_after.is_none());
+    }
+
+    #[test]
+    fn parse_url_encoded_key() {
+        let input = r#"
+        <?xml version="1.0" encoding="UTF-8"?>
+        <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+            <Name>test</Name>
+            <Prefix></Prefix>
+            <KeyCount>0</KeyCount>
+            <MaxKeys>4500</MaxKeys>
+            <Delimiter></Delimiter>
+            <IsTruncated>false</IsTruncated>
+            <Contents>
+                <Key>100%25tamo.jpg</Key>
+                <LastModified>2020-12-01T20:43:11.794Z</LastModified>
+                <ETag>"bfd537a51d15208163231b0711e0b1f3"</ETag>
+                <Size>4274</Size>
+                <Owner>
+                    <ID></ID>
+                    <DisplayName></DisplayName>
+                </Owner>
+                <StorageClass>STANDARD</StorageClass>
+            </Contents>
+            <EncodingType>url</EncodingType>
+        </ListBucketResult>
+        "#;
+
+        let parsed = ListObjectsV2::parse_response(input).unwrap();
+        assert_eq!(parsed.contents.len(), 1);
+        assert_eq!(parsed.contents[0].key, "100%tamo.jpg");
 
         assert_eq!(parsed.max_keys, Some(4500));
         assert!(parsed.common_prefixes.is_empty());
