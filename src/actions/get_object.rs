@@ -54,7 +54,7 @@ impl<'a> S3Action<'a> for GetObject<'a> {
         match self.credentials {
             Some(credentials) => sign(
                 time,
-                Method::Get,
+                Self::METHOD,
                 url,
                 credentials.key(),
                 credentials.secret(),
