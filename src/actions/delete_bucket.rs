@@ -52,7 +52,7 @@ impl<'a> S3Action<'a> for DeleteBucket<'a> {
 
         sign(
             time,
-            Method::Delete,
+            Self::METHOD,
             url,
             self.credentials.key(),
             self.credentials.secret(),

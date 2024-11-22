@@ -83,7 +83,7 @@ impl<'a> S3Action<'a> for CreateMultipartUpload<'a> {
         match self.credentials {
             Some(credentials) => sign(
                 time,
-                Method::Post,
+                Self::METHOD,
                 url,
                 credentials.key(),
                 credentials.secret(),
