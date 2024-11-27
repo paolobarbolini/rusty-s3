@@ -9,7 +9,7 @@ license = "BSD-2-Clause"
 documentation = "https://docs.rs/rusty-s3"
 readme = "README.md"
 edition = "2021"
-rust-version = "1.67"
+rust-version = "1.71"
 
 [dependencies]
 hmac = "0.12.1"
