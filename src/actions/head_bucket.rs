@@ -52,7 +52,7 @@ impl<'a> S3Action<'a> for HeadBucket<'a> {
         match self.credentials {
             Some(credentials) => sign(
                 time,
-                Method::Head,
+                Self::METHOD,
                 url,
                 credentials.key(),
                 credentials.secret(),

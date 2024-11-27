@@ -50,7 +50,7 @@ impl<'a> S3Action<'a> for CreateBucket<'a> {
 
         sign(
             time,
-            Method::Put,
+            Self::METHOD,
             url,
             self.credentials.key(),
             self.credentials.secret(),

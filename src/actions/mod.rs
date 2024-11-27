@@ -9,6 +9,7 @@ pub use self::delete_bucket::DeleteBucket;
 pub use self::delete_object::DeleteObject;
 #[cfg(feature = "full")]
 pub use self::delete_objects::{DeleteObjects, ObjectIdentifier};
+pub use self::get_bucket_policy::{GetBucketPolicy, GetBucketPolicyResponse};
 pub use self::get_object::GetObject;
 pub use self::head_bucket::HeadBucket;
 pub use self::head_object::HeadObject;
@@ -31,6 +32,7 @@ mod delete_bucket;
 mod delete_object;
 #[cfg(feature = "full")]
 mod delete_objects;
+mod get_bucket_policy;
 mod get_object;
 mod head_bucket;
 mod head_object;
