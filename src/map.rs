@@ -36,7 +36,15 @@ impl<'a> Map<'a> {
 
     /// Insert a new element in this `Map`
     ///
-    /// Overwrites elements with the same `key`, if present.
+    /// If the `key` is already present, the `value` is appended to the existing value:
+    ///
+    /// ```
+    /// let mut map = rusty_s3::Map::new();
+    /// map.insert("k", "a");
+    /// assert_eq!(map.get("k"), Some("a"));
+    /// map.insert("k", "b");
+    /// assert_eq!(map.get("k"), Some("a, b"));
+    /// ```
     pub fn insert<K, V>(&mut self, key: K, value: V)
     where
         K: Into<Cow<'a, str>>,

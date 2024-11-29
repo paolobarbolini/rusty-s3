@@ -54,7 +54,7 @@ impl<'a> S3Action<'a> for PutObject<'a> {
         match self.credentials {
             Some(credentials) => sign(
                 time,
-                Method::Put,
+                Self::METHOD,
                 url,
                 credentials.key(),
                 credentials.secret(),

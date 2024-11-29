@@ -208,7 +208,7 @@ impl<'a> S3Action<'a> for ListObjectsV2<'a> {
         match self.credentials {
             Some(credentials) => sign(
                 time,
-                Method::Get,
+                Self::METHOD,
                 url,
                 credentials.key(),
                 credentials.secret(),
