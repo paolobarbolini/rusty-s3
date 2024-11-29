@@ -85,7 +85,7 @@ impl<'a> S3Action<'a> for UploadPart<'a> {
         match self.credentials {
             Some(credentials) => sign(
                 time,
-                Method::Put,
+                Self::METHOD,
                 url,
                 credentials.key(),
                 credentials.secret(),

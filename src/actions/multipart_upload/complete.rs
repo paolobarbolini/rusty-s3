@@ -111,7 +111,7 @@ where
         match self.credentials {
             Some(credentials) => sign(
                 time,
-                Method::Post,
+                Self::METHOD,
                 url,
                 credentials.key(),
                 credentials.secret(),
