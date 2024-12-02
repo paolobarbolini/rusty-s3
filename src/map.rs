@@ -80,13 +80,13 @@ impl<'a> Map<'a> {
     }
 }
 
-impl<'a> Debug for Map<'a> {
+impl Debug for Map<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_map().entries(self.iter()).finish()
     }
 }
 
-impl<'a> Default for Map<'a> {
+impl Default for Map<'_> {
     #[inline]
     fn default() -> Self {
         Self::new()
