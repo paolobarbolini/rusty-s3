@@ -91,7 +91,7 @@ jobs:
 
     - name: Install cargo-tarpaulin
       run: |
-        LINK="https://github.com/xd009642/tarpaulin/releases/download/0.20.1/cargo-tarpaulin-0.20.1-travis.tar.gz"
+        LINK="https://github.com/xd009642/tarpaulin/releases/download/0.22.0/cargo-tarpaulin-0.22.0-travis.tar.gz"
         curl -L --output tarpaulin.tar.gz "$LINK"
         tar -xzvf tarpaulin.tar.gz
         chmod +x cargo-tarpaulin
