@@ -16,6 +16,7 @@ use crate::{Bucket, Credentials, Map};
 /// Find out more about `CompleteMultipartUpload` from the [AWS API Reference][api]
 ///
 /// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateMultipartUpload.html
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Clone)]
 pub struct CompleteMultipartUpload<'a, I> {
     bucket: &'a Bucket,
@@ -31,7 +32,7 @@ pub struct CompleteMultipartUpload<'a, I> {
 
 impl<'a, I> CompleteMultipartUpload<'a, I> {
     #[inline]
-    pub fn new(
+    pub const fn new(
         bucket: &'a Bucket,
         credentials: Option<&'a Credentials>,
         object: &'a str,
@@ -56,6 +57,10 @@ impl<'a, I> CompleteMultipartUpload<'a, I>
 where
     I: Iterator<Item = &'a str>,
 {
+    /// Generate the XML body for the request.
+    ///
+    /// # Panics
+    /// Panics if an index is not representable as a `u16`.
     pub fn body(self) -> String {
         #[derive(Serialize)]
         #[serde(rename = "CompleteMultipartUpload")]
@@ -80,7 +85,10 @@ where
             .etags
             .enumerate()
             .map(|(i, etag)| Part {
-                nodes: vec![Node::ETag(etag), Node::PartNumber(i as u16 + 1)],
+                nodes: vec![
+                    Node::ETag(etag),
+                    Node::PartNumber(u16::try_from(i).expect("convert to u16") + 1),
+                ],
             })
             .collect::<Vec<_>>();
 

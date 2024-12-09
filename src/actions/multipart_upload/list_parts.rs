@@ -33,6 +33,7 @@ pub struct ListParts<'a> {
     headers: Map<'a>,
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Clone, Deserialize)]
 pub struct ListPartsResponse {
     #[serde(rename = "Part")]
@@ -59,7 +60,8 @@ pub struct PartsContent {
 }
 
 impl<'a> ListParts<'a> {
-    pub fn new(
+    #[must_use]
+    pub const fn new(
         bucket: &'a Bucket,
         credentials: Option<&'a Credentials>,
         object: &'a str,

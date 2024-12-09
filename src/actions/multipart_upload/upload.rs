@@ -26,6 +26,7 @@ use crate::{Bucket, Credentials, Map};
 /// Find out more about `UploadPart` from the [AWS API Reference][api]
 ///
 /// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPart.html
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Clone)]
 pub struct UploadPart<'a> {
     bucket: &'a Bucket,
@@ -41,7 +42,8 @@ pub struct UploadPart<'a> {
 
 impl<'a> UploadPart<'a> {
     #[inline]
-    pub fn new(
+    #[must_use]
+    pub const fn new(
         bucket: &'a Bucket,
         credentials: Option<&'a Credentials>,
         object: &'a str,

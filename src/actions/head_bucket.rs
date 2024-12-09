@@ -24,7 +24,8 @@ pub struct HeadBucket<'a> {
 
 impl<'a> HeadBucket<'a> {
     #[inline]
-    pub fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>) -> Self {
+    #[must_use]
+    pub const fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>) -> Self {
         Self {
             bucket,
             credentials,

@@ -36,36 +36,43 @@ impl Ec2SecurityCredentialsMetadataResponse {
     ///
     /// Parses the credentials from a response received from
     /// `http://169.254.169.254/latest/meta-data/iam/security-credentials/{name-of-IAM-role}`.
+    /// # Errors
+    /// Returns an error if the JSON is invalid.
     pub fn deserialize(s: &str) -> Result<Self, serde_json::Error> {
         serde_json::from_str(s)
     }
 
     /// Get the key of this `Ec2SecurityCredentialsMetadataResponse`
     #[inline]
+    #[must_use]
     pub fn key(&self) -> &str {
         &self.key
     }
 
     /// Get the secret of this `Ec2SecurityCredentialsMetadataResponse`
     #[inline]
+    #[must_use]
     pub fn secret(&self) -> &str {
         &self.secret
     }
 
     /// Get the token of this `Ec2SecurityCredentialsMetadataResponse`
     #[inline]
+    #[must_use]
     pub fn token(&self) -> &str {
         &self.token
     }
 
     /// Get the expiration of the credentials of this `Ec2SecurityCredentialsMetadataResponse`
     #[inline]
-    pub fn expiration(&self) -> PrimitiveDateTime {
+    #[must_use]
+    pub const fn expiration(&self) -> PrimitiveDateTime {
         self.expiration
     }
 
     /// Convert this `Ec2SecurityCredentialsMetadataResponse` into [`Credentials`]
     #[inline]
+    #[must_use]
     pub fn into_credentials(mut self) -> Credentials {
         let key = mem::take(&mut self.key);
         let secret = mem::take(&mut self.secret);
@@ -83,6 +90,7 @@ impl Ec2SecurityCredentialsMetadataResponse {
     }
 }
 
+#[allow(clippy::missing_fields_in_debug)]
 impl Debug for Ec2SecurityCredentialsMetadataResponse {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.debug_struct("Ec2SecurityCredentialsMetadataResponse")

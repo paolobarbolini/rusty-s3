@@ -33,6 +33,16 @@
 //! println!("GET {}", action.sign(presigned_url_duration));
 //! ```
 
+#![warn(
+    clippy::all,
+    clippy::correctness,
+    clippy::style,
+    clippy::pedantic,
+    clippy::perf,
+    clippy::complexity,
+    clippy::nursery,
+    clippy::cargo
+)]
 #![deny(
     missing_debug_implementations,
     missing_copy_implementations,

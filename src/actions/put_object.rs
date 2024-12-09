@@ -10,7 +10,7 @@ use crate::{Bucket, Credentials, Map};
 
 /// Upload a file to S3, using a `PUT` request.
 ///
-/// Find out more about PutObject from the [AWS API Reference][api]
+/// Find out more about `PutObject` from the [AWS API Reference][api]
 ///
 /// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html
 #[derive(Debug, Clone)]
@@ -25,7 +25,12 @@ pub struct PutObject<'a> {
 
 impl<'a> PutObject<'a> {
     #[inline]
-    pub fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>, object: &'a str) -> Self {
+    #[must_use]
+    pub const fn new(
+        bucket: &'a Bucket,
+        credentials: Option<&'a Credentials>,
+        object: &'a str,
+    ) -> Self {
         Self {
             bucket,
             credentials,

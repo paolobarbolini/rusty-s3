@@ -70,6 +70,7 @@ pub enum UrlStyle {
     VirtualHost,
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum BucketError {
     UnsupportedScheme,
@@ -79,12 +80,14 @@ pub enum BucketError {
 
 impl From<ParseError> for BucketError {
     fn from(error: ParseError) -> Self {
-        BucketError::ParseError(error)
+        Self::ParseError(error)
     }
 }
 
 impl Bucket {
     /// Construct a new S3 bucket
+    /// # Errors
+    /// Returns a `BucketError` if the `endpoint` is not a valid url, or if the `endpoint` is missing the host.
     pub fn new(
         endpoint: Url,
         path_style: UrlStyle,
@@ -111,16 +114,19 @@ impl Bucket {
     }
 
     /// Get the base url of this s3 `Bucket`
-    pub fn base_url(&self) -> &Url {
+    #[must_use]
+    pub const fn base_url(&self) -> &Url {
         &self.base_url
     }
 
     /// Get the name of this `Bucket`
+    #[must_use]
     pub fn name(&self) -> &str {
         &self.name
     }
 
     /// Get the region of this `Bucket`
+    #[must_use]
     pub fn region(&self) -> &str {
         &self.region
     }
@@ -129,6 +135,8 @@ impl Bucket {
     ///
     /// This is not a signed url, it's just the starting point for
     /// generating an url to an S3 object.
+    /// # Errors
+    /// Returns a `ParseError` if the object is not a valid path.
     pub fn object_url(&self, object: &str) -> Result<Url, ParseError> {
         let object = percent_encode_path(object);
         self.base_url.join(&object)
@@ -155,14 +163,16 @@ impl Bucket {
     /// Create a new bucket.
     ///
     /// See [`CreateBucket`] for more details.
-    pub fn create_bucket<'a>(&'a self, credentials: &'a Credentials) -> CreateBucket<'a> {
+    #[must_use]
+    pub const fn create_bucket<'a>(&'a self, credentials: &'a Credentials) -> CreateBucket<'a> {
         CreateBucket::new(self, credentials)
     }
 
     /// Delete a bucket.
     ///
     /// See [`DeleteBucket`] for more details.
-    pub fn delete_bucket<'a>(&'a self, credentials: &'a Credentials) -> DeleteBucket<'a> {
+    #[must_use]
+    pub const fn delete_bucket<'a>(&'a self, credentials: &'a Credentials) -> DeleteBucket<'a> {
         DeleteBucket::new(self, credentials)
     }
 }
@@ -173,7 +183,8 @@ impl Bucket {
     /// Retrieve an object's metadata from S3, using a `HEAD` request.
     ///
     /// See [`HeadObject`] for more details.
-    pub fn head_object<'a>(
+    #[must_use]
+    pub const fn head_object<'a>(
         &'a self,
         credentials: Option<&'a Credentials>,
         object: &'a str,
@@ -184,14 +195,16 @@ impl Bucket {
     /// Retrieve an bucket's metadata from S3, using a `HEAD` request.
     ///
     /// See [`HeadBucket`] for more details.
-    pub fn head_bucket<'a>(&'a self, credentials: Option<&'a Credentials>) -> HeadBucket<'a> {
+    #[must_use]
+    pub const fn head_bucket<'a>(&'a self, credentials: Option<&'a Credentials>) -> HeadBucket<'a> {
         HeadBucket::new(self, credentials)
     }
 
     /// Retrieve an object from S3, using a `GET` request.
     ///
     /// See [`GetObject`] for more details.
-    pub fn get_object<'a>(
+    #[must_use]
+    pub const fn get_object<'a>(
         &'a self,
         credentials: Option<&'a Credentials>,
         object: &'a str,
@@ -203,6 +216,7 @@ impl Bucket {
     ///
     /// See [`ListObjectsV2`] for more details.
     #[cfg(feature = "full")]
+    #[must_use]
     pub fn list_objects_v2<'a>(
         &'a self,
         credentials: Option<&'a Credentials>,
@@ -213,7 +227,8 @@ impl Bucket {
     /// Upload a file to S3, using a `PUT` request.
     ///
     /// See [`PutObject`] for more details.
-    pub fn put_object<'a>(
+    #[must_use]
+    pub const fn put_object<'a>(
         &'a self,
         credentials: Option<&'a Credentials>,
         object: &'a str,
@@ -224,7 +239,8 @@ impl Bucket {
     /// Delete an object from S3, using a `DELETE` request.
     ///
     /// See [`DeleteObject`] for more details.
-    pub fn delete_object<'a>(
+    #[must_use]
+    pub const fn delete_object<'a>(
         &'a self,
         credentials: Option<&'a Credentials>,
         object: &'a str,
@@ -236,7 +252,7 @@ impl Bucket {
     ///
     /// See [`DeleteObjects`] for more details.
     #[cfg(feature = "full")]
-    pub fn delete_objects<'a, I>(
+    pub const fn delete_objects<'a, I>(
         &'a self,
         credentials: Option<&'a Credentials>,
         objects: I,
@@ -252,7 +268,8 @@ impl Bucket {
     ///
     /// See [`CreateMultipartUpload`] for more details.
     #[cfg(feature = "full")]
-    pub fn create_multipart_upload<'a>(
+    #[must_use]
+    pub const fn create_multipart_upload<'a>(
         &'a self,
         credentials: Option<&'a Credentials>,
         object: &'a str,
@@ -263,7 +280,8 @@ impl Bucket {
     /// Upload a part to a previously created multipart upload.
     ///
     /// See [`UploadPart`] for more details.
-    pub fn upload_part<'a>(
+    #[must_use]
+    pub const fn upload_part<'a>(
         &'a self,
         credentials: Option<&'a Credentials>,
         object: &'a str,
@@ -277,7 +295,7 @@ impl Bucket {
     ///
     /// See [`CompleteMultipartUpload`] for more details.
     #[cfg(feature = "full")]
-    pub fn complete_multipart_upload<'a, I>(
+    pub const fn complete_multipart_upload<'a, I>(
         &'a self,
         credentials: Option<&'a Credentials>,
         object: &'a str,
@@ -290,7 +308,8 @@ impl Bucket {
     /// Abort multipart upload.
     ///
     /// See [`AbortMultipartUpload`] for more details.
-    pub fn abort_multipart_upload<'a>(
+    #[must_use]
+    pub const fn abort_multipart_upload<'a>(
         &'a self,
         credentials: Option<&'a Credentials>,
         object: &'a str,
@@ -303,7 +322,8 @@ impl Bucket {
     ///
     /// See [`ListParts`] for more details.
     #[cfg(feature = "full")]
-    pub fn list_parts<'a>(
+    #[must_use]
+    pub const fn list_parts<'a>(
         &'a self,
         credentials: Option<&'a Credentials>,
         object: &'a str,
@@ -315,7 +335,7 @@ impl Bucket {
 
 impl Display for BucketError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
+        match *self {
             Self::UnsupportedScheme => f.write_str("unsupported Url scheme"),
             Self::MissingHost => f.write_str("Url is missing the `host`"),
             Self::ParseError(e) => e.fmt(f),

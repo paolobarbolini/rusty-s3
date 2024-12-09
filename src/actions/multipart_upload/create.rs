@@ -22,6 +22,7 @@ use crate::{Bucket, Credentials, Map};
 /// Find out more about `CreateMultipartUpload` from the [AWS API Reference][api]
 ///
 /// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateMultipartUpload.html
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Clone)]
 pub struct CreateMultipartUpload<'a> {
     bucket: &'a Bucket,
@@ -32,9 +33,11 @@ pub struct CreateMultipartUpload<'a> {
     headers: Map<'a>,
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Clone)]
 pub struct CreateMultipartUploadResponse(InnerCreateMultipartUploadResponse);
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Clone, Deserialize)]
 struct InnerCreateMultipartUploadResponse {
     #[serde(rename = "UploadId")]
@@ -43,7 +46,12 @@ struct InnerCreateMultipartUploadResponse {
 
 impl<'a> CreateMultipartUpload<'a> {
     #[inline]
-    pub fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>, object: &'a str) -> Self {
+    #[must_use]
+    pub const fn new(
+        bucket: &'a Bucket,
+        credentials: Option<&'a Credentials>,
+        object: &'a str,
+    ) -> Self {
         Self {
             bucket,
             credentials,
@@ -69,6 +77,7 @@ impl<'a> CreateMultipartUpload<'a> {
 }
 
 impl CreateMultipartUploadResponse {
+    #[must_use]
     pub fn upload_id(&self) -> &str {
         &self.0.upload_id
     }
