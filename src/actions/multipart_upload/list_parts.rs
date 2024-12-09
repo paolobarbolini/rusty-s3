@@ -87,10 +87,16 @@ impl<'a> ListParts<'a> {
             .insert("part-number-marker", part_number_marker.to_string());
     }
 
+    /// Parse the XML response from S3 into a struct
+    /// # Errors
+    /// Will return an error if the XML cannot be deserialized
     pub fn parse_response(s: impl AsRef<[u8]>) -> Result<ListPartsResponse, quick_xml::DeError> {
         Self::parse_response_from_reader(&mut s.as_ref())
     }
 
+    /// Parse the XML response from S3 into a struct
+    /// # Errors
+    /// Will return an error if the XML cannot be deserialized
     pub fn parse_response_from_reader(
         s: impl BufRead,
     ) -> Result<ListPartsResponse, quick_xml::DeError> {

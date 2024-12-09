@@ -179,27 +179,22 @@ impl<'a> ListObjectsV2<'a> {
         self.query_mut().insert("max-keys", max_keys.to_string());
     }
 
-<<<<<<< HEAD
-    /// Parse the response from S3.
+    /// Parse the XML response from S3 into a struct.
     /// # Errors
-    /// If the response cannot be parsed.
-    pub fn parse_response(s: &str) -> Result<ListObjectsV2Response, quick_xml::DeError> {
-        let mut parsed: ListObjectsV2Response = quick_xml::de::from_str(s)?;
-||||||| parent of 9636a50 (improve the parse response APIs)
-    pub fn parse_response(s: &str) -> Result<ListObjectsV2Response, quick_xml::DeError> {
-        let mut parsed: ListObjectsV2Response = quick_xml::de::from_str(s)?;
-=======
+    /// Returns an error if the XML response could not be parsed.
     pub fn parse_response(
         s: impl AsRef<[u8]>,
     ) -> Result<ListObjectsV2Response, quick_xml::DeError> {
         Self::parse_response_from_reader(&mut s.as_ref())
     }
 
+    /// Parse the XML response from S3 into a struct.
+    /// # Errors
+    /// Returns an error if the XML response could not be parsed.
     pub fn parse_response_from_reader(
         s: impl Read,
     ) -> Result<ListObjectsV2Response, quick_xml::DeError> {
         let mut parsed: ListObjectsV2Response = quick_xml::de::from_reader(BufReader::new(s))?;
->>>>>>> 9636a50 (improve the parse response APIs)
 
         // S3 returns an Owner with an empty DisplayName and ID when fetch-owner is disabled
         for content in &mut parsed.contents {
