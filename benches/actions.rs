@@ -25,7 +25,7 @@ fn criterion_benchmark(c: &mut Criterion) {
                 .insert("response-content-type", "text/plain");
             let url = action.sign(black_box(expires_in));
             let _ = url;
-        })
+        });
     });
 }
 

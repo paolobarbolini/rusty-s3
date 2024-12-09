@@ -10,12 +10,14 @@ use super::Credentials;
 /// by calling [`RotatingCredentials::get`].
 ///
 /// Credentials can be updated by calling [`RotatingCredentials::update`].
+#[allow(clippy::module_name_repetitions)]
 pub struct RotatingCredentials {
     inner: Arc<RwLock<Arc<Credentials>>>,
 }
 
 impl RotatingCredentials {
     /// Construct a new `RotatingCredentials` using the provided key, secret and token
+    #[must_use]
     pub fn new(key: String, secret: String, token: Option<String>) -> Self {
         let credentials = Credentials::new_with_maybe_token(key, secret, token);
 
@@ -25,12 +27,19 @@ impl RotatingCredentials {
     }
 
     /// Get the latest credentials inside this `RotatingCredentials`
+    ///
+    /// # Panics
+    /// If the lock is poisoned
+    #[must_use]
     pub fn get(&self) -> Arc<Credentials> {
         let lock = self.inner.read().expect("can't be poisoned");
         Arc::clone(&lock)
     }
 
     /// Update the credentials inside this `RotatingCredentials`
+    ///
+    /// # Panics
+    /// If the lock is poisoned
     pub fn update(&self, key: String, secret: String, token: Option<String>) {
         let credentials = Credentials::new_with_maybe_token(key, secret, token);
 
@@ -57,12 +66,12 @@ impl Clone for RotatingCredentials {
     }
 
     fn clone_from(&mut self, source: &Self) {
-        self.inner = Arc::clone(&source.inner)
+        self.inner = Arc::clone(&source.inner);
     }
 }
 
 impl PartialEq for RotatingCredentials {
-    fn eq(&self, other: &RotatingCredentials) -> bool {
+    fn eq(&self, other: &Self) -> bool {
         let current1 = self.get();
         let current2 = other.get();
         *current1 == *current2

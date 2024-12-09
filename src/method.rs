@@ -18,7 +18,8 @@ impl Method {
     /// assert_eq!(Method::Get.to_str(), "GET");
     /// ```
     #[inline]
-    pub fn to_str(self) -> &'static str {
+    #[must_use]
+    pub const fn to_str(self) -> &'static str {
         match self {
             Self::Head => "HEAD",
             Self::Get => "GET",

@@ -12,6 +12,7 @@
 use std::env;
 use std::fmt::{self, Debug, Formatter};
 
+#[allow(clippy::module_name_repetitions)]
 pub use self::rotating::RotatingCredentials;
 #[cfg(feature = "full")]
 pub use self::serde::Ec2SecurityCredentialsMetadataResponse;
@@ -61,6 +62,7 @@ impl Credentials {
     /// from the `AWS_SECRET_ACCESS_KEY` environment variable.
     /// If `AWS_SESSION_TOKEN` is set a token is also read.
     /// Returns `None` if either environment variables aren't set or they aren't valid utf-8.
+    #[must_use]
     pub fn from_env() -> Option<Self> {
         let key = env::var("AWS_ACCESS_KEY_ID").ok()?;
         let secret = env::var("AWS_SECRET_ACCESS_KEY").ok()?;
@@ -70,23 +72,27 @@ impl Credentials {
 
     /// Get the key of this `Credentials`
     #[inline]
+    #[must_use]
     pub fn key(&self) -> &str {
         &self.key
     }
 
     /// Get the secret of this `Credentials`
     #[inline]
+    #[must_use]
     pub fn secret(&self) -> &str {
         &self.secret
     }
 
     /// Get the token of this `Credentials`, if present
     #[inline]
+    #[must_use]
     pub fn token(&self) -> Option<&str> {
         self.token.as_deref()
     }
 }
 
+#[allow(clippy::missing_fields_in_debug)]
 impl Debug for Credentials {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.debug_struct("Credentials")

@@ -23,7 +23,8 @@ pub struct CreateBucket<'a> {
 }
 
 impl<'a> CreateBucket<'a> {
-    pub fn new(bucket: &'a Bucket, credentials: &'a Credentials) -> Self {
+    #[must_use]
+    pub const fn new(bucket: &'a Bucket, credentials: &'a Credentials) -> Self {
         Self {
             bucket,
             credentials,

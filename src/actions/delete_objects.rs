@@ -30,7 +30,7 @@ pub struct DeleteObjects<'a, I> {
 
 impl<'a, I> DeleteObjects<'a, I> {
     #[inline]
-    pub fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>, objects: I) -> Self {
+    pub const fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>, objects: I) -> Self {
         Self {
             bucket,
             credentials,
@@ -41,7 +41,7 @@ impl<'a, I> DeleteObjects<'a, I> {
         }
     }
 
-    pub fn quiet(&self) -> bool {
+    pub const fn quiet(&self) -> bool {
         self.quiet
     }
 
@@ -57,6 +57,7 @@ pub struct ObjectIdentifier {
 }
 
 impl ObjectIdentifier {
+    #[must_use]
     pub fn new(key: String) -> Self {
         Self {
             key,
@@ -69,6 +70,10 @@ impl<'a, I> DeleteObjects<'a, I>
 where
     I: Iterator<Item = &'a ObjectIdentifier>,
 {
+    /// Generate the XML body for the request.
+    ///
+    /// # Panics
+    /// Panics if an index is not representable as a `u16`.
     pub fn body_with_md5(self) -> (String, String) {
         #[derive(Serialize)]
         #[serde(rename = "Delete")]
