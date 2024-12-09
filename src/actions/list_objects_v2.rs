@@ -179,12 +179,18 @@ impl<'a> ListObjectsV2<'a> {
         self.query_mut().insert("max-keys", max_keys.to_string());
     }
 
+    /// Parse the XML response from S3
+    /// # Errors
+    /// Will return an error if the body is not valid XML
     pub fn parse_response(
         s: impl AsRef<[u8]>,
     ) -> Result<ListObjectsV2Response, quick_xml::DeError> {
         Self::parse_response_from_reader(&mut s.as_ref())
     }
 
+    /// Parse the XML response from S3
+    /// # Errors
+    /// Will return an error if the body is not valid XML
     pub fn parse_response_from_reader(
         s: impl Read,
     ) -> Result<ListObjectsV2Response, quick_xml::DeError> {
