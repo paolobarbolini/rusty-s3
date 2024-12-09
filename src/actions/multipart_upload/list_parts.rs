@@ -32,6 +32,7 @@ pub struct ListParts<'a> {
     headers: Map<'a>,
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Clone, Deserialize)]
 pub struct ListPartsResponse {
     #[serde(rename = "Part")]
@@ -58,7 +59,8 @@ pub struct PartsContent {
 }
 
 impl<'a> ListParts<'a> {
-    pub fn new(
+    #[must_use]
+    pub const fn new(
         bucket: &'a Bucket,
         credentials: Option<&'a Credentials>,
         object: &'a str,
@@ -84,6 +86,9 @@ impl<'a> ListParts<'a> {
             .insert("part-number-marker", part_number_marker.to_string());
     }
 
+    /// Parse the XML response from S3 into a struct
+    /// # Errors
+    /// Will return an error if the XML cannot be deserialized
     pub fn parse_response(s: &str) -> Result<ListPartsResponse, quick_xml::DeError> {
         let mut parts: ListPartsResponse = quick_xml::de::from_str(s)?;
         if !parts.is_truncated {

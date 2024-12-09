@@ -4,6 +4,7 @@ version = "0.5.0"
 authors = ["Paolo Barbolini <paolo@paolo565.org>", "Federico Guerinoni <guerinoni.federico@gmail.com>"]
 description = "Simple pure Rust AWS S3 Client following a Sans-IO approach"
 keywords = ["aws", "s3", "minio"]
+categories = ["aws", "s3", "minio"]
 repository = "https://github.com/paolobarbolini/rusty-s3"
 license = "BSD-2-Clause"
 documentation = "https://docs.rs/rusty-s3"
@@ -42,3 +43,12 @@ criterion = "0.5"
 [[bench]]
 name = "actions"
 harness = false
+
+[lints.clippy]
+complexity = "warn"
+correctness = "warn"
+nursery = "warn"
+pedantic = "warn"
+perf = "warn"
+style = "warn"
+suspicious = "warn"

@@ -10,28 +10,31 @@ pub struct Map<'a> {
 impl<'a> Map<'a> {
     /// Construct a new empty `Map`
     #[inline]
+    #[must_use]
     pub const fn new() -> Self {
         Self { inner: Vec::new() }
     }
 
     /// Get the number of elements in this `Map`
     #[inline]
+    #[must_use]
     pub fn len(&self) -> usize {
         self.inner.len()
     }
 
     /// Return `true` if this `Map` is empty
     #[inline]
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.inner.is_empty()
     }
 
     /// Get the value of an element of this `Map`, or `None` if it doesn't contain `key`
+    #[must_use]
     pub fn get(&self, key: &str) -> Option<&str> {
-        match self.inner.binary_search_by(|a| a.0.as_ref().cmp(key)) {
-            Ok(i) => self.inner.get(i).map(|kv| kv.1.as_ref()),
-            Err(_) => None,
-        }
+        self.inner
+            .binary_search_by(|a| a.0.as_ref().cmp(key))
+            .map_or(None, |i| self.inner.get(i).map(|kv| kv.1.as_ref()))
     }
 
     /// Insert a new element in this `Map`
@@ -45,6 +48,9 @@ impl<'a> Map<'a> {
     /// map.insert("k", "b");
     /// assert_eq!(map.get("k"), Some("a, b"));
     /// ```
+    ///
+    /// # Panics
+    /// In case of out of bound inner index access
     pub fn insert<K, V>(&mut self, key: K, value: V)
     where
         K: Into<Cow<'a, str>>,

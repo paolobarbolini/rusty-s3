@@ -12,7 +12,16 @@ mod signature;
 mod string_to_sign;
 pub(crate) mod util;
 
-#[allow(clippy::too_many_arguments, clippy::map_identity)]
+/// Sign a URL with AWS Signature.
+///
+/// # Panics
+/// If date format is invalid.
+#[allow(
+    clippy::too_many_arguments,
+    clippy::map_identity,
+    clippy::option_if_let_else,
+    clippy::single_match_else
+)]
 pub fn sign<'a, Q, H>(
     date: &OffsetDateTime,
     method: Method,
@@ -34,8 +43,8 @@ where
     // the inner iterators, which because of the references they take to the inner
     // `String`s, have a shorter lifetime than 'a.
     // Thanks to: https://t.me/rustlang_it/61993
-    let query_string = query_string.map(|(key, value)| (key, value));
-    let headers = headers.map(|(key, value)| (key, value));
+    let query_string = query_string.map(|(k, value)| (k, value));
+    let headers = headers.map(|(k, value)| (k, value));
 
     let yyyymmdd = date.format(&YYYYMMDD).expect("invalid format");
 
@@ -48,10 +57,8 @@ where
 
     let host = url.host_str().expect("host is known");
     let host_header = match (url.scheme(), url.port()) {
-        ("http", None) | ("http", Some(80)) | ("https", None) | ("https", Some(443)) => {
-            host.to_string()
-        }
-        ("http", Some(port)) | ("https", Some(port)) => {
+        ("http" | "https", None) | ("http", Some(80)) | ("https", Some(443)) => host.to_owned(),
+        ("http" | "https", Some(port)) => {
             format!("{host}:{port}")
         }
         _ => panic!("unsupported url scheme"),
@@ -60,7 +67,7 @@ where
     let standard_headers = iter::once(("host", host_header.as_str()));
     let headers = SortingIterator::new(standard_headers, headers);
 
-    let signed_headers = headers.clone().map(|(key, _)| key);
+    let signed_headers = headers.clone().map(|(k, _)| k);
     let mut signed_headers_str = String::new();
     for header in signed_headers.clone() {
         if !signed_headers_str.is_empty() {

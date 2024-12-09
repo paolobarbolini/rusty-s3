@@ -50,7 +50,7 @@ async fn list_parts() {
     assert_eq!(parts.parts.len(), 2);
     assert_eq!(parts.max_parts, 2);
     assert_eq!(parts.next_part_number_marker, Some(1));
-    for part in parts.parts.iter() {
+    for part in &parts.parts {
         assert_eq!(part.size, part_size as u64);
         assert_eq!(part.etag, "\"0551556e17bba4b6c9dfbaab9e6f08dd\"");
     }
@@ -60,7 +60,7 @@ async fn list_parts() {
     let parts = get_list_of_parts(&client, action).await;
     assert_eq!(parts.parts.len(), 1);
     assert!(parts.next_part_number_marker.is_none());
-    for part in parts.parts.iter() {
+    for part in &parts.parts {
         assert_eq!(part.size, part_size as u64);
         assert_eq!(part.etag, "\"0551556e17bba4b6c9dfbaab9e6f08dd\"");
     }

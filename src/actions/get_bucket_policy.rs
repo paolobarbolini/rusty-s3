@@ -27,6 +27,7 @@ pub struct GetBucketPolicy<'a> {
     headers: Map<'a>,
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 pub struct GetBucketPolicyResponse {
     #[serde(rename = "Version")]
@@ -37,7 +38,8 @@ pub struct GetBucketPolicyResponse {
 
 impl<'a> GetBucketPolicy<'a> {
     #[inline]
-    pub fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>) -> Self {
+    #[must_use]
+    pub const fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>) -> Self {
         Self {
             bucket,
             credentials,
@@ -47,6 +49,9 @@ impl<'a> GetBucketPolicy<'a> {
         }
     }
 
+    /// Parse the response from S3.
+    /// # Errors
+    /// If the response cannot be parsed.
     pub fn parse_response(s: &str) -> Result<GetBucketPolicyResponse, serde_json::Error> {
         serde_json::from_str(s)
     }

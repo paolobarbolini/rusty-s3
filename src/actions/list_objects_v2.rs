@@ -20,6 +20,7 @@ use crate::{Bucket, Credentials, Map};
 /// Find out more about `ListObjectsV2` from the [AWS API Reference][api]
 ///
 /// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Clone)]
 pub struct ListObjectsV2<'a> {
     bucket: &'a Bucket,
@@ -29,6 +30,7 @@ pub struct ListObjectsV2<'a> {
     headers: Map<'a>,
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Clone, Deserialize)]
 pub struct ListObjectsV2Response {
     // #[serde(rename = "IsTruncated")]
@@ -90,6 +92,7 @@ pub struct CommonPrefixes {
 }
 
 impl<'a> ListObjectsV2<'a> {
+    #[must_use]
     pub fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>) -> Self {
         let mut query = Map::new();
         query.insert("list-type", "2");
@@ -106,7 +109,7 @@ impl<'a> ListObjectsV2<'a> {
 
     /// Limits the response to keys that begin with the specified prefix.
     ///
-    /// See https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax for more infos.
+    /// See <https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax> for more infos.
     /// # Example
     /// ```
     /// # let bucket = rusty_s3::Bucket::new(url::Url::parse("http://rusty_s3/").unwrap(), rusty_s3::UrlStyle::Path, "doggo", "doggoland").unwrap();
@@ -119,7 +122,7 @@ impl<'a> ListObjectsV2<'a> {
 
     /// A delimiter is a character that you use to group keys.
     ///
-    /// See https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax for more infos.
+    /// See <https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax> for more infos.
     /// # Example
     /// ```
     /// # let bucket = rusty_s3::Bucket::new(url::Url::parse("http://rusty_s3/").unwrap(), rusty_s3::UrlStyle::Path, "doggo", "doggoland").unwrap();
@@ -130,11 +133,11 @@ impl<'a> ListObjectsV2<'a> {
         self.query_mut().insert("delimiter", delimiter);
     }
 
-    /// StartAfter is where you want Amazon S3 to start listing from.
+    /// `StartAfter` is where you want Amazon S3 to start listing from.
     /// Amazon S3 starts listing after this specified key.
-    /// StartAfter can be any key in the bucket.
+    /// `StartAfter` can be any key in the bucket.
     ///
-    /// See https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax for more infos.
+    /// See <https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax> for more infos.
     /// # Example
     /// ```
     /// # let bucket = rusty_s3::Bucket::new(url::Url::parse("http://rusty_s3/").unwrap(), rusty_s3::UrlStyle::Path, "doggo", "doggoland").unwrap();
@@ -145,10 +148,10 @@ impl<'a> ListObjectsV2<'a> {
         self.query_mut().insert("start-after", start_after);
     }
 
-    /// ContinuationToken indicates to Amazon S3 that the list is being continued on this bucket with a token.
-    /// ContinuationToken is obfuscated and is not a real key.
+    /// `ContinuationToken` indicates to Amazon S3 that the list is being continued on this bucket with a token.
+    /// `ContinuationToken` is obfuscated and is not a real key.
     ///
-    /// See https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax for more infos.
+    /// See <https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax> for more infos.
     /// # Example
     /// ```
     /// # let bucket = rusty_s3::Bucket::new(url::Url::parse("http://rusty_s3/").unwrap(), rusty_s3::UrlStyle::Path, "doggo", "doggoland").unwrap();
@@ -164,7 +167,7 @@ impl<'a> ListObjectsV2<'a> {
     /// By default, the action returns up to 1,000 key names.
     /// The response might contain fewer keys but will never contain more.
     ///
-    /// See https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax for more infos.
+    /// See <https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax> for more infos.
     /// # Example
     /// ```
     /// # let bucket = rusty_s3::Bucket::new(url::Url::parse("http://rusty_s3/").unwrap(), rusty_s3::UrlStyle::Path, "doggo", "doggoland").unwrap();
@@ -175,11 +178,14 @@ impl<'a> ListObjectsV2<'a> {
         self.query_mut().insert("max-keys", max_keys.to_string());
     }
 
+    /// Parse the response from S3.
+    /// # Errors
+    /// If the response cannot be parsed.
     pub fn parse_response(s: &str) -> Result<ListObjectsV2Response, quick_xml::DeError> {
         let mut parsed: ListObjectsV2Response = quick_xml::de::from_str(s)?;
 
         // S3 returns an Owner with an empty DisplayName and ID when fetch-owner is disabled
-        for content in parsed.contents.iter_mut() {
+        for content in &mut parsed.contents {
             if let Some(owner) = &content.owner {
                 if owner.id.is_empty() && owner.display_name.is_empty() {
                     content.owner = None;
