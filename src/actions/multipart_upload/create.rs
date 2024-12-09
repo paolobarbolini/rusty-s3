@@ -62,12 +62,18 @@ impl<'a> CreateMultipartUpload<'a> {
         }
     }
 
+    /// Parse the XML response from S3
+    /// # Errors
+    /// Will return an error if the body is not valid XML
     pub fn parse_response(
         s: impl AsRef<[u8]>,
     ) -> Result<CreateMultipartUploadResponse, quick_xml::DeError> {
         Self::parse_response_from_reader(&mut s.as_ref())
     }
 
+    /// Parse the XML response from S3
+    /// # Errors
+    /// Will return an error if the body is not valid XML
     pub fn parse_response_from_reader(
         s: impl Read,
     ) -> Result<CreateMultipartUploadResponse, quick_xml::DeError> {
