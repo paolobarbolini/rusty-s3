@@ -1,3 +1,5 @@
+use std::fmt;
+
 use url::Url;
 
 use super::util::percent_encode;
@@ -23,15 +25,15 @@ where
     string.push_str(url.path());
     string.push('\n');
 
-    canonical_query_string(query_string, &mut string);
+    canonical_query_string(query_string, &mut string).expect("String writer panicked");
 
     string.push('\n');
 
-    canonical_headers(headers, &mut string);
+    canonical_headers(headers, &mut string).expect("String writer panicked");
 
     string.push('\n');
 
-    signed_headers_(signed_headers, &mut string);
+    signed_headers_(signed_headers, &mut string).expect("String writer panicked");
 
     string.push('\n');
 
@@ -40,7 +42,7 @@ where
     string
 }
 
-fn canonical_query_string<'a, Q>(query_string: Q, string: &mut String)
+fn canonical_query_string<'a, Q>(query_string: Q, mut out: impl fmt::Write) -> fmt::Result
 where
     Q: Iterator<Item = (&'a str, &'a str)>,
 {
@@ -49,29 +51,31 @@ where
         if first {
             first = false;
         } else {
-            string.push('&');
+            out.write_char('&')?;
         }
 
-        string.push_str(&percent_encode(key));
-        string.push('=');
-        string.push_str(&percent_encode(val));
+        write!(out, "{}={}", percent_encode(key), percent_encode(val))?;
     }
+
+    Ok(())
 }
 
-fn canonical_headers<'a, H>(headers: H, string: &mut String)
+fn canonical_headers<'a, H>(headers: H, mut out: impl fmt::Write) -> fmt::Result
 where
     H: Iterator<Item = (&'a str, &'a str)>,
 {
     for (key, val) in headers {
-        string.push_str(key);
-        string.push(':');
-        string.push_str(val.trim());
+        out.write_str(key)?;
+        out.write_char(':')?;
+        out.write_str(val.trim())?;
 
-        string.push('\n');
+        out.write_char('\n')?;
     }
+
+    Ok(())
 }
 
-fn signed_headers_<'a, H>(signed_headers: H, string: &mut String)
+fn signed_headers_<'a, H>(signed_headers: H, mut out: impl fmt::Write) -> fmt::Result
 where
     H: Iterator<Item = &'a str>,
 {
@@ -80,11 +84,13 @@ where
         if first {
             first = false;
         } else {
-            string.push(';');
+            out.write_char(';')?;
         }
 
-        string.push_str(key);
+        out.write_str(key)?;
     }
+
+    Ok(())
 }
 
 #[cfg(test)]
