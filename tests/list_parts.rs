@@ -30,7 +30,7 @@ async fn list_parts() {
     // Upload some parts
     let part_size: usize = 5 * 1024 * 1024;
     let body = vec![b'r'; part_size];
-    for part_num in 0..3u16 {
+    for part_num in 1..=3u16 {
         let action = bucket.upload_part(Some(&credentials), key, part_num, upload_id);
         let url = action.sign(Duration::from_secs(60));
         client
@@ -49,7 +49,7 @@ async fn list_parts() {
     let parts = get_list_of_parts(&client, action).await;
     assert_eq!(parts.parts.len(), 2);
     assert_eq!(parts.max_parts, 2);
-    assert_eq!(parts.next_part_number_marker, Some(1));
+    assert_eq!(parts.next_part_number_marker, Some(2));
     for part in &parts.parts {
         assert_eq!(part.size, part_size as u64);
         assert_eq!(part.etag, "\"0551556e17bba4b6c9dfbaab9e6f08dd\"");
