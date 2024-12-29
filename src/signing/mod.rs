@@ -15,6 +15,7 @@ pub(crate) mod util;
 /// Sign a URL with AWS Signature.
 ///
 /// # Panics
+///
 /// If date format is invalid.
 #[allow(
     clippy::too_many_arguments,

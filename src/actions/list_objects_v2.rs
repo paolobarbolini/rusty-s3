@@ -180,7 +180,9 @@ impl<'a> ListObjectsV2<'a> {
     }
 
     /// Parse the XML response from S3 into a struct.
+    ///
     /// # Errors
+    ///
     /// Returns an error if the XML response could not be parsed.
     pub fn parse_response(
         s: impl AsRef<[u8]>,
@@ -189,7 +191,9 @@ impl<'a> ListObjectsV2<'a> {
     }
 
     /// Parse the XML response from S3 into a struct.
+    ///
     /// # Errors
+    ///
     /// Returns an error if the XML response could not be parsed.
     pub fn parse_response_from_reader(
         s: impl Read,

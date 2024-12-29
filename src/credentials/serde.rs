@@ -36,7 +36,9 @@ impl Ec2SecurityCredentialsMetadataResponse {
     ///
     /// Parses the credentials from a response received from
     /// `http://169.254.169.254/latest/meta-data/iam/security-credentials/{name-of-IAM-role}`.
+    ///
     /// # Errors
+    ///
     /// Returns an error if the JSON is invalid.
     pub fn deserialize(s: &str) -> Result<Self, serde_json::Error> {
         serde_json::from_str(s)

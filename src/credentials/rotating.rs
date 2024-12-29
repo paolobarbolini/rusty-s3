@@ -29,6 +29,7 @@ impl RotatingCredentials {
     /// Get the latest credentials inside this `RotatingCredentials`
     ///
     /// # Panics
+    ///
     /// If the lock is poisoned
     #[must_use]
     pub fn get(&self) -> Arc<Credentials> {
@@ -39,6 +40,7 @@ impl RotatingCredentials {
     /// Update the credentials inside this `RotatingCredentials`
     ///
     /// # Panics
+    ///
     /// If the lock is poisoned
     pub fn update(&self, key: String, secret: String, token: Option<String>) {
         let credentials = Credentials::new_with_maybe_token(key, secret, token);

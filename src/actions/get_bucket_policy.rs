@@ -50,7 +50,9 @@ impl<'a> GetBucketPolicy<'a> {
     }
 
     /// Parse the response from S3.
+    ///
     /// # Errors
+    ///
     /// If the response cannot be parsed.
     pub fn parse_response(s: &str) -> Result<GetBucketPolicyResponse, serde_json::Error> {
         serde_json::from_str(s)

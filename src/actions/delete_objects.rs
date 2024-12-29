@@ -73,6 +73,7 @@ where
     /// Generate the XML body for the request.
     ///
     /// # Panics
+    ///
     /// Panics if an index is not representable as a `u16`.
     pub fn body_with_md5(self) -> (String, String) {
         #[derive(Serialize)]
