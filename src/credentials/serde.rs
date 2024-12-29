@@ -92,12 +92,11 @@ impl Ec2SecurityCredentialsMetadataResponse {
     }
 }
 
-#[allow(clippy::missing_fields_in_debug)]
 impl Debug for Ec2SecurityCredentialsMetadataResponse {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.debug_struct("Ec2SecurityCredentialsMetadataResponse")
             .field("key", &self.key)
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 
@@ -138,7 +137,7 @@ mod tests {
         let debug_output = format!("{deserialized:?}");
         assert_eq!(
             debug_output,
-            "Ec2SecurityCredentialsMetadataResponse { key: \"some_access_key\" }"
+            "Ec2SecurityCredentialsMetadataResponse { key: \"some_access_key\", .. }"
         );
     }
 }
