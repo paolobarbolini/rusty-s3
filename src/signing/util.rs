@@ -1,3 +1,5 @@
+use std::{borrow::Cow, fmt::Display};
+
 use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
 use url::Url;
 
@@ -36,12 +38,12 @@ pub const FRAGMENT: &AsciiSet = &CONTROLS
 
 pub const FRAGMENT_SLASH: &AsciiSet = &FRAGMENT.add(b'/');
 
-pub fn percent_encode(val: &str) -> String {
-    utf8_percent_encode(val, FRAGMENT_SLASH).to_string()
+pub fn percent_encode(val: &str) -> impl Display + Into<Cow<'_, str>> + '_ {
+    utf8_percent_encode(val, FRAGMENT_SLASH)
 }
 
-pub fn percent_encode_path(val: &str) -> String {
-    utf8_percent_encode(val, FRAGMENT).to_string()
+pub fn percent_encode_path(val: &str) -> impl Display + Into<Cow<'_, str>> + '_ {
+    utf8_percent_encode(val, FRAGMENT)
 }
 
 pub fn add_query_params<'a, Q>(mut url: Url, params: Q) -> Url

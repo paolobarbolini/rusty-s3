@@ -142,7 +142,7 @@ impl Bucket {
     ///
     /// Returns a `ParseError` if the object is not a valid path.
     pub fn object_url(&self, object: &str) -> Result<Url, ParseError> {
-        let object = percent_encode_path(object);
+        let object: Cow<'_, str> = percent_encode_path(object).into();
         self.base_url.join(&object)
     }
 }
