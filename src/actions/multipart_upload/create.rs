@@ -63,7 +63,9 @@ impl<'a> CreateMultipartUpload<'a> {
     }
 
     /// Parse the XML response from S3
+    ///
     /// # Errors
+    ///
     /// Will return an error if the body is not valid XML
     pub fn parse_response(
         s: impl AsRef<[u8]>,
@@ -72,7 +74,9 @@ impl<'a> CreateMultipartUpload<'a> {
     }
 
     /// Parse the XML response from S3
+    ///
     /// # Errors
+    ///
     /// Will return an error if the body is not valid XML
     pub fn parse_response_from_reader(
         s: impl Read,

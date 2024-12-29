@@ -50,6 +50,7 @@ impl<'a> Map<'a> {
     /// ```
     ///
     /// # Panics
+    ///
     /// In case of out of bound inner index access
     pub fn insert<K, V>(&mut self, key: K, value: V)
     where
@@ -82,6 +83,7 @@ impl<'a> Map<'a> {
     /// ```
     ///
     /// # Panics
+    ///
     /// In case of out of bound inner index access
     pub fn append<K, V>(&mut self, key: K, value: V)
     where

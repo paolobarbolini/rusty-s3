@@ -86,7 +86,9 @@ impl From<ParseError> for BucketError {
 
 impl Bucket {
     /// Construct a new S3 bucket
+    ///
     /// # Errors
+    ///
     /// Returns a `BucketError` if the `endpoint` is not a valid url, or if the `endpoint` is missing the host.
     pub fn new(
         endpoint: Url,
@@ -135,7 +137,9 @@ impl Bucket {
     ///
     /// This is not a signed url, it's just the starting point for
     /// generating an url to an S3 object.
+    ///
     /// # Errors
+    ///
     /// Returns a `ParseError` if the object is not a valid path.
     pub fn object_url(&self, object: &str) -> Result<Url, ParseError> {
         let object = percent_encode_path(object);
