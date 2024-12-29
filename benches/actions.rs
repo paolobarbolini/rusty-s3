@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
-use rusty_s3::{Bucket, Credentials, S3Action, UrlStyle};
+use rusty_s3::{Bucket, Credentials, S3Action as _, UrlStyle};
 
 fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function("Authenticated GetObject", |b| {

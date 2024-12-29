@@ -1,4 +1,4 @@
-use sha2::{Digest, Sha256};
+use sha2::{Digest as _, Sha256};
 use time::OffsetDateTime;
 
 use crate::time_::{ISO8601, YYYYMMDD};

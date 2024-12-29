@@ -3,7 +3,7 @@ use std::mem;
 
 use serde::{Deserialize, Deserializer};
 use time::PrimitiveDateTime;
-use zeroize::Zeroize;
+use zeroize::Zeroize as _;
 
 use crate::time_::ISO8601_EXT;
 

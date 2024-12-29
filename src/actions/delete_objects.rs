@@ -1,7 +1,7 @@
 use std::iter;
 use std::time::Duration;
 
-use md5::{Digest, Md5};
+use md5::{Digest as _, Md5};
 use serde::Serialize;
 use time::OffsetDateTime;
 use url::Url;
@@ -101,7 +101,7 @@ where
             .objects
             .map(|o| {
                 let mut nodes = vec![Node::Key(o.key.as_str())];
-                if let Some(ref version_id) = o.version_id {
+                if let Some(version_id) = &o.version_id {
                     nodes.push(Node::VersionId(version_id.as_str()));
                 }
                 Object { nodes }

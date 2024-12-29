@@ -4,7 +4,9 @@ use std::time::Duration;
 
 use reqwest::header::ETAG;
 use reqwest::Client;
-use rusty_s3::actions::{CompleteMultipartUpload, CreateMultipartUpload, S3Action, UploadPart};
+use rusty_s3::actions::{
+    CompleteMultipartUpload, CreateMultipartUpload, S3Action as _, UploadPart,
+};
 use rusty_s3::{Bucket, Credentials, UrlStyle};
 
 const ONE_HOUR: Duration = Duration::from_secs(3600);

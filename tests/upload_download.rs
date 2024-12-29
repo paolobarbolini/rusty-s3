@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use rusty_s3::actions::{ListObjectsV2, S3Action};
+use rusty_s3::actions::{ListObjectsV2, S3Action as _};
 
 mod common;
 
