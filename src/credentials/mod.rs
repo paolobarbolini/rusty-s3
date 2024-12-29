@@ -92,12 +92,11 @@ impl Credentials {
     }
 }
 
-#[allow(clippy::missing_fields_in_debug)]
 impl Debug for Credentials {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.debug_struct("Credentials")
             .field("key", &self.key)
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 
@@ -127,14 +126,14 @@ mod tests {
     fn debug() {
         let credentials = Credentials::new("abcd", "1234");
         let debug_output = format!("{credentials:?}");
-        assert_eq!(debug_output, "Credentials { key: \"abcd\" }");
+        assert_eq!(debug_output, "Credentials { key: \"abcd\", .. }");
     }
 
     #[test]
     fn debug_token() {
         let credentials = Credentials::new_with_token("abcd", "1234", "xyz");
         let debug_output = format!("{credentials:?}");
-        assert_eq!(debug_output, "Credentials { key: \"abcd\" }");
+        assert_eq!(debug_output, "Credentials { key: \"abcd\", .. }");
     }
 
     #[test]

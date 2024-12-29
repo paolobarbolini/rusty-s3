@@ -151,6 +151,6 @@ mod tests {
         let credentials =
             RotatingCredentials::new("abcd".into(), "1234".into(), Some("xyz".into()));
         let debug_output = format!("{credentials:?}");
-        assert_eq!(debug_output, "Credentials { key: \"abcd\" }");
+        assert_eq!(debug_output, "Credentials { key: \"abcd\", .. }");
     }
 }
