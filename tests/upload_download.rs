@@ -22,7 +22,7 @@ async fn test1() {
 
     assert!(list.contents.is_empty());
 
-    assert_eq!(list.max_keys, Some(4500));
+    assert_eq!(list.max_keys, Some(1000));
     assert!(list.common_prefixes.is_empty());
     assert!(list.next_continuation_token.is_none());
     assert!(list.start_after.is_none());
@@ -92,7 +92,7 @@ async fn test_headers() {
 
     assert!(list.contents.is_empty());
 
-    assert_eq!(list.max_keys, Some(4500));
+    assert_eq!(list.max_keys, Some(1000));
     assert!(list.common_prefixes.is_empty());
     assert!(list.next_continuation_token.is_none());
     assert!(list.start_after.is_none());
