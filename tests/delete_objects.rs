@@ -3,7 +3,7 @@ use std::time::Duration;
 use reqwest::Client;
 use url::Url;
 
-use rusty_s3::actions::{ListObjectsV2, ListObjectsV2Response, ObjectIdentifier, S3Action};
+use rusty_s3::actions::{ListObjectsV2, ListObjectsV2Response, ObjectIdentifier, S3Action as _};
 
 mod common;
 

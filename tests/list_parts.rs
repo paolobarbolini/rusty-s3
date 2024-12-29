@@ -1,7 +1,7 @@
 use reqwest::Client;
 use std::time::Duration;
 
-use rusty_s3::actions::{CreateMultipartUpload, ListParts, ListPartsResponse, S3Action};
+use rusty_s3::actions::{CreateMultipartUpload, ListParts, ListPartsResponse, S3Action as _};
 
 mod common;
 

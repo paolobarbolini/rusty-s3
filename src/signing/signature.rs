@@ -1,4 +1,4 @@
-use hmac::{Hmac, Mac};
+use hmac::{Hmac, Mac as _};
 use sha2::Sha256;
 use time::OffsetDateTime;
 use zeroize::Zeroizing;

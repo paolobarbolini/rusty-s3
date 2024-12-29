@@ -2,7 +2,7 @@ use std::error::Error as StdError;
 use std::time::Duration;
 
 use reqwest::Client;
-use rusty_s3::actions::{CreateBucket, S3Action};
+use rusty_s3::actions::{CreateBucket, S3Action as _};
 use rusty_s3::{Bucket, Credentials, UrlStyle};
 
 const ONE_HOUR: Duration = Duration::from_secs(3600);
