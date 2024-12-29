@@ -39,19 +39,51 @@ impl<'a> Map<'a> {
 
     /// Insert a new element in this `Map`
     ///
-    /// If the `key` is already present, the `value` is appended to the existing value:
+    /// If the `key` is already present, the `value` overwrites the existing value:
     ///
     /// ```
     /// let mut map = rusty_s3::Map::new();
     /// map.insert("k", "a");
     /// assert_eq!(map.get("k"), Some("a"));
     /// map.insert("k", "b");
-    /// assert_eq!(map.get("k"), Some("a, b"));
+    /// assert_eq!(map.get("k"), Some("b"));
     /// ```
     ///
     /// # Panics
     /// In case of out of bound inner index access
     pub fn insert<K, V>(&mut self, key: K, value: V)
+    where
+        K: Into<Cow<'a, str>>,
+        V: Into<Cow<'a, str>>,
+    {
+        let key = key.into();
+        let value = value.into();
+
+        let i = self.inner.binary_search_by(|a| a.0.cmp(&key));
+        match i {
+            Ok(i) => {
+                let old_value = self.inner.get_mut(i).expect("i can't be out of bounds");
+                *old_value = (key, value);
+            }
+            Err(i) => self.inner.insert(i, (key, value)),
+        }
+    }
+
+    /// Insert a new element in this `Map`
+    ///
+    /// If the `key` is already present, the `value` is appended to the existing value:
+    ///
+    /// ```
+    /// let mut map = rusty_s3::Map::new();
+    /// map.append("k", "a");
+    /// assert_eq!(map.get("k"), Some("a"));
+    /// map.append("k", "b");
+    /// assert_eq!(map.get("k"), Some("a, b"));
+    /// ```
+    ///
+    /// # Panics
+    /// In case of out of bound inner index access
+    pub fn append<K, V>(&mut self, key: K, value: V)
     where
         K: Into<Cow<'a, str>>,
         V: Into<Cow<'a, str>>,
@@ -191,7 +223,7 @@ mod tests {
         }
 
         {
-            map.insert("cache-control", "immutable");
+            map.append("cache-control", "immutable");
             assert_eq!(map.len(), 2);
             assert!(!map.is_empty());
             assert!(map.get("nothing").is_none());
