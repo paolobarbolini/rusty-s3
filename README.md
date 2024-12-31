@@ -76,3 +76,14 @@ More examples can be found in the examples directory on GitHub.
 [listobjectsv2]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html
 [putobject]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html
 [uploadpart]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPart
+
+### Development
+
+```zsh
+docker run -p 9000:9000 -p 9001:9001 minio/minio:RELEASE.2024-12-18T13-15-44Z server /data --console-address ":9001"
+```
+
+In another terminal
+```zsh
+cargo test --lib # or other specific command
+```
