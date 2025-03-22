@@ -1,8 +1,8 @@
 use std::iter;
 use std::time::Duration;
 
+use jiff::Timestamp;
 use serde::Deserialize;
-use time::OffsetDateTime;
 use url::Url;
 
 use super::S3Action;
@@ -70,7 +70,7 @@ impl<'a> S3Action<'a> for GetBucketPolicy<'a> {
         &mut self.headers
     }
 
-    fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url {
+    fn sign_with_time(&self, expires_in: Duration, time: &Timestamp) -> Url {
         let url = self.bucket.base_url().clone();
         let query = SortingIterator::new(iter::once((POLICY_PARAM, "")), self.query.iter());
 
@@ -114,14 +114,14 @@ mod tests {
 "Statement" : [
     {
         "Effect":"Deny",
-        "Sid":"1", 
+        "Sid":"1",
         "Principal" : {
             "AWS":["111122223333","444455556666"]
         },
         "Action":["s3:*"],
         "Resource":"arn:aws:s3:::bucket/*"
     }
-] 
+]
 }
 "#;
         assert_eq!(

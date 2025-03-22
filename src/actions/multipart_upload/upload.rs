@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use time::OffsetDateTime;
+use jiff::Timestamp;
 use url::Url;
 
 use crate::actions::Method;
@@ -75,7 +75,7 @@ impl<'a> S3Action<'a> for UploadPart<'a> {
         &mut self.headers
     }
 
-    fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url {
+    fn sign_with_time(&self, expires_in: Duration, time: &Timestamp) -> Url {
         let url = self.bucket.object_url(self.object).unwrap();
 
         let part_number = self.part_number.to_string();
@@ -104,8 +104,6 @@ impl<'a> S3Action<'a> for UploadPart<'a> {
 
 #[cfg(test)]
 mod tests {
-    use time::OffsetDateTime;
-
     use pretty_assertions::assert_eq;
 
     use super::*;
@@ -114,7 +112,7 @@ mod tests {
     #[test]
     fn aws_example() {
         // Fri, 24 May 2013 00:00:00 GMT
-        let date = OffsetDateTime::from_unix_timestamp(1369353600).unwrap();
+        let date = Timestamp::from_second(1369353600).unwrap();
 
         let expires_in = Duration::from_secs(86400);
 

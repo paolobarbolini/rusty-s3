@@ -1,11 +1,9 @@
 use std::fmt::{self, Debug, Formatter};
 use std::mem;
 
-use serde::{Deserialize, Deserializer};
-use time::PrimitiveDateTime;
+use jiff::Timestamp;
+use serde::Deserialize;
 use zeroize::Zeroize as _;
-
-use crate::time_::ISO8601_EXT;
 
 use super::{Credentials, RotatingCredentials};
 
@@ -18,17 +16,8 @@ pub struct Ec2SecurityCredentialsMetadataResponse {
     secret: String,
     #[serde(rename = "Token")]
     token: String,
-    #[serde(rename = "Expiration", deserialize_with = "expiration_deserializer")]
-    expiration: PrimitiveDateTime,
-}
-
-fn expiration_deserializer<'de, D>(deserializer: D) -> Result<PrimitiveDateTime, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    let s: &str = Deserialize::deserialize(deserializer)?;
-
-    PrimitiveDateTime::parse(s, &ISO8601_EXT).map_err(serde::de::Error::custom)
+    #[serde(rename = "Expiration")]
+    expiration: Timestamp,
 }
 
 impl Ec2SecurityCredentialsMetadataResponse {
@@ -68,7 +57,7 @@ impl Ec2SecurityCredentialsMetadataResponse {
     /// Get the expiration of the credentials of this `Ec2SecurityCredentialsMetadataResponse`
     #[inline]
     #[must_use]
-    pub const fn expiration(&self) -> PrimitiveDateTime {
+    pub const fn expiration(&self) -> Timestamp {
         self.expiration
     }
 
@@ -130,7 +119,10 @@ mod tests {
         assert_eq!(deserialized.token(), "some_token");
         //                                                                  2020-12-28T23:10:09Z
         assert_eq!(
-            deserialized.expiration().assume_utc().unix_timestamp(),
+            deserialized
+                .expiration()
+                .duration_since(Timestamp::UNIX_EPOCH)
+                .as_secs(),
             1609197009
         );
 

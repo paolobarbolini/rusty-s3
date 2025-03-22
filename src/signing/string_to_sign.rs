@@ -1,11 +1,11 @@
+use jiff::Timestamp;
 use sha2::{Digest as _, Sha256};
-use time::OffsetDateTime;
 
-use crate::time_::{ISO8601, YYYYMMDD};
+use crate::time::{ISO8601, YYYYMMDD};
 
-pub fn string_to_sign(date: &OffsetDateTime, region: &str, canonical_request: &str) -> String {
-    let iso8601 = date.format(&ISO8601).expect("invalid format");
-    let yyyymmdd = date.format(&YYYYMMDD).expect("invalid format");
+pub fn string_to_sign(date: &Timestamp, region: &str, canonical_request: &str) -> String {
+    let iso8601 = date.strftime(&ISO8601);
+    let yyyymmdd = date.strftime(&YYYYMMDD);
 
     let scope = format!("{yyyymmdd}/{region}/s3/aws4_request");
 
@@ -16,14 +16,13 @@ pub fn string_to_sign(date: &OffsetDateTime, region: &str, canonical_request: &s
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use time::OffsetDateTime;
 
     use super::*;
 
     #[test]
     fn aws_example() {
         // Fri, 24 May 2013 00:00:00 GMT
-        let date = OffsetDateTime::from_unix_timestamp(1369353600).unwrap();
+        let date = Timestamp::from_second(1369353600).unwrap();
 
         let region = "us-east-1";
 
