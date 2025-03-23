@@ -1,8 +1,8 @@
-pub mod abort;
+pub(super) mod abort;
 #[cfg(feature = "full")]
-pub mod complete;
+pub(super) mod complete;
 #[cfg(feature = "full")]
-pub mod create;
+pub(super) mod create;
 #[cfg(feature = "full")]
-pub mod list_parts;
-pub mod upload;
+pub(super) mod list_parts;
+pub(super) mod upload;

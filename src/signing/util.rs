@@ -4,7 +4,7 @@ use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
 use url::Url;
 
 // https://perishablepress.com/stop-using-unsafe-characters-in-urls/
-pub const FRAGMENT: &AsciiSet = &CONTROLS
+pub(crate) const FRAGMENT: &AsciiSet = &CONTROLS
     // URL_RESERVED
     .add(b':')
     .add(b'?')
@@ -36,17 +36,17 @@ pub const FRAGMENT: &AsciiSet = &CONTROLS
     .add(b'^')
     .add(b'`');
 
-pub const FRAGMENT_SLASH: &AsciiSet = &FRAGMENT.add(b'/');
+pub(crate) const FRAGMENT_SLASH: &AsciiSet = &FRAGMENT.add(b'/');
 
-pub fn percent_encode(val: &str) -> impl Display + Into<Cow<'_, str>> + '_ {
+pub(crate) fn percent_encode(val: &str) -> impl Display + Into<Cow<'_, str>> + '_ {
     utf8_percent_encode(val, FRAGMENT_SLASH)
 }
 
-pub fn percent_encode_path(val: &str) -> impl Display + Into<Cow<'_, str>> + '_ {
+pub(crate) fn percent_encode_path(val: &str) -> impl Display + Into<Cow<'_, str>> + '_ {
     utf8_percent_encode(val, FRAGMENT)
 }
 
-pub fn add_query_params<'a, Q>(mut url: Url, params: Q) -> Url
+pub(crate) fn add_query_params<'a, Q>(mut url: Url, params: Q) -> Url
 where
     Q: Iterator<Item = (&'a str, &'a str)>,
 {

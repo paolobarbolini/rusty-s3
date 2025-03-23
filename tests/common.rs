@@ -4,7 +4,7 @@ use reqwest::Client;
 use rusty_s3::actions::{CreateBucket, S3Action as _};
 use rusty_s3::{Bucket, Credentials, UrlStyle};
 
-pub async fn bucket() -> (Bucket, Credentials, Client) {
+pub(crate) async fn bucket() -> (Bucket, Credentials, Client) {
     let mut buf = [0; 8];
     getrandom::getrandom(&mut buf).expect("getrandom");
 

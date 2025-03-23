@@ -2,7 +2,7 @@ use std::cmp::Ord;
 use std::iter::{Fuse, FusedIterator};
 
 #[derive(Debug, Clone)]
-pub struct SortingIterator<A, B>
+pub(crate) struct SortingIterator<A, B>
 where
     A: Iterator,
     B: Iterator<Item = A::Item>,

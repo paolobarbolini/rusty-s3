@@ -3,7 +3,7 @@ use sha2::{Digest as _, Sha256};
 
 use crate::time::{ISO8601, YYYYMMDD};
 
-pub fn string_to_sign(date: &Timestamp, region: &str, canonical_request: &str) -> String {
+pub(super) fn string_to_sign(date: &Timestamp, region: &str, canonical_request: &str) -> String {
     let iso8601 = date.strftime(&ISO8601);
     let yyyymmdd = date.strftime(&YYYYMMDD);
 

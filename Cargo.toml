@@ -44,6 +44,9 @@ criterion = "0.5"
 name = "actions"
 harness = false
 
+[lints.rust]
+unreachable_pub = "warn"
+
 [lints.clippy]
 complexity = "warn"
 correctness = "warn"
