@@ -2,6 +2,7 @@
 
 use std::time::Duration;
 
+use jiff::Timestamp;
 use url::Url;
 
 pub use self::create_bucket::CreateBucket;
@@ -43,15 +44,13 @@ pub mod list_objects_v2;
 mod multipart_upload;
 mod put_object;
 
-use time::OffsetDateTime;
-
 /// A request which can be signed
 pub trait S3Action<'a> {
     const METHOD: Method;
 
     /// Sign a request for this action, using `METHOD` for the [`Method`]
     fn sign(&self, expires_in: Duration) -> Url {
-        let now = OffsetDateTime::now_utc();
+        let now = Timestamp::now();
         self.sign_with_time(expires_in, &now)
     }
 
@@ -66,5 +65,5 @@ pub trait S3Action<'a> {
 
     /// Takes the time at which the URL should be signed
     /// Used for testing purposes
-    fn sign_with_time(&self, expires_in: Duration, time: &OffsetDateTime) -> Url;
+    fn sign_with_time(&self, expires_in: Duration, time: &Timestamp) -> Url;
 }

@@ -1,19 +1,14 @@
 use hmac::{Hmac, Mac as _};
+use jiff::Timestamp;
 use sha2::Sha256;
-use time::OffsetDateTime;
 use zeroize::Zeroizing;
 
-use crate::time_::YYYYMMDD;
+use crate::time::YYYYMMDD;
 
 type HmacSha256 = Hmac<Sha256>;
 
-pub fn signature(
-    date: &OffsetDateTime,
-    secret: &str,
-    region: &str,
-    string_to_sign: &str,
-) -> String {
-    let yyyymmdd = date.format(&YYYYMMDD).expect("invalid format");
+pub fn signature(date: &Timestamp, secret: &str, region: &str, string_to_sign: &str) -> String {
+    let yyyymmdd = date.strftime(&YYYYMMDD).to_string();
 
     let mut raw_date = String::with_capacity("AWS4".len() + secret.len());
     raw_date.push_str("AWS4");
@@ -47,14 +42,13 @@ pub fn signature(
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use time::OffsetDateTime;
 
     use super::*;
 
     #[test]
     fn aws_example() {
         // Fri, 24 May 2013 00:00:00 GMT
-        let date = OffsetDateTime::from_unix_timestamp(1369353600).unwrap();
+        let date = Timestamp::from_second(1369353600).unwrap();
 
         let secret = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
         let region = "us-east-1";

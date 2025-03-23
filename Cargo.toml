@@ -15,7 +15,7 @@ rust-version = "1.72"
 [dependencies]
 hmac = "0.12.1"
 sha2 = "0.10"
-time = { version = "0.3", default-features = false, features = ["macros", "formatting"] }
+jiff = { version = "0.2", default-features = false, features = ["std"] }
 url = "2.2.0"
 percent-encoding = "2.1.0"
 zeroize = "1"
@@ -29,8 +29,8 @@ serde_json = { version = "1", optional = true }
 
 [features]
 default = ["full"]
-wasm_bindgen = ["time/wasm-bindgen"]
-full = ["dep:base64", "dep:quick-xml", "dep:md-5", "dep:serde", "dep:serde_json", "time/parsing"]
+wasm_bindgen = ["jiff/js"]
+full = ["dep:base64", "dep:quick-xml", "dep:md-5", "dep:serde", "dep:serde_json", "jiff/serde"]
 
 [dev-dependencies]
 tokio = { version = "1.0.1", features = ["macros", "fs", "rt-multi-thread"] }
