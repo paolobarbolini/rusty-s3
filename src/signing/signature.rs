@@ -7,7 +7,12 @@ use crate::time::YYYYMMDD;
 
 type HmacSha256 = Hmac<Sha256>;
 
-pub fn signature(date: &Timestamp, secret: &str, region: &str, string_to_sign: &str) -> String {
+pub(super) fn signature(
+    date: &Timestamp,
+    secret: &str,
+    region: &str,
+    string_to_sign: &str,
+) -> String {
     let yyyymmdd = date.strftime(&YYYYMMDD).to_string();
 
     let mut raw_date = String::with_capacity("AWS4".len() + secret.len());

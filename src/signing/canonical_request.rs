@@ -7,7 +7,7 @@ use crate::Method;
 
 const UNSIGNED_PAYLOAD: &str = "UNSIGNED-PAYLOAD";
 
-pub fn canonical_request<'a, Q, H, S>(
+pub(super) fn canonical_request<'a, Q, H, S>(
     method: Method,
     url: &Url,
     query_string: Q,
