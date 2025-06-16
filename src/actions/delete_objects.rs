@@ -3,7 +3,7 @@ use std::time::Duration;
 
 use jiff::Timestamp;
 use md5::{Digest as _, Md5};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use url::Url;
 
 use crate::actions::Method;
@@ -63,6 +63,63 @@ impl ObjectIdentifier {
             key,
             ..Default::default()
         }
+    }
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct DeleteObjectsResponse {
+    #[serde(rename = "Deleted")]
+    pub deleted: Vec<DeletedObject>,
+    #[serde(rename = "Errors")]
+    pub errors: Vec<ErrorObject>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct DeletedObject {
+    #[serde(rename = "Key")]
+    pub key: String,
+    #[serde(rename = "VersionId")]
+    pub version_id: Option<String>,
+    #[serde(rename = "DeleteMarker")]
+    pub delete_marker: Option<bool>,
+    #[serde(rename = "DeleteMarkerVersionId")]
+    pub delete_marker_version_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct ErrorObject {
+    #[serde(rename = "Key")]
+    pub key: String,
+    #[serde(rename = "VersionId")]
+    pub version_id: Option<String>,
+    #[serde(rename = "Code")]
+    pub code: String,
+    #[serde(rename = "Message")]
+    pub message: String,
+}
+
+impl DeleteObjectsResponse {
+    /// Parse the XML response from S3 into a struct.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the XML response could not be parsed.
+    pub fn parse(s: impl AsRef<[u8]>) -> Result<Self, quick_xml::DeError> {
+        quick_xml::de::from_reader(s.as_ref())
+    }
+}
+
+impl<I> DeleteObjects<'_, I> {
+    /// Parse the XML response from S3 into a struct.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the XML response could not be parsed.
+    #[deprecated = "Use DeleteObjectsResponse::parse instead"]
+    pub fn parse_response(
+        s: impl AsRef<[u8]>,
+    ) -> Result<DeleteObjectsResponse, quick_xml::DeError> {
+        DeleteObjectsResponse::parse(s)
     }
 }
 
@@ -229,5 +286,54 @@ mod tests {
         let expected = "https://examplebucket.s3.amazonaws.com/?delete=1";
 
         assert_eq!(expected, url.as_str());
+    }
+
+    #[test]
+    fn parse_response() {
+        let input = r#"
+        <?xml version="1.0" encoding="UTF-8"?>
+        <DeleteResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+            <Deleted>
+                <Key>duck.jpg</Key>
+                <VersionId>ver1234</VersionId>
+                <DeleteMarker>true</DeleteMarker>
+                <DeleteMarkerVersionId>del1234</DeleteMarkerVersionId>
+            </Deleted>
+            <Deleted>
+                <Key>duck2.jpg</Key>
+            </Deleted>
+            <Errors>
+                <Key>idk.txt</Key>
+                <Code>ErrorCode</Code>
+                <Message>Error message</Message>
+            </Errors>
+        </DeleteResult>
+        "#;
+
+        #[allow(deprecated)]
+        let parsed = DeleteObjects::<i32>::parse_response(input).unwrap();
+        assert_eq!(parsed.deleted.len(), 2);
+        assert_eq!(parsed.errors.len(), 1);
+
+        let deleted = &parsed.deleted[0];
+        assert_eq!(deleted.key, "duck.jpg");
+        assert_eq!(deleted.version_id, Some("ver1234".to_string()));
+        assert_eq!(deleted.delete_marker, Some(true));
+        assert_eq!(
+            deleted.delete_marker_version_id,
+            Some("del1234".to_string())
+        );
+
+        let deleted = &parsed.deleted[1];
+        assert_eq!(deleted.key, "duck2.jpg");
+        assert!(deleted.version_id.is_none());
+        assert!(deleted.delete_marker.is_none());
+        assert!(deleted.delete_marker_version_id.is_none());
+
+        let error = &parsed.errors[0];
+        assert_eq!(error.key, "idk.txt");
+        assert!(error.version_id.is_none());
+        assert_eq!(error.code, "ErrorCode");
+        assert_eq!(error.message, "Error message");
     }
 }
