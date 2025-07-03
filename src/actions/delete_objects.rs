@@ -307,13 +307,19 @@ mod tests {
                 <Code>ErrorCode</Code>
                 <Message>Error message</Message>
             </Error>
+            <Error>
+                <Key>idk2.txt</Key>
+                <VersionId>ver2</VersionId>
+                <Code>ErrorCode2</Code>
+                <Message>Error message 2</Message>
+            </Error>
         </DeleteResult>
         "#;
 
         #[allow(deprecated)]
         let parsed = DeleteObjects::<i32>::parse_response(input).unwrap();
         assert_eq!(parsed.deleted.len(), 2);
-        assert_eq!(parsed.errors.len(), 1);
+        assert_eq!(parsed.errors.len(), 2);
 
         let deleted = &parsed.deleted[0];
         assert_eq!(deleted.key, "duck.jpg");
@@ -335,5 +341,11 @@ mod tests {
         assert!(error.version_id.is_none());
         assert_eq!(error.code, "ErrorCode");
         assert_eq!(error.message, "Error message");
+
+        let error = &parsed.errors[1];
+        assert_eq!(error.key, "idk2.txt");
+        assert_eq!(error.version_id, Some("ver2".to_string()));
+        assert_eq!(error.code, "ErrorCode2");
+        assert_eq!(error.message, "Error message 2");
     }
 }
