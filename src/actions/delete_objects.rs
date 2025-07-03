@@ -70,7 +70,7 @@ impl ObjectIdentifier {
 pub struct DeleteObjectsResponse {
     #[serde(rename = "Deleted")]
     pub deleted: Vec<DeletedObject>,
-    #[serde(rename = "Errors")]
+    #[serde(rename = "Error")]
     pub errors: Vec<ErrorObject>,
 }
 
@@ -302,11 +302,11 @@ mod tests {
             <Deleted>
                 <Key>duck2.jpg</Key>
             </Deleted>
-            <Errors>
+            <Error>
                 <Key>idk.txt</Key>
                 <Code>ErrorCode</Code>
                 <Message>Error message</Message>
-            </Errors>
+            </Error>
         </DeleteResult>
         "#;
 
