@@ -9,7 +9,7 @@ pub use self::create_bucket::CreateBucket;
 pub use self::delete_bucket::DeleteBucket;
 pub use self::delete_object::DeleteObject;
 #[cfg(feature = "full")]
-pub use self::delete_objects::{DeleteObjects, ObjectIdentifier};
+pub use self::delete_objects::{DeleteObjects, DeleteObjectsResponse, ObjectIdentifier};
 #[cfg(feature = "full")]
 pub use self::get_bucket_policy::{GetBucketPolicy, GetBucketPolicyResponse};
 pub use self::get_object::GetObject;
