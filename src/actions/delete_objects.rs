@@ -109,20 +109,6 @@ impl DeleteObjectsResponse {
     }
 }
 
-impl<I> DeleteObjects<'_, I> {
-    /// Parse the XML response from S3 into a struct.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the XML response could not be parsed.
-    #[deprecated = "Use DeleteObjectsResponse::parse instead"]
-    pub fn parse_response(
-        s: impl AsRef<[u8]>,
-    ) -> Result<DeleteObjectsResponse, quick_xml::DeError> {
-        DeleteObjectsResponse::parse(s)
-    }
-}
-
 impl<'a, I> DeleteObjects<'a, I>
 where
     I: Iterator<Item = &'a ObjectIdentifier>,
@@ -316,8 +302,7 @@ mod tests {
         </DeleteResult>
         "#;
 
-        #[allow(deprecated)]
-        let parsed = DeleteObjects::<i32>::parse_response(input).unwrap();
+        let parsed = DeleteObjectsResponse::parse(input).unwrap();
         assert_eq!(parsed.deleted.len(), 2);
         assert_eq!(parsed.errors.len(), 2);
 
