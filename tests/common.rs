@@ -6,7 +6,7 @@ use rusty_s3::{Bucket, Credentials, UrlStyle};
 
 pub(crate) async fn bucket() -> (Bucket, Credentials, Client) {
     let mut buf = [0; 8];
-    getrandom::getrandom(&mut buf).expect("getrandom");
+    getrandom::fill(&mut buf).expect("getrandom");
 
     let hex = hex::encode(buf);
     let name = format!("test-{hex}");

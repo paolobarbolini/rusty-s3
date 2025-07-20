@@ -35,7 +35,7 @@ full = ["dep:base64", "dep:quick-xml", "dep:md-5", "dep:serde", "dep:serde_json"
 [dev-dependencies]
 tokio = { version = "1.0.1", features = ["macros", "fs", "rt-multi-thread"] }
 reqwest = "0.12"
-getrandom = "0.2"
+getrandom = "0.3"
 hex = "0.4"
 pretty_assertions = "1"
 criterion = "0.6"
