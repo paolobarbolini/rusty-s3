@@ -38,7 +38,7 @@ reqwest = "0.12"
 getrandom = "0.2"
 hex = "0.4"
 pretty_assertions = "1"
-criterion = "0.5"
+criterion = "0.6"
 
 [[bench]]
 name = "actions"
