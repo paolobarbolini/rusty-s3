@@ -68,9 +68,9 @@ impl ObjectIdentifier {
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct DeleteObjectsResponse {
-    #[serde(rename = "Deleted")]
+    #[serde(rename = "Deleted", default)]
     pub deleted: Vec<DeletedObject>,
-    #[serde(rename = "Error")]
+    #[serde(rename = "Error", default)]
     pub errors: Vec<ErrorObject>,
 }
 
@@ -275,7 +275,7 @@ mod tests {
     }
 
     #[test]
-    fn parse_response() {
+    fn parse_response_success() {
         let input = r#"
         <?xml version="1.0" encoding="UTF-8"?>
         <DeleteResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
@@ -288,23 +288,12 @@ mod tests {
             <Deleted>
                 <Key>duck2.jpg</Key>
             </Deleted>
-            <Error>
-                <Key>idk.txt</Key>
-                <Code>ErrorCode</Code>
-                <Message>Error message</Message>
-            </Error>
-            <Error>
-                <Key>idk2.txt</Key>
-                <VersionId>ver2</VersionId>
-                <Code>ErrorCode2</Code>
-                <Message>Error message 2</Message>
-            </Error>
         </DeleteResult>
         "#;
 
         let parsed = DeleteObjectsResponse::parse(input).unwrap();
         assert_eq!(parsed.deleted.len(), 2);
-        assert_eq!(parsed.errors.len(), 2);
+        assert_eq!(parsed.errors.len(), 0);
 
         let deleted = &parsed.deleted[0];
         assert_eq!(deleted.key, "duck.jpg");
@@ -320,6 +309,30 @@ mod tests {
         assert!(deleted.version_id.is_none());
         assert!(deleted.delete_marker.is_none());
         assert!(deleted.delete_marker_version_id.is_none());
+    }
+
+    #[test]
+    fn parse_response_errors() {
+        let input = r#"
+        <?xml version="1.0" encoding="UTF-8"?>
+        <DeleteResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+            <Error>
+                <Key>idk.txt</Key>
+                <Code>ErrorCode</Code>
+                <Message>Error message</Message>
+            </Error>
+            <Error>
+                <Key>idk2.txt</Key>
+                <VersionId>ver2</VersionId>
+                <Code>ErrorCode2</Code>
+                <Message>Error message 2</Message>
+            </Error>
+        </DeleteResult>
+        "#;
+
+        let parsed = DeleteObjectsResponse::parse(input).unwrap();
+        assert_eq!(parsed.deleted.len(), 0);
+        assert_eq!(parsed.errors.len(), 2);
 
         let error = &parsed.errors[0];
         assert_eq!(error.key, "idk.txt");
