@@ -49,7 +49,7 @@ impl RotatingCredentials {
         match Arc::get_mut(&mut lock) {
             Some(arc) => *arc = credentials,
             None => *lock = Arc::new(credentials),
-        };
+        }
     }
 }
 

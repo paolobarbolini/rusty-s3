@@ -101,7 +101,7 @@ impl Bucket {
         match endpoint.scheme() {
             "http" | "https" => {}
             _ => return Err(BucketError::UnsupportedScheme),
-        };
+        }
 
         let name = name.into();
         let region = region.into();

@@ -48,12 +48,13 @@ harness = false
 unreachable_pub = "warn"
 
 [lints.clippy]
-complexity = "warn"
-correctness = "warn"
-nursery = "warn"
-pedantic = "warn"
-perf = "warn"
-style = "warn"
-suspicious = "warn"
+complexity = { level = "warn", priority = -1 }
+correctness = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+perf = { level = "warn", priority = -1 }
+style = { level = "warn", priority = -1 }
+suspicious = { level = "warn", priority = -1 }
 unused_trait_names = "warn"
+redundant_pub_crate = "allow"
 ref_patterns = "warn"
