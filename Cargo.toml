@@ -14,16 +14,16 @@ rust-version = "1.81"
 
 [dependencies]
 hmac = "0.12.1"
-sha2 = "0.10"
 jiff = { version = "0.2", default-features = false, features = ["std"] }
-url = "2.2.0"
 percent-encoding = "2.1.0"
+sha2 = "0.10"
+url = "2.2.0"
 zeroize = "1"
 
 # optional
 base64 = { version = "0.22", optional = true }
-quick-xml = { version = "0.38", features = ["serialize"], optional = true }
 md-5 = { version = "0.10", optional = true }
+quick-xml = { version = "0.38", features = ["serialize"], optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
 serde_json = { version = "1", optional = true }
 
