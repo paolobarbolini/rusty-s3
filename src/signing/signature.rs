@@ -1,8 +1,9 @@
-use hmac::{Hmac, Mac as _};
+use hmac::{Hmac, KeyInit as _, Mac as _};
 use jiff::Timestamp;
 use sha2::Sha256;
 use zeroize::Zeroizing;
 
+use crate::hex::LowerHexWrapper;
 use crate::time::YYYYMMDD;
 
 type HmacSha256 = Hmac<Sha256>;
@@ -41,7 +42,7 @@ pub(super) fn signature(
 
     let mut mac = HmacSha256::new_from_slice(&signing_key).expect("HMAC can take keys of any size");
     mac.update(string_to_sign.as_bytes());
-    format!("{:x}", mac.finalize().into_bytes())
+    format!("{:x}", LowerHexWrapper(mac.finalize().into_bytes()))
 }
 
 #[cfg(test)]
