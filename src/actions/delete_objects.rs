@@ -45,7 +45,7 @@ impl<'a, I> DeleteObjects<'a, I> {
         self.quiet
     }
 
-    pub fn set_quiet(&mut self, quiet: bool) {
+    pub const fn set_quiet(&mut self, quiet: bool) {
         self.quiet = quiet;
     }
 }
