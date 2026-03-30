@@ -1,6 +1,7 @@
 use jiff::Timestamp;
 use sha2::{Digest as _, Sha256};
 
+use crate::hex::LowerHexWrapper;
 use crate::time::{ISO8601, YYYYMMDD};
 
 pub(super) fn string_to_sign(date: &Timestamp, region: &str, canonical_request: &str) -> String {
@@ -9,7 +10,7 @@ pub(super) fn string_to_sign(date: &Timestamp, region: &str, canonical_request: 
 
     let scope = format!("{yyyymmdd}/{region}/s3/aws4_request");
 
-    let hash = Sha256::digest(canonical_request.as_bytes());
+    let hash = LowerHexWrapper(Sha256::digest(canonical_request.as_bytes()));
     format!("AWS4-HMAC-SHA256\n{iso8601}\n{scope}\n{hash:x}")
 }
 
