@@ -3,9 +3,9 @@ use std::{iter, str};
 use jiff::Timestamp;
 use url::Url;
 
+use crate::Method;
 use crate::sorting_iter::SortingIterator;
 use crate::time::{ISO8601, YYYYMMDD};
-use crate::Method;
 
 mod canonical_request;
 mod signature;

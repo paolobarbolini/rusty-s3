@@ -2,8 +2,8 @@ use std::error::Error as StdError;
 use std::iter;
 use std::time::Duration;
 
-use reqwest::header::ETAG;
 use reqwest::Client;
+use reqwest::header::ETAG;
 use rusty_s3::actions::{
     CompleteMultipartUpload, CreateMultipartUpload, S3Action as _, UploadPart,
 };

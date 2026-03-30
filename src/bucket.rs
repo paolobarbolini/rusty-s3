@@ -4,6 +4,7 @@ use std::fmt::{self, Display};
 
 use url::{ParseError, Url};
 
+use crate::Credentials;
 use crate::actions::{
     AbortMultipartUpload, CreateBucket, DeleteBucket, DeleteObject, GetObject, HeadBucket,
     HeadObject, PutObject, UploadPart,
@@ -13,7 +14,6 @@ use crate::actions::{
     CompleteMultipartUpload, CreateMultipartUpload, DeleteObjects, ListObjectsV2, ListParts,
 };
 use crate::signing::util::percent_encode_path;
-use crate::Credentials;
 
 /// An S3 bucket
 ///

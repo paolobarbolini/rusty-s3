@@ -1,6 +1,6 @@
 use std::{borrow::Cow, fmt::Display};
 
-use percent_encoding::{utf8_percent_encode, AsciiSet, CONTROLS};
+use percent_encoding::{AsciiSet, CONTROLS, utf8_percent_encode};
 use url::Url;
 
 // https://perishablepress.com/stop-using-unsafe-characters-in-urls/
