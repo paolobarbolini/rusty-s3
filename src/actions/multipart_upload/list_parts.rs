@@ -211,8 +211,7 @@ mod tests {
         action.set_max_parts(50);
         action.set_part_number_marker(100);
         let url = action.sign(expires_in);
-        let expected =
-            "https://examplebucket.s3.amazonaws.com/test.txt?max-parts=50&part-number-marker=100&uploadId=abcd";
+        let expected = "https://examplebucket.s3.amazonaws.com/test.txt?max-parts=50&part-number-marker=100&uploadId=abcd";
         assert_eq!(expected, url.as_str());
     }
 

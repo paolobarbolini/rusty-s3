@@ -138,16 +138,20 @@ mod tests {
 
     #[test]
     fn from_env() {
-        env::set_var("AWS_ACCESS_KEY_ID", "key");
-        env::set_var("AWS_SECRET_ACCESS_KEY", "secret");
+        unsafe {
+            env::set_var("AWS_ACCESS_KEY_ID", "key");
+            env::set_var("AWS_SECRET_ACCESS_KEY", "secret");
+        }
 
         let credentials = Credentials::from_env().unwrap();
         assert_eq!(credentials.key(), "key");
         assert_eq!(credentials.secret(), "secret");
         assert!(credentials.token().is_none());
 
-        env::remove_var("AWS_ACCESS_KEY_ID");
-        env::remove_var("AWS_SECRET_ACCESS_KEY");
+        unsafe {
+            env::remove_var("AWS_ACCESS_KEY_ID");
+            env::remove_var("AWS_SECRET_ACCESS_KEY");
+        }
 
         assert!(Credentials::from_env().is_none());
     }

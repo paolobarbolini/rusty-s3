@@ -12,8 +12,10 @@
 //! use std::env;
 //! use std::time::Duration;
 //! use rusty_s3::{Bucket, Credentials, S3Action, UrlStyle};
-//! # env::set_var("AWS_ACCESS_KEY_ID", "key");
-//! # env::set_var("AWS_SECRET_ACCESS_KEY", "secret");
+//! # unsafe {
+//! #     env::set_var("AWS_ACCESS_KEY_ID", "key");
+//! #     env::set_var("AWS_SECRET_ACCESS_KEY", "secret");
+//! # }
 //!
 //! // setting up a bucket
 //! let endpoint = "https://s3.dualstack.eu-west-1.amazonaws.com".parse().expect("endpoint is a valid Url");
@@ -39,7 +41,7 @@
     rust_2018_idioms,
     rustdoc::broken_intra_doc_links
 )]
-#![forbid(unsafe_code)]
+#![cfg_attr(not(test), forbid(unsafe_code))]
 
 pub use self::actions::S3Action;
 pub use self::bucket::{Bucket, BucketError, UrlStyle};
