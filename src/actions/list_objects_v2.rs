@@ -82,7 +82,7 @@ pub struct ListObjectsContent {
 pub struct ListObjectsOwner {
     #[serde(rename = "ID")]
     pub id: String,
-    #[serde(rename = "DisplayName")]
+    #[serde(rename = "DisplayName", default)]
     pub display_name: String,
 }
 
