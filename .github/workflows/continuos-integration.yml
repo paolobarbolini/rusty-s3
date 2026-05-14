@@ -52,7 +52,7 @@ jobs:
       run: |
         MINIO_RELEASE="2024-12-18T13-15-44Z"
         LINK="https://dl.min.io/server/minio/release/linux-amd64/archive"
-        curl --output minio "$LINK/minio.RELEASE.$MINIO_RELEASE"
+        curl -L --output minio "$LINK/minio.RELEASE.$MINIO_RELEASE"
         chmod +x minio
         ./minio server minio_data/ &
 
