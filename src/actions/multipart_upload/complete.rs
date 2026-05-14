@@ -1,8 +1,8 @@
 use std::iter;
 use std::time::Duration;
 
+use instant_xml::ToXml;
 use jiff::Timestamp;
-use serde::Serialize;
 use url::Url;
 
 use crate::actions::Method;
@@ -63,39 +63,33 @@ where
     ///
     /// Panics if an index is not representable as a `u16`.
     pub fn body(self) -> String {
-        #[derive(Serialize)]
-        #[serde(rename = "CompleteMultipartUpload")]
-        struct CompleteMultipartUploadSerde<'a> {
-            #[serde(rename = "Part")]
+        #[derive(ToXml)]
+        #[xml(rename = "CompleteMultipartUpload")]
+        struct CompleteMultipartUploadBody<'a> {
             parts: Vec<Part<'a>>,
         }
 
-        #[derive(Serialize)]
+        #[derive(ToXml)]
+        #[xml(rename = "Part")]
         struct Part<'a> {
-            #[serde(rename = "$value")]
-            nodes: Vec<Node<'a>>,
-        }
-
-        #[derive(Serialize)]
-        enum Node<'a> {
-            ETag(&'a str),
-            PartNumber(u16),
+            #[xml(rename = "ETag")]
+            etag: &'a str,
+            #[xml(rename = "PartNumber")]
+            part_number: u16,
         }
 
         let parts = self
             .etags
             .enumerate()
             .map(|(i, etag)| Part {
-                nodes: vec![
-                    Node::ETag(etag),
-                    Node::PartNumber(u16::try_from(i).expect("convert to u16") + 1),
-                ],
+                etag,
+                part_number: u16::try_from(i).expect("convert to u16") + 1,
             })
             .collect::<Vec<_>>();
 
-        let req = CompleteMultipartUploadSerde { parts };
+        let req = CompleteMultipartUploadBody { parts };
 
-        quick_xml::se::to_string(&req).unwrap()
+        instant_xml::to_string(&req).unwrap()
     }
 }
 

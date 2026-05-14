@@ -1,13 +1,11 @@
-use std::io::BufRead;
 use std::iter;
 use std::time::Duration;
 
+use instant_xml::FromXml;
 use jiff::Timestamp;
-use serde::Deserialize;
 use url::Url;
 
-use crate::actions::Method;
-use crate::actions::S3Action;
+use crate::actions::{Method, S3_XML_NS, S3Action};
 use crate::signing::sign;
 use crate::sorting_iter::SortingIterator;
 use crate::{Bucket, Credentials, Map};
@@ -34,28 +32,28 @@ pub struct ListParts<'a> {
 }
 
 #[allow(clippy::module_name_repetitions)]
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, FromXml)]
+#[xml(rename = "ListPartsResult", ns(S3_XML_NS))]
 pub struct ListPartsResponse {
-    #[serde(rename = "Part")]
-    #[serde(default)]
     pub parts: Vec<PartsContent>,
-    #[serde(rename = "MaxParts")]
+    #[xml(rename = "MaxParts")]
     pub max_parts: u16,
-    #[serde(rename = "IsTruncated")]
+    #[xml(rename = "IsTruncated")]
     is_truncated: bool,
-    #[serde(rename = "NextPartNumberMarker")]
+    #[xml(rename = "NextPartNumberMarker")]
     pub next_part_number_marker: Option<u16>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, FromXml)]
+#[xml(rename = "Part", ns(S3_XML_NS))]
 pub struct PartsContent {
-    #[serde(rename = "PartNumber")]
+    #[xml(rename = "PartNumber")]
     pub number: u16,
-    #[serde(rename = "ETag")]
+    #[xml(rename = "ETag")]
     pub etag: String,
-    #[serde(rename = "LastModified")]
+    #[xml(rename = "LastModified")]
     pub last_modified: String,
-    #[serde(rename = "Size")]
+    #[xml(rename = "Size")]
     pub size: u64,
 }
 
@@ -92,19 +90,8 @@ impl<'a> ListParts<'a> {
     /// # Errors
     ///
     /// Will return an error if the XML cannot be deserialized
-    pub fn parse_response(s: impl AsRef<[u8]>) -> Result<ListPartsResponse, quick_xml::DeError> {
-        Self::parse_response_from_reader(&mut s.as_ref())
-    }
-
-    /// Parse the XML response from S3 into a struct
-    ///
-    /// # Errors
-    ///
-    /// Will return an error if the XML cannot be deserialized
-    pub fn parse_response_from_reader(
-        s: impl BufRead,
-    ) -> Result<ListPartsResponse, quick_xml::DeError> {
-        let mut parts: ListPartsResponse = quick_xml::de::from_reader(s)?;
+    pub fn parse_response(s: &str) -> Result<ListPartsResponse, instant_xml::Error> {
+        let mut parts: ListPartsResponse = instant_xml::from_str(s)?;
         if !parts.is_truncated {
             parts.next_part_number_marker = None;
         }
@@ -217,8 +204,7 @@ mod tests {
 
     #[test]
     fn parse() {
-        let input = r#"
-        <?xml version="1.0" encoding="UTF-8"?>
+        let input = r#"<?xml version="1.0" encoding="UTF-8"?>
         <ListPartsResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
           <Bucket>example-bucket</Bucket>
           <Key>example-object</Key>
@@ -272,8 +258,7 @@ mod tests {
 
     #[test]
     fn parse_no_parts() {
-        let input = r#"
-        <?xml version="1.0" encoding="UTF-8"?>
+        let input = r#"<?xml version="1.0" encoding="UTF-8"?>
         <ListPartsResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
           <Bucket>example-bucket</Bucket>
           <Key>example-object</Key>

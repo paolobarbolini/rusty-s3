@@ -1,13 +1,11 @@
-use std::io::{BufReader, Read};
 use std::iter;
 use std::time::Duration;
 
+use instant_xml::FromXml;
 use jiff::Timestamp;
-use serde::Deserialize;
 use url::Url;
 
-use crate::actions::Method;
-use crate::actions::S3Action;
+use crate::actions::{Method, S3_XML_NS, S3Action};
 use crate::signing::sign;
 use crate::sorting_iter::SortingIterator;
 use crate::{Bucket, Credentials, Map};
@@ -37,10 +35,10 @@ pub struct CreateMultipartUpload<'a> {
 #[derive(Debug, Clone)]
 pub struct CreateMultipartUploadResponse(InnerCreateMultipartUploadResponse);
 
-#[allow(clippy::module_name_repetitions)]
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, FromXml)]
+#[xml(rename = "InitiateMultipartUploadResult", ns(S3_XML_NS))]
 struct InnerCreateMultipartUploadResponse {
-    #[serde(rename = "UploadId")]
+    #[xml(rename = "UploadId")]
     upload_id: String,
 }
 
@@ -67,21 +65,8 @@ impl<'a> CreateMultipartUpload<'a> {
     /// # Errors
     ///
     /// Will return an error if the body is not valid XML
-    pub fn parse_response(
-        s: impl AsRef<[u8]>,
-    ) -> Result<CreateMultipartUploadResponse, quick_xml::DeError> {
-        Self::parse_response_from_reader(&mut s.as_ref())
-    }
-
-    /// Parse the XML response from S3
-    ///
-    /// # Errors
-    ///
-    /// Will return an error if the body is not valid XML
-    pub fn parse_response_from_reader(
-        s: impl Read,
-    ) -> Result<CreateMultipartUploadResponse, quick_xml::DeError> {
-        let parsed = quick_xml::de::from_reader(BufReader::new(s))?;
+    pub fn parse_response(s: &str) -> Result<CreateMultipartUploadResponse, instant_xml::Error> {
+        let parsed = instant_xml::from_str(s)?;
         Ok(CreateMultipartUploadResponse(parsed))
     }
 }
