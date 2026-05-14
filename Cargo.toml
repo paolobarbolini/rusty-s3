@@ -22,15 +22,15 @@ zeroize = "1"
 
 # optional
 base64 = { version = "0.22", optional = true }
+instant-xml = { version = "0.7", optional = true }
 md-5 = { version = "0.11", optional = true }
-quick-xml = { version = "0.39", features = ["serialize"], optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
 serde_json = { version = "1", optional = true }
 
 [features]
 default = ["full"]
 wasm_bindgen = ["jiff/js"]
-full = ["dep:base64", "dep:quick-xml", "dep:md-5", "dep:serde", "dep:serde_json", "jiff/serde"]
+full = ["dep:base64", "dep:instant-xml", "dep:md-5", "dep:serde", "dep:serde_json", "jiff/serde"]
 
 [dev-dependencies]
 tokio = { version = "1.0.1", features = ["macros", "fs", "rt-multi-thread"] }

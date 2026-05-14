@@ -1,13 +1,11 @@
 use std::borrow::Cow;
-use std::io::{BufReader, Read};
 use std::time::Duration;
 
+use instant_xml::FromXml;
 use jiff::Timestamp;
-use serde::Deserialize;
 use url::Url;
 
-use crate::actions::Method;
-use crate::actions::S3Action;
+use crate::actions::{Method, S3_XML_NS, S3Action};
 use crate::signing::sign;
 use crate::{Bucket, Credentials, Map};
 
@@ -32,63 +30,49 @@ pub struct ListObjectsV2<'a> {
 }
 
 #[allow(clippy::module_name_repetitions)]
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, FromXml)]
+#[xml(rename = "ListBucketResult", ns(S3_XML_NS))]
 pub struct ListObjectsV2Response {
-    // #[serde(rename = "IsTruncated")]
-    // is_truncated: bool,
-    #[serde(rename = "Contents")]
-    #[serde(default)]
     pub contents: Vec<ListObjectsContent>,
 
-    // #[serde(rename = "Name")]
-    // name: String,
-    // #[serde(rename = "Prefix")]
-    // prefix: String,
-    // #[serde(rename = "Delimiter")]
-    // delimiter: String,
-    #[serde(rename = "MaxKeys")]
+    #[xml(rename = "MaxKeys")]
     pub max_keys: Option<u16>,
-    #[serde(rename = "CommonPrefixes", default)]
     pub common_prefixes: Vec<CommonPrefixes>,
-    // #[serde(rename = "EncodingType")]
-    // encoding_type: String,
-    // #[serde(rename = "KeyCount")]
-    // key_count: u16,
-    // #[serde(rename = "ContinuationToken")]
-    // continuation_token: Option<String>,
-    #[serde(rename = "NextContinuationToken")]
+    #[xml(rename = "NextContinuationToken")]
     pub next_continuation_token: Option<String>,
-    #[serde(rename = "StartAfter")]
+    #[xml(rename = "StartAfter")]
     pub start_after: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, FromXml)]
+#[xml(rename = "Contents", ns(S3_XML_NS))]
 pub struct ListObjectsContent {
-    #[serde(rename = "ETag")]
+    #[xml(rename = "ETag")]
     pub etag: String,
-    #[serde(rename = "Key")]
+    #[xml(rename = "Key")]
     pub key: String,
-    #[serde(rename = "LastModified")]
+    #[xml(rename = "LastModified")]
     pub last_modified: String,
-    #[serde(rename = "Owner")]
     pub owner: Option<ListObjectsOwner>,
-    #[serde(rename = "Size")]
+    #[xml(rename = "Size")]
     pub size: u64,
-    #[serde(rename = "StorageClass")]
+    #[xml(rename = "StorageClass")]
     pub storage_class: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, FromXml)]
+#[xml(rename = "Owner", ns(S3_XML_NS))]
 pub struct ListObjectsOwner {
-    #[serde(rename = "ID")]
+    #[xml(rename = "ID")]
     pub id: String,
-    #[serde(rename = "DisplayName", default)]
-    pub display_name: String,
+    #[xml(rename = "DisplayName")]
+    pub display_name: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, FromXml)]
+#[xml(rename = "CommonPrefixes", ns(S3_XML_NS))]
 pub struct CommonPrefixes {
-    #[serde(rename = "Prefix")]
+    #[xml(rename = "Prefix")]
     pub prefix: String,
 }
 
@@ -184,26 +168,13 @@ impl<'a> ListObjectsV2<'a> {
     /// # Errors
     ///
     /// Returns an error if the XML response could not be parsed.
-    pub fn parse_response(
-        s: impl AsRef<[u8]>,
-    ) -> Result<ListObjectsV2Response, quick_xml::DeError> {
-        Self::parse_response_from_reader(&mut s.as_ref())
-    }
-
-    /// Parse the XML response from S3 into a struct.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the XML response could not be parsed.
-    pub fn parse_response_from_reader(
-        s: impl Read,
-    ) -> Result<ListObjectsV2Response, quick_xml::DeError> {
-        let mut parsed: ListObjectsV2Response = quick_xml::de::from_reader(BufReader::new(s))?;
+    pub fn parse_response(s: &str) -> Result<ListObjectsV2Response, instant_xml::Error> {
+        let mut parsed: ListObjectsV2Response = instant_xml::from_str(s)?;
 
         // S3 returns an Owner with an empty DisplayName and ID when fetch-owner is disabled
         for content in &mut parsed.contents {
             if let Some(owner) = &content.owner {
-                if owner.id.is_empty() && owner.display_name.is_empty() {
+                if owner.id.is_empty() && owner.display_name.as_deref().is_none_or(str::is_empty) {
                     content.owner = None;
                 }
             }
@@ -303,8 +274,7 @@ mod tests {
 
     #[test]
     fn parse() {
-        let input = r#"
-        <?xml version="1.0" encoding="UTF-8"?>
+        let input = r#"<?xml version="1.0" encoding="UTF-8"?>
         <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
             <Name>test</Name>
             <Prefix></Prefix>
@@ -384,8 +354,7 @@ mod tests {
 
     #[test]
     fn parse_no_contents() {
-        let input = r#"
-        <?xml version="1.0" encoding="UTF-8"?>
+        let input = r#"<?xml version="1.0" encoding="UTF-8"?>
         <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
             <Name>test</Name>
             <Prefix></Prefix>

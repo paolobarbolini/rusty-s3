@@ -1,13 +1,12 @@
 use std::iter;
 use std::time::Duration;
 
+use instant_xml::{FromXml, ToXml};
 use jiff::Timestamp;
 use md5::{Digest as _, Md5};
-use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::actions::Method;
-use crate::actions::S3Action;
+use crate::actions::{Method, S3_XML_NS, S3Action};
 use crate::signing::sign;
 use crate::sorting_iter::SortingIterator;
 use crate::{Bucket, Credentials, Map};
@@ -66,35 +65,37 @@ impl ObjectIdentifier {
     }
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, FromXml)]
+#[xml(rename = "DeleteResult", ns(S3_XML_NS))]
 pub struct DeleteObjectsResponse {
-    #[serde(rename = "Deleted", default)]
     pub deleted: Vec<DeletedObject>,
-    #[serde(rename = "Error", default)]
+    #[xml(rename = "Error")]
     pub errors: Vec<ErrorObject>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, FromXml)]
+#[xml(rename = "Deleted", ns(S3_XML_NS))]
 pub struct DeletedObject {
-    #[serde(rename = "Key")]
+    #[xml(rename = "Key")]
     pub key: String,
-    #[serde(rename = "VersionId")]
+    #[xml(rename = "VersionId")]
     pub version_id: Option<String>,
-    #[serde(rename = "DeleteMarker")]
+    #[xml(rename = "DeleteMarker")]
     pub delete_marker: Option<bool>,
-    #[serde(rename = "DeleteMarkerVersionId")]
+    #[xml(rename = "DeleteMarkerVersionId")]
     pub delete_marker_version_id: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, FromXml)]
+#[xml(rename = "Error", ns(S3_XML_NS))]
 pub struct ErrorObject {
-    #[serde(rename = "Key")]
+    #[xml(rename = "Key")]
     pub key: String,
-    #[serde(rename = "VersionId")]
+    #[xml(rename = "VersionId")]
     pub version_id: Option<String>,
-    #[serde(rename = "Code")]
+    #[xml(rename = "Code")]
     pub code: String,
-    #[serde(rename = "Message")]
+    #[xml(rename = "Message")]
     pub message: String,
 }
 
@@ -104,8 +105,8 @@ impl DeleteObjectsResponse {
     /// # Errors
     ///
     /// Returns an error if the XML response could not be parsed.
-    pub fn parse(s: impl AsRef<[u8]>) -> Result<Self, quick_xml::DeError> {
-        quick_xml::de::from_reader(s.as_ref())
+    pub fn parse(s: &str) -> Result<Self, instant_xml::Error> {
+        instant_xml::from_str(s)
     }
 }
 
@@ -117,46 +118,38 @@ where
     ///
     /// # Panics
     ///
-    /// Panics if an index is not representable as a `u16`.
+    /// Panics if XML serialization fails, which shouldn't happen in practice.
     pub fn body_with_md5(self) -> (String, String) {
-        #[derive(Serialize)]
-        #[serde(rename = "Delete")]
-        struct DeleteSerde<'a> {
-            #[serde(rename = "Object")]
+        #[derive(ToXml)]
+        #[xml(rename = "Delete")]
+        struct DeleteBody<'a> {
             objects: Vec<Object<'a>>,
-            #[serde(rename = "Quiet")]
+            #[xml(rename = "Quiet")]
             quiet: Option<bool>,
         }
-        #[derive(Serialize)]
-        #[serde(rename = "Delete")]
+        #[derive(ToXml)]
+        #[xml(rename = "Object")]
         struct Object<'a> {
-            #[serde(rename = "$value")]
-            nodes: Vec<Node<'a>>,
-        }
-
-        #[derive(Serialize)]
-        enum Node<'a> {
-            Key(&'a str),
-            VersionId(&'a str),
+            #[xml(rename = "Key")]
+            key: &'a str,
+            #[xml(rename = "VersionId")]
+            version_id: Option<&'a str>,
         }
 
         let objects: Vec<Object<'a>> = self
             .objects
-            .map(|o| {
-                let mut nodes = vec![Node::Key(o.key.as_str())];
-                if let Some(version_id) = &o.version_id {
-                    nodes.push(Node::VersionId(version_id.as_str()));
-                }
-                Object { nodes }
+            .map(|o| Object {
+                key: o.key.as_str(),
+                version_id: o.version_id.as_deref(),
             })
             .collect();
 
-        let req = DeleteSerde {
+        let req = DeleteBody {
             objects,
             quiet: self.quiet.then_some(true),
         };
 
-        let body = quick_xml::se::to_string(&req).unwrap();
+        let body = instant_xml::to_string(&req).unwrap();
 
         let content_md5 = crate::base64::encode(Md5::digest(body.as_bytes()));
         (body, content_md5)
@@ -276,8 +269,7 @@ mod tests {
 
     #[test]
     fn parse_response_success() {
-        let input = r#"
-        <?xml version="1.0" encoding="UTF-8"?>
+        let input = r#"<?xml version="1.0" encoding="UTF-8"?>
         <DeleteResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
             <Deleted>
                 <Key>duck.jpg</Key>
@@ -313,8 +305,7 @@ mod tests {
 
     #[test]
     fn parse_response_errors() {
-        let input = r#"
-        <?xml version="1.0" encoding="UTF-8"?>
+        let input = r#"<?xml version="1.0" encoding="UTF-8"?>
         <DeleteResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
             <Error>
                 <Key>idk.txt</Key>

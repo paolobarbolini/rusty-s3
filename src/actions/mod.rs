@@ -29,6 +29,9 @@ pub use self::multipart_upload::upload::UploadPart;
 pub use self::put_object::PutObject;
 use crate::{Map, Method};
 
+#[cfg(feature = "full")]
+pub(crate) const S3_XML_NS: &str = "http://s3.amazonaws.com/doc/2006-03-01/";
+
 mod create_bucket;
 mod delete_bucket;
 mod delete_object;
