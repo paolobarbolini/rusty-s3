@@ -105,20 +105,27 @@ where
 
     let query_string = SortingIterator::new(standard_query.copied(), query_string);
 
-    {
-        let mut query_pairs = url.query_pairs_mut();
-        query_pairs.clear();
-
-        query_pairs.extend_pairs(query_string.clone());
-    }
-
-    let canonical_req =
-        canonical_request::canonical_request(method, &url, query_string, headers, signed_headers);
+    let canonical_req = canonical_request::canonical_request(
+        method,
+        &url,
+        query_string.clone(),
+        headers,
+        signed_headers,
+    );
     let signed_string = string_to_sign::string_to_sign(date, region, &canonical_req);
     let signature = signature::signature(date, secret, region, &signed_string);
 
-    url.query_pairs_mut()
-        .append_pair("X-Amz-Signature", &signature);
+    // Build the URL query string with the same RFC 3986 percent-encoding used
+    // for the canonical request (a space is `%20`, not `+`), so the emitted URL
+    // matches exactly what was signed. `Url::query_pairs_mut` must not be used
+    // here: it serializes as `application/x-www-form-urlencoded`, which encodes
+    // spaces as `+` and would invalidate the signature.
+    let mut query = String::new();
+    util::canonical_query_string(query_string, &mut query).expect("String writer panicked");
+    query.push_str("&X-Amz-Signature=");
+    query.push_str(&signature);
+    url.set_query(Some(&query));
+
     url
 }
 
@@ -234,5 +241,38 @@ mod tests {
         );
 
         assert_eq!(expected, got.as_str());
+    }
+
+    #[test]
+    fn query_value_with_space_is_percent_encoded() {
+        // Fri, 24 May 2013 00:00:00 GMT
+        let date = Timestamp::from_second(1369353600).unwrap();
+
+        let url = "https://examplebucket.s3.amazonaws.com/test.txt"
+            .parse()
+            .unwrap();
+
+        let query = [("response-content-disposition", "attachment; x y")];
+        let got = sign(
+            &date,
+            Method::Get,
+            url,
+            "AKIAIOSFODNN7EXAMPLE",
+            "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+            None,
+            "us-east-1",
+            86400,
+            query.iter().copied(),
+            iter::empty(),
+        );
+
+        // The emitted URL must encode spaces as `%20` (matching the canonical
+        // request), never `+` (form-encoding), otherwise the signature breaks.
+        let got = got.as_str();
+        assert!(
+            got.contains("response-content-disposition=attachment%3B%20x%20y"),
+            "got: {got}"
+        );
+        assert!(!got.contains('+'), "query unexpectedly contains '+': {got}");
     }
 }
