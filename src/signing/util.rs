@@ -78,9 +78,20 @@ pub(crate) fn add_query_params<'a, Q>(mut url: Url, params: Q) -> Url
 where
     Q: Iterator<Item = (&'a str, &'a str)>,
 {
-    let mut query_pairs = url.query_pairs_mut();
-    query_pairs.extend_pairs(params);
-    drop(query_pairs);
+    // Encode with RFC 3986 percent-encoding (space -> `%20`, not `+`), the same
+    // as the signed path, so S3 interprets parameter values such as `prefix`
+    // correctly. `Url::query_pairs_mut` would form-encode spaces as `+`.
+    let mut query = String::new();
+    canonical_query_string(params, &mut query).expect("String writer panicked");
+
+    if !query.is_empty() {
+        match url.query() {
+            Some(existing) if !existing.is_empty() => {
+                url.set_query(Some(&format!("{existing}&{query}")));
+            }
+            _ => url.set_query(Some(&query)),
+        }
+    }
 
     url
 }

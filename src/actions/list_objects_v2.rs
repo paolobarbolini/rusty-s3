@@ -273,6 +273,30 @@ mod tests {
     }
 
     #[test]
+    fn anonymous_prefix_with_space() {
+        let expires_in = Duration::from_secs(86400);
+
+        let endpoint = "https://s3.amazonaws.com".parse().unwrap();
+        let bucket = Bucket::new(
+            endpoint,
+            UrlStyle::VirtualHost,
+            "examplebucket",
+            "us-east-1",
+        )
+        .unwrap();
+
+        let mut action = ListObjectsV2::new(&bucket, None);
+        action.with_prefix("my folder/");
+
+        let url = action.sign(expires_in);
+        let expected = "https://examplebucket.s3.amazonaws.com/?encoding-type=url&list-type=2&prefix=my%20folder%2F";
+
+        // The unsigned URL must percent-encode the space as `%20`, never `+`, so
+        // S3 interprets the prefix value correctly.
+        assert_eq!(expected, url.as_str());
+    }
+
+    #[test]
     fn parse() {
         let input = r#"<?xml version="1.0" encoding="UTF-8"?>
         <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
