@@ -1,4 +1,5 @@
-use std::{borrow::Cow, fmt::Display};
+use std::borrow::Cow;
+use std::fmt::{self, Display};
 
 use percent_encoding::{AsciiSet, CONTROLS, utf8_percent_encode};
 use url::Url;
@@ -44,6 +45,33 @@ pub(crate) fn percent_encode(val: &str) -> impl Display + Into<Cow<'_, str>> + '
 
 pub(crate) fn percent_encode_path(val: &str) -> impl Display + Into<Cow<'_, str>> + '_ {
     utf8_percent_encode(val, FRAGMENT)
+}
+
+/// Write a query string, percent-encoding keys and values per RFC 3986.
+///
+/// This is the encoding AWS Signature Version 4 expects in the canonical
+/// request (e.g. a space becomes `%20`, never `+`), so the same function is
+/// used to build both the canonical request and the emitted URL query string,
+/// guaranteeing the two match.
+pub(crate) fn canonical_query_string<'a, Q>(
+    query_string: Q,
+    mut out: impl fmt::Write,
+) -> fmt::Result
+where
+    Q: Iterator<Item = (&'a str, &'a str)>,
+{
+    let mut first = true;
+    for (key, val) in query_string {
+        if first {
+            first = false;
+        } else {
+            out.write_char('&')?;
+        }
+
+        write!(out, "{}={}", percent_encode(key), percent_encode(val))?;
+    }
+
+    Ok(())
 }
 
 pub(crate) fn add_query_params<'a, Q>(mut url: Url, params: Q) -> Url
