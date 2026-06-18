@@ -56,16 +56,37 @@ jobs:
         chmod +x minio
         ./minio server minio_data/ &
 
-    - name: Run tests
+    - name: Run tests (aws-lc-rs)
+      if: matrix.platform == 'ubuntu-24.04'
+      run: cargo test --no-default-features --features aws-lc-rs
+
+    - name: Run tests (rustcrypto)
+      if: matrix.platform == 'ubuntu-24.04'
+      run: cargo test --no-default-features --features rustcrypto
+
+    - name: Run tests (graviola)
+      if: matrix.platform == 'ubuntu-24.04'
+      run: cargo test --no-default-features --features graviola
+
+    - name: Run tests (default features)
       if: matrix.platform == 'ubuntu-24.04'
       run: cargo test
 
-    - name: Run tests
+    - name: Run tests (aws-lc-rs)
+      if: matrix.platform != 'ubuntu-24.04'
+      run: cargo test --lib --no-default-features --features aws-lc-rs
+
+    - name: Run tests (rustcrypto)
+      if: matrix.platform != 'ubuntu-24.04'
+      run: cargo test --lib --no-default-features --features rustcrypto
+
+    - name: Run tests (graviola)
+      if: matrix.platform != 'ubuntu-24.04'
+      run: cargo test --lib --no-default-features --features graviola
+
+    - name: Run tests (default features)
       if: matrix.platform != 'ubuntu-24.04'
       run: cargo test --lib
-
-    - name: Run tests no default features
-      run: cargo test --lib --no-default-features
 
   msrv:
     runs-on: ubuntu-24.04

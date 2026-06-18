@@ -13,10 +13,12 @@ edition = "2024"
 rust-version = "1.85"
 
 [dependencies]
-hmac = "0.13"
+aws-lc-rs = { version = "1.17", optional = true }
+graviola = { version = "0.4", optional = true }
+hmac = { version = "0.13", optional = true }
 jiff = { version = "0.2", default-features = false, features = ["std"] }
 percent-encoding = "2.1.0"
-sha2 = "0.11"
+sha2 = { version = "0.11", optional = true }
 url = "2.2.0"
 zeroize = "1"
 
@@ -28,7 +30,10 @@ serde = { version = "1", features = ["derive"], optional = true }
 serde_json = { version = "1", optional = true }
 
 [features]
-default = ["full"]
+default = ["rustcrypto", "full"]
+aws-lc-rs = ["dep:aws-lc-rs"]
+rustcrypto = ["dep:hmac", "dep:sha2"]
+graviola = ["dep:graviola"]
 wasm_bindgen = ["jiff/js"]
 full = ["dep:base64", "dep:instant-xml", "dep:md-5", "dep:serde", "dep:serde_json", "jiff/serde"]
 
