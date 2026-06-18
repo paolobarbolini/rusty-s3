@@ -1,12 +1,9 @@
-use hmac::{Hmac, KeyInit as _, Mac as _};
 use jiff::Timestamp;
-use sha2::Sha256;
 use zeroize::Zeroizing;
 
+use crate::crypto::hmac_sha256;
 use crate::hex::LowerHexWrapper;
 use crate::time::YYYYMMDD;
-
-type HmacSha256 = Hmac<Sha256>;
 
 pub(super) fn signature(
     date: &Timestamp,
@@ -21,28 +18,12 @@ pub(super) fn signature(
     raw_date.push_str(secret);
     let raw_date = Zeroizing::new(raw_date);
 
-    let mut mac =
-        HmacSha256::new_from_slice(raw_date.as_bytes()).expect("HMAC can take keys of any size");
-    mac.update(yyyymmdd.as_bytes());
-    let date_key = mac.finalize().into_bytes();
-
-    let mut mac = HmacSha256::new_from_slice(&date_key).expect("HMAC can take keys of any size");
-    mac.update(region.as_bytes());
-    let date_region_key = mac.finalize().into_bytes();
-
-    let mut mac =
-        HmacSha256::new_from_slice(&date_region_key).expect("HMAC can take keys of any size");
-    mac.update(b"s3");
-    let date_region_service_key = mac.finalize().into_bytes();
-
-    let mut mac = HmacSha256::new_from_slice(&date_region_service_key)
-        .expect("HMAC can take keys of any size");
-    mac.update(b"aws4_request");
-    let signing_key = mac.finalize().into_bytes();
-
-    let mut mac = HmacSha256::new_from_slice(&signing_key).expect("HMAC can take keys of any size");
-    mac.update(string_to_sign.as_bytes());
-    format!("{:x}", LowerHexWrapper(mac.finalize().into_bytes()))
+    let date_key = hmac_sha256(raw_date.as_bytes(), yyyymmdd.as_bytes());
+    let date_region_key = hmac_sha256(&date_key, region.as_bytes());
+    let date_region_service_key = hmac_sha256(&date_region_key, b"s3");
+    let signing_key = hmac_sha256(&date_region_service_key, b"aws4_request");
+    let signature = hmac_sha256(&signing_key, string_to_sign.as_bytes());
+    format!("{:x}", LowerHexWrapper(signature))
 }
 
 #[cfg(test)]

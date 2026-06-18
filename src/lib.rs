@@ -54,6 +54,7 @@ pub mod actions;
 pub(crate) mod base64;
 mod bucket;
 pub mod credentials;
+pub(crate) mod crypto;
 pub(crate) mod hex;
 mod map;
 mod method;
