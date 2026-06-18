@@ -3,6 +3,7 @@ use std::time::Duration;
 
 use instant_xml::FromXml;
 use jiff::Timestamp;
+use percent_encoding::percent_decode_str;
 use url::Url;
 
 use crate::actions::{Method, S3_XML_NS, S3Action};
@@ -42,6 +43,8 @@ pub struct ListObjectsV2Response {
     pub next_continuation_token: Option<String>,
     #[xml(rename = "StartAfter")]
     pub start_after: Option<String>,
+    #[xml(rename = "EncodingType")]
+    pub encoding_type: Option<String>,
 }
 
 #[derive(Debug, Clone, FromXml)]
@@ -171,6 +174,12 @@ impl<'a> ListObjectsV2<'a> {
     pub fn parse_response(s: &str) -> Result<ListObjectsV2Response, instant_xml::Error> {
         let mut parsed: ListObjectsV2Response = instant_xml::from_str(s)?;
 
+        // When `encoding-type=url` is requested (which `new` always does), S3
+        // percent-encodes the key-related fields in the response. Some
+        // implementations (e.g. DigitalOcean Spaces) encode characters such as
+        // `/` and `%`, so the values must be decoded to recover the real keys.
+        let url_encoded = parsed.encoding_type.as_deref() == Some("url");
+
         // S3 returns an Owner with an empty DisplayName and ID when fetch-owner is disabled
         for content in &mut parsed.contents {
             if let Some(owner) = &content.owner {
@@ -178,9 +187,30 @@ impl<'a> ListObjectsV2<'a> {
                     content.owner = None;
                 }
             }
+
+            if url_encoded {
+                percent_decode_in_place(&mut content.key);
+            }
+        }
+
+        if url_encoded {
+            for prefix in &mut parsed.common_prefixes {
+                percent_decode_in_place(&mut prefix.prefix);
+            }
+            if let Some(start_after) = &mut parsed.start_after {
+                percent_decode_in_place(start_after);
+            }
         }
 
         Ok(parsed)
+    }
+}
+
+/// Percent-decode `value` in place, leaving it untouched if it is not valid
+/// percent-encoded UTF-8.
+fn percent_decode_in_place(value: &mut String) {
+    if let Ok(Cow::Owned(decoded)) = percent_decode_str(value).decode_utf8() {
+        *value = decoded;
     }
 }
 
@@ -397,5 +427,68 @@ mod tests {
         assert!(parsed.common_prefixes.is_empty());
         assert!(parsed.next_continuation_token.is_none());
         assert!(parsed.start_after.is_none());
+    }
+
+    #[test]
+    fn parse_url_encoded() {
+        let input = r#"<?xml version="1.0" encoding="UTF-8"?>
+        <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+            <Name>test</Name>
+            <Prefix></Prefix>
+            <KeyCount>1</KeyCount>
+            <MaxKeys>4500</MaxKeys>
+            <Delimiter>/</Delimiter>
+            <IsTruncated>false</IsTruncated>
+            <Contents>
+                <Key>100%25tamo%2Fduck.jpg</Key>
+                <LastModified>2020-12-01T20:43:11.794Z</LastModified>
+                <ETag>"bfd537a51d15208163231b0711e0b1f3"</ETag>
+                <Size>4274</Size>
+                <StorageClass>STANDARD</StorageClass>
+            </Contents>
+            <CommonPrefixes>
+                <Prefix>my%20folder%2F</Prefix>
+            </CommonPrefixes>
+            <StartAfter>start%2Fafter</StartAfter>
+            <EncodingType>url</EncodingType>
+        </ListBucketResult>
+        "#;
+
+        let parsed = ListObjectsV2::parse_response(input).unwrap();
+        assert_eq!(parsed.contents.len(), 1);
+        assert_eq!(parsed.contents[0].key, "100%tamo/duck.jpg");
+
+        assert_eq!(parsed.common_prefixes.len(), 1);
+        assert_eq!(parsed.common_prefixes[0].prefix, "my folder/");
+
+        assert_eq!(parsed.start_after.as_deref(), Some("start/after"));
+        assert_eq!(parsed.encoding_type.as_deref(), Some("url"));
+    }
+
+    #[test]
+    fn parse_not_url_encoded_is_left_untouched() {
+        let input = r#"<?xml version="1.0" encoding="UTF-8"?>
+        <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+            <Name>test</Name>
+            <Prefix></Prefix>
+            <KeyCount>1</KeyCount>
+            <MaxKeys>4500</MaxKeys>
+            <Delimiter></Delimiter>
+            <IsTruncated>false</IsTruncated>
+            <Contents>
+                <Key>100%25tamo.jpg</Key>
+                <LastModified>2020-12-01T20:43:11.794Z</LastModified>
+                <ETag>"bfd537a51d15208163231b0711e0b1f3"</ETag>
+                <Size>4274</Size>
+                <StorageClass>STANDARD</StorageClass>
+            </Contents>
+        </ListBucketResult>
+        "#;
+
+        let parsed = ListObjectsV2::parse_response(input).unwrap();
+        assert_eq!(parsed.contents.len(), 1);
+        // No `EncodingType` in the response, so the key is left as-is.
+        assert_eq!(parsed.contents[0].key, "100%25tamo.jpg");
+        assert!(parsed.encoding_type.is_none());
     }
 }
