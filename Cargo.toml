@@ -44,6 +44,26 @@ criterion = "0.7"
 name = "actions"
 harness = false
 
+[[test]]
+name = "delete_objects"
+required-features = ["full"]
+
+[[test]]
+name = "list_parts"
+required-features = ["full"]
+
+[[test]]
+name = "upload_download"
+required-features = ["full"]
+
+[[example]]
+name = "list_objects"
+required-features = ["full"]
+
+[[example]]
+name = "multipart_upload"
+required-features = ["full"]
+
 [lints.rust]
 unreachable_pub = "warn"
 
