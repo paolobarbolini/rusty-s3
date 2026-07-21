@@ -255,7 +255,7 @@ impl Bucket {
     /// Delete multiple objects from S3 using a single `POST` request.
     ///
     /// See [`DeleteObjects`] for more details.
-    #[cfg(feature = "xml")]
+    #[cfg(feature = "full")]
     pub const fn delete_objects<'a, I>(
         &'a self,
         credentials: Option<&'a Credentials>,
