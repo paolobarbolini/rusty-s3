@@ -5,14 +5,14 @@ use std::fmt::{self, Display};
 use url::{ParseError, Url};
 
 use crate::Credentials;
+#[cfg(feature = "full")]
+use crate::actions::DeleteObjects;
 use crate::actions::{
     AbortMultipartUpload, CreateBucket, DeleteBucket, DeleteObject, GetObject, HeadBucket,
     HeadObject, PutObject, UploadPart,
 };
-#[cfg(feature = "full")]
-use crate::actions::{
-    CompleteMultipartUpload, CreateMultipartUpload, DeleteObjects, ListObjectsV2, ListParts,
-};
+#[cfg(feature = "xml")]
+use crate::actions::{CompleteMultipartUpload, CreateMultipartUpload, ListObjectsV2, ListParts};
 use crate::signing::util::percent_encode_path;
 
 /// An S3 bucket
@@ -219,7 +219,7 @@ impl Bucket {
     /// List all objects in the bucket.
     ///
     /// See [`ListObjectsV2`] for more details.
-    #[cfg(feature = "full")]
+    #[cfg(feature = "xml")]
     #[must_use]
     pub fn list_objects_v2<'a>(
         &'a self,
@@ -271,7 +271,7 @@ impl Bucket {
     /// Create a multipart upload.
     ///
     /// See [`CreateMultipartUpload`] for more details.
-    #[cfg(feature = "full")]
+    #[cfg(feature = "xml")]
     #[must_use]
     pub const fn create_multipart_upload<'a>(
         &'a self,
@@ -298,7 +298,7 @@ impl Bucket {
     /// Complete a multipart upload.
     ///
     /// See [`CompleteMultipartUpload`] for more details.
-    #[cfg(feature = "full")]
+    #[cfg(feature = "xml")]
     pub const fn complete_multipart_upload<'a, I>(
         &'a self,
         credentials: Option<&'a Credentials>,
@@ -325,7 +325,7 @@ impl Bucket {
     /// Lists the parts that have been uploaded for a specific multipart upload.
     ///
     /// See [`ListParts`] for more details.
-    #[cfg(feature = "full")]
+    #[cfg(feature = "xml")]
     #[must_use]
     pub const fn list_parts<'a>(
         &'a self,
@@ -465,17 +465,17 @@ mod tests {
 
         let _ = bucket.head_object(Some(&credentials), "duck.jpg");
         let _ = bucket.get_object(Some(&credentials), "duck.jpg");
-        #[cfg(feature = "full")]
+        #[cfg(feature = "xml")]
         let _ = bucket.list_objects_v2(Some(&credentials));
         let _ = bucket.put_object(Some(&credentials), "duck.jpg");
         let _ = bucket.delete_object(Some(&credentials), "duck.jpg");
         #[cfg(feature = "full")]
         let _ = bucket.delete_objects(Some(&credentials), std::iter::empty::<ObjectIdentifier>());
 
-        #[cfg(feature = "full")]
+        #[cfg(feature = "xml")]
         let _ = bucket.create_multipart_upload(Some(&credentials), "duck.jpg");
         let _ = bucket.upload_part(Some(&credentials), "duck.jpg", 1, "abcd");
-        #[cfg(feature = "full")]
+        #[cfg(feature = "xml")]
         let _ = bucket.complete_multipart_upload(
             Some(&credentials),
             "duck.jpg",
@@ -483,7 +483,7 @@ mod tests {
             ["1234"].iter().copied(),
         );
         let _ = bucket.abort_multipart_upload(Some(&credentials), "duck.jpg", "abcd");
-        #[cfg(feature = "full")]
+        #[cfg(feature = "xml")]
         let _ = bucket.list_parts(Some(&credentials), "duck.jpg", "abcd");
     }
 }

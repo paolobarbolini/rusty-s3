@@ -35,7 +35,8 @@ aws-lc-rs = ["dep:aws-lc-rs"]
 rustcrypto = ["dep:hmac", "dep:sha2"]
 graviola = ["dep:graviola"]
 wasm_bindgen = ["jiff/js"]
-full = ["dep:base64", "dep:instant-xml", "dep:md-5", "dep:serde", "dep:serde_json", "jiff/serde"]
+xml = ["dep:instant-xml"]
+full = ["xml", "dep:base64", "dep:md-5", "dep:serde", "dep:serde_json", "jiff/serde"]
 
 [dev-dependencies]
 tokio = { version = "1.0.1", features = ["macros", "fs", "rt-multi-thread"] }
@@ -55,7 +56,7 @@ required-features = ["full"]
 
 [[test]]
 name = "list_parts"
-required-features = ["full"]
+required-features = ["xml"]
 
 [[test]]
 name = "upload_download"
@@ -67,7 +68,7 @@ required-features = ["full"]
 
 [[example]]
 name = "multipart_upload"
-required-features = ["full"]
+required-features = ["xml"]
 
 [lints.rust]
 unreachable_pub = "warn"

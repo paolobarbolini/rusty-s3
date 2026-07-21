@@ -15,21 +15,21 @@ pub use self::get_bucket_policy::{GetBucketPolicy, GetBucketPolicyResponse};
 pub use self::get_object::GetObject;
 pub use self::head_bucket::HeadBucket;
 pub use self::head_object::HeadObject;
-#[cfg(feature = "full")]
+#[cfg(feature = "xml")]
 #[doc(inline)]
 pub use self::list_objects_v2::{ListObjectsV2, ListObjectsV2Response};
 pub use self::multipart_upload::abort::AbortMultipartUpload;
-#[cfg(feature = "full")]
+#[cfg(feature = "xml")]
 pub use self::multipart_upload::complete::CompleteMultipartUpload;
-#[cfg(feature = "full")]
+#[cfg(feature = "xml")]
 pub use self::multipart_upload::create::{CreateMultipartUpload, CreateMultipartUploadResponse};
-#[cfg(feature = "full")]
+#[cfg(feature = "xml")]
 pub use self::multipart_upload::list_parts::{ListParts, ListPartsResponse};
 pub use self::multipart_upload::upload::UploadPart;
 pub use self::put_object::PutObject;
 use crate::{Map, Method};
 
-#[cfg(feature = "full")]
+#[cfg(feature = "xml")]
 pub(crate) const S3_XML_NS: &str = "http://s3.amazonaws.com/doc/2006-03-01/";
 
 mod create_bucket;
@@ -42,7 +42,7 @@ mod get_bucket_policy;
 mod get_object;
 mod head_bucket;
 mod head_object;
-#[cfg(feature = "full")]
+#[cfg(feature = "xml")]
 pub mod list_objects_v2;
 mod multipart_upload;
 mod put_object;
