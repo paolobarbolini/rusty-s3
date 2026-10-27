@@ -27,17 +27,24 @@ pub struct GetBucketPolicy<'a> {
     headers: Map<'a>,
 }
 
+/// The policy of a bucket, as returned by [`GetBucketPolicy`]
+///
+/// Only the `Version` and `Id` of the policy are parsed.
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 pub struct GetBucketPolicyResponse {
     /// The version of the policy language, empty if the policy doesn't have one
     #[serde(rename = "Version", default)]
     pub version: String,
+    /// The ID of the policy, if it has one
     #[serde(rename = "Id")]
     pub id: Option<String>,
 }
 
 impl<'a> GetBucketPolicy<'a> {
+    /// Construct a new `GetBucketPolicy` action
+    ///
+    /// Without `credentials` the request isn't signed.
     #[inline]
     #[must_use]
     pub const fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>) -> Self {

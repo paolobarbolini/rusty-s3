@@ -1,3 +1,5 @@
+//! Signing of requests with AWS Signature Version 4
+
 use std::str;
 
 use jiff::Timestamp;

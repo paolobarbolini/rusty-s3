@@ -60,6 +60,9 @@ struct InnerCompleteMultipartUploadResponse {
 }
 
 impl<'a, I> CompleteMultipartUpload<'a, I> {
+    /// Construct a new `CompleteMultipartUpload` action
+    ///
+    /// Without `credentials` the request isn't signed.
     #[inline]
     pub const fn new(
         bucket: &'a Bucket,

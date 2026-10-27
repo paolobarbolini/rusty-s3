@@ -24,6 +24,9 @@ pub struct DeleteObject<'a> {
 }
 
 impl<'a> DeleteObject<'a> {
+    /// Construct a new `DeleteObject` action
+    ///
+    /// Without `credentials` the request isn't signed.
     #[inline]
     #[must_use]
     pub const fn new(

@@ -31,6 +31,7 @@ pub struct CreateBucket<'a> {
 }
 
 impl<'a> CreateBucket<'a> {
+    /// Construct a new `CreateBucket` action
     #[must_use]
     pub const fn new(bucket: &'a Bucket, credentials: &'a Credentials) -> Self {
         Self {

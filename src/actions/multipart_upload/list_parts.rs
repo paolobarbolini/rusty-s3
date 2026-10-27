@@ -31,33 +31,45 @@ pub struct ListParts<'a> {
     headers: Map<'a>,
 }
 
+/// The response of a [`ListParts`] request
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Clone, FromXml)]
 #[xml(rename = "ListPartsResult", ns(S3_XML_NS))]
 pub struct ListPartsResponse {
+    /// The listed parts
     pub parts: Vec<PartsContent>,
+    /// The maximum number of parts the response could contain
     #[xml(rename = "MaxParts")]
     pub max_parts: u16,
     #[xml(rename = "IsTruncated")]
     is_truncated: bool,
+    /// The part number to continue listing from, if the list is truncated
     #[xml(rename = "NextPartNumberMarker")]
     pub next_part_number_marker: Option<u16>,
 }
 
+/// A part listed by [`ListParts`]
 #[derive(Debug, Clone, FromXml)]
 #[xml(rename = "Part", ns(S3_XML_NS))]
 pub struct PartsContent {
+    /// The part number of the part
     #[xml(rename = "PartNumber")]
     pub number: u16,
+    /// The entity tag of the part
     #[xml(rename = "ETag")]
     pub etag: String,
+    /// When the part was uploaded
     #[xml(rename = "LastModified")]
     pub last_modified: String,
+    /// The size of the part, in bytes
     #[xml(rename = "Size")]
     pub size: u64,
 }
 
 impl<'a> ListParts<'a> {
+    /// Construct a new `ListParts` action
+    ///
+    /// Without `credentials` the request isn't signed.
     #[must_use]
     pub const fn new(
         bucket: &'a Bucket,
@@ -76,10 +88,14 @@ impl<'a> ListParts<'a> {
         }
     }
 
+    /// Sets the maximum number of parts returned in the response, which is
+    /// 1,000 by default.
     pub fn set_max_parts(&mut self, max_parts: u16) {
         self.query.insert("max-parts", max_parts.to_string());
     }
 
+    /// Only list the parts with a part number greater than `part_number_marker`,
+    /// like the `next_part_number_marker` of the previous response.
     pub fn set_part_number_marker(&mut self, part_number_marker: u16) {
         self.query
             .insert("part-number-marker", part_number_marker.to_string());
