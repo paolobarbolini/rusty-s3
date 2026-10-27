@@ -30,7 +30,7 @@ use crate::signing::util::percent_encode_path;
 /// assert_eq!(bucket.base_url().as_str(), "https://s3.dualstack.eu-west-1.amazonaws.com/rusty-s3/");
 /// assert_eq!(bucket.name(), "rusty-s3");
 /// assert_eq!(bucket.region(), "eu-west-1");
-/// assert_eq!(bucket.object_url("duck.jpg").expect("url is valid").as_str(), "https://s3.dualstack.eu-west-1.amazonaws.com/rusty-s3/duck.jpg");
+/// assert_eq!(bucket.object_url("duck.jpg").as_str(), "https://s3.dualstack.eu-west-1.amazonaws.com/rusty-s3/duck.jpg");
 /// ```
 ///
 /// ## Domain style url
@@ -46,7 +46,7 @@ use crate::signing::util::percent_encode_path;
 /// assert_eq!(bucket.base_url().as_str(), "https://rusty-s3.s3.dualstack.eu-west-1.amazonaws.com/");
 /// assert_eq!(bucket.name(), "rusty-s3");
 /// assert_eq!(bucket.region(), "eu-west-1");
-/// assert_eq!(bucket.object_url("duck.jpg").expect("url is valid").as_str(), "https://rusty-s3.s3.dualstack.eu-west-1.amazonaws.com/duck.jpg");
+/// assert_eq!(bucket.object_url("duck.jpg").as_str(), "https://rusty-s3.s3.dualstack.eu-west-1.amazonaws.com/duck.jpg");
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Bucket {
@@ -146,13 +146,15 @@ impl Bucket {
     ///
     /// This is not a signed url, it's just the starting point for
     /// generating an url to an S3 object.
-    ///
-    /// # Errors
-    ///
-    /// Returns a `ParseError` if the object is not a valid path.
-    pub fn object_url(&self, object: &str) -> Result<Url, ParseError> {
-        let object: Cow<'_, str> = percent_encode_path(object).into();
-        self.base_url.join(&object)
+    #[must_use]
+    pub fn object_url(&self, object: &str) -> Url {
+        // Appended to the path of the bucket rather than resolved against
+        // it, so that a key starting with `/` can't replace the path of the
+        // bucket, nor one starting with `//` its host
+        let mut url = self.base_url.clone();
+        let path = format!("{}{}", url.path(), percent_encode_path(object));
+        url.set_path(&path);
+        url
     }
 }
 
@@ -492,7 +494,7 @@ mod tests {
         let region = "eu-west-1";
         let bucket = Bucket::new(endpoint, UrlStyle::Path, name, region).unwrap();
 
-        let path_style = bucket.object_url("something/cat.jpg").unwrap();
+        let path_style = bucket.object_url("something/cat.jpg");
         assert_eq!(
             "https://s3.dualstack.eu-west-1.amazonaws.com/rusty-s3/something/cat.jpg",
             path_style.as_str()
@@ -508,7 +510,7 @@ mod tests {
         let region = "eu-west-1";
         let bucket = Bucket::new(endpoint, UrlStyle::VirtualHost, name, region).unwrap();
 
-        let domain_style = bucket.object_url("something/cat.jpg").unwrap();
+        let domain_style = bucket.object_url("something/cat.jpg");
         assert_eq!(
             "https://rusty-s3.s3.dualstack.eu-west-1.amazonaws.com/something/cat.jpg",
             domain_style.as_str()
@@ -529,7 +531,7 @@ mod tests {
                 "https://example.com/storage/v1/s3/rusty-s3/"
             );
             assert_eq!(
-                bucket.object_url("something/cat.jpg").unwrap().as_str(),
+                bucket.object_url("something/cat.jpg").as_str(),
                 "https://example.com/storage/v1/s3/rusty-s3/something/cat.jpg"
             );
         }
@@ -550,8 +552,40 @@ mod tests {
                 "https://rusty-s3.example.com/storage/v1/s3/"
             );
             assert_eq!(
-                bucket.object_url("something/cat.jpg").unwrap().as_str(),
+                bucket.object_url("something/cat.jpg").as_str(),
                 "https://rusty-s3.example.com/storage/v1/s3/something/cat.jpg"
+            );
+        }
+    }
+
+    #[test]
+    fn object_url_leading_slashes() {
+        let endpoint: Url = "https://s3.dualstack.eu-west-1.amazonaws.com"
+            .parse()
+            .unwrap();
+        let name = "rusty-s3";
+        let region = "eu-west-1";
+        let path_bucket = Bucket::new(endpoint.clone(), UrlStyle::Path, name, region).unwrap();
+        let domain_bucket = Bucket::new(endpoint, UrlStyle::VirtualHost, name, region).unwrap();
+
+        for (object, path) in [
+            ("/cat.jpg", "//cat.jpg"),
+            ("/", "//"),
+            ("//", "///"),
+            ("//example.com/cat.jpg", "///example.com/cat.jpg"),
+            ("//my cat.jpg", "///my%20cat.jpg"),
+            (
+                "//user@example.com:1/cat.jpg",
+                "///user%40example.com%3A1/cat.jpg",
+            ),
+        ] {
+            assert_eq!(
+                path_bucket.object_url(object).as_str(),
+                format!("https://s3.dualstack.eu-west-1.amazonaws.com/rusty-s3{path}")
+            );
+            assert_eq!(
+                domain_bucket.object_url(object).as_str(),
+                format!("https://rusty-s3.s3.dualstack.eu-west-1.amazonaws.com{path}")
             );
         }
     }

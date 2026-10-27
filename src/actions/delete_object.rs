@@ -54,7 +54,7 @@ impl<'a> S3Action<'a> for DeleteObject<'a> {
     }
 
     fn sign_with_time(&self, expires_in: Duration, time: &Timestamp) -> Url {
-        let url = self.bucket.object_url(self.object).unwrap();
+        let url = self.bucket.object_url(self.object);
 
         match self.credentials {
             Some(credentials) => sign(

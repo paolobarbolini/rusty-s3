@@ -76,7 +76,7 @@ impl<'a> S3Action<'a> for UploadPart<'a> {
     }
 
     fn sign_with_time(&self, expires_in: Duration, time: &Timestamp) -> Url {
-        let url = self.bucket.object_url(self.object).unwrap();
+        let url = self.bucket.object_url(self.object);
 
         let part_number = self.part_number.to_string();
         let query = [
