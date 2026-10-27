@@ -37,7 +37,10 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     );
 
     if let Err(err) = upload(&client, &bucket, &credential, multipart.upload_id()).await {
-        // the uploaded parts consume storage until the upload is completed or aborted
+        // the uploaded parts consume storage until the upload is completed or
+        // aborted, and uploads can still be left behind, like when the
+        // process crashes, so the bucket should also have a lifecycle rule
+        // aborting incomplete uploads
         let action =
             AbortMultipartUpload::new(&bucket, Some(&credential), "idk.txt", multipart.upload_id());
         let url = action.sign(ONE_HOUR);
