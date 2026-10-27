@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 use std::fmt::{self, Debug};
 
-/// A map used for holding query string paramenters or headers
+/// A map used for holding query string parameters or headers
 #[derive(Clone)]
 pub struct Map<'a> {
     inner: Vec<(Cow<'a, str>, Cow<'a, str>)>,

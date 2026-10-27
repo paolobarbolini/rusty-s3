@@ -63,7 +63,7 @@ pub enum UrlStyle {
     ///
     /// This style should be considered deprecated and is **NOT RECOMMENDED**.
     /// Check [Amazon S3 Path Deprecation Plan](https://aws.amazon.com/blogs/aws/amazon-s3-path-deprecation-plan-the-rest-of-the-story/)
-    /// for more informations.
+    /// for more information.
     Path,
     /// Requests will use "virtual-hosted-style" urls, i.e:
     /// `https://<bucket>.s3.<region>.amazonaws.com/<key>`.
@@ -250,7 +250,7 @@ impl Bucket {
         HeadObject::new(self, credentials, object)
     }
 
-    /// Retrieve an bucket's metadata from S3, using a `HEAD` request.
+    /// Retrieve a bucket's metadata from S3, using a `HEAD` request.
     ///
     /// See [`HeadBucket`] for more details.
     #[must_use]

@@ -14,7 +14,7 @@ use crate::{Bucket, Credentials, Map};
 ///
 /// A few advantages of multipart uploads are:
 ///
-/// * being able to be resume without having to start back from the beginning
+/// * being able to resume without having to start back from the beginning
 /// * parallelize the uploads across multiple threads
 ///
 /// Find out more about `CreateMultipartUpload` from the [AWS API Reference][api]
