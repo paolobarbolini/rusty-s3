@@ -47,6 +47,23 @@ pub struct ListObjectsV2Response {
     pub encoding_type: Option<String>,
 }
 
+#[derive(FromXml)]
+#[xml(rename = "ListBucketResult", ns(S3_XML_NS))]
+struct InnerListObjectsV2Response {
+    contents: Vec<ListObjectsContent>,
+    #[xml(rename = "MaxKeys")]
+    max_keys: Option<u16>,
+    common_prefixes: Vec<CommonPrefixes>,
+    #[xml(rename = "IsTruncated")]
+    is_truncated: Option<bool>,
+    #[xml(rename = "NextContinuationToken")]
+    next_continuation_token: Option<String>,
+    #[xml(rename = "StartAfter")]
+    start_after: Option<String>,
+    #[xml(rename = "EncodingType")]
+    encoding_type: Option<String>,
+}
+
 #[derive(Debug, Clone, FromXml)]
 #[xml(rename = "Contents", ns(S3_XML_NS))]
 pub struct ListObjectsContent {
@@ -174,11 +191,45 @@ impl<'a> ListObjectsV2<'a> {
 
     /// Parse the XML response from S3 into a struct.
     ///
+    /// The continuation token is only kept if the response is truncated.
+    ///
     /// # Errors
     ///
-    /// Returns an error if the XML response could not be parsed.
+    /// Returns an error if the XML response could not be parsed, or if it's
+    /// truncated without a continuation token to continue listing from.
     pub fn parse_response(s: &str) -> Result<ListObjectsV2Response, instant_xml::Error> {
-        let mut parsed: ListObjectsV2Response = instant_xml::from_str(s)?;
+        let InnerListObjectsV2Response {
+            contents,
+            max_keys,
+            common_prefixes,
+            is_truncated,
+            next_continuation_token,
+            start_after,
+            encoding_type,
+        } = instant_xml::from_str(s)?;
+
+        // Without a token a truncated listing would silently end early, while
+        // following a token given with a complete one would restart it, or
+        // fail if the token is empty
+        let next_continuation_token = match (is_truncated, next_continuation_token) {
+            (Some(false), _) => None,
+            (_, Some(token)) if !token.is_empty() => Some(token),
+            (Some(true), _) => {
+                return Err(instant_xml::Error::MissingValue(
+                    "ListObjectsV2Response::next_continuation_token",
+                ));
+            }
+            (None, _) => None,
+        };
+
+        let mut parsed = ListObjectsV2Response {
+            contents,
+            max_keys,
+            common_prefixes,
+            next_continuation_token,
+            start_after,
+            encoding_type,
+        };
 
         // When `encoding-type=url` is requested (which `new` always does), S3
         // URL-encodes the key-related fields in the response. AWS S3 and MinIO
@@ -640,5 +691,73 @@ mod tests {
         // No `EncodingType` in the response, so the key is left as-is.
         assert_eq!(parsed.contents[0].key, "100%25tamo.jpg");
         assert!(parsed.encoding_type.is_none());
+    }
+
+    /// A page of a listing, with `continuation` after its contents
+    fn page(is_truncated: bool, continuation: &str) -> String {
+        format!(
+            r#"<?xml version="1.0" encoding="UTF-8"?>
+        <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+            <Name>test</Name>
+            <Prefix></Prefix>
+            <KeyCount>1</KeyCount>
+            <MaxKeys>1</MaxKeys>
+            <IsTruncated>{is_truncated}</IsTruncated>
+            <Contents>
+                <Key>duck.jpg</Key>
+                <LastModified>2020-12-01T20:43:11.794Z</LastModified>
+                <ETag>"bfd537a51d15208163231b0711e0b1f3"</ETag>
+                <Size>4274</Size>
+                <StorageClass>STANDARD</StorageClass>
+            </Contents>
+            {continuation}
+        </ListBucketResult>
+        "#
+        )
+    }
+
+    #[test]
+    fn parse_truncated() {
+        let input = page(
+            true,
+            "<NextContinuationToken>1ueGcxLPRx1Tr/XYExHnhbYLgveDs2J/wm36Hy4vbOwM=</NextContinuationToken>",
+        );
+
+        let parsed = ListObjectsV2::parse_response(&input).unwrap();
+        assert_eq!(parsed.contents.len(), 1);
+        assert_eq!(
+            parsed.next_continuation_token.as_deref(),
+            Some("1ueGcxLPRx1Tr/XYExHnhbYLgveDs2J/wm36Hy4vbOwM=")
+        );
+    }
+
+    #[test]
+    fn parse_truncated_without_continuation_token() {
+        for continuation in [
+            // Servers without `ListObjectsV2`, like old versions of Ceph,
+            // answer with a page of `ListObjects`
+            "<NextMarker>duck.jpg</NextMarker>",
+            "<NextContinuationToken></NextContinuationToken>",
+        ] {
+            let err = ListObjectsV2::parse_response(&page(true, continuation)).unwrap_err();
+            assert_eq!(
+                err,
+                instant_xml::Error::MissingValue("ListObjectsV2Response::next_continuation_token"),
+                "{continuation}"
+            );
+        }
+    }
+
+    #[test]
+    fn parse_not_truncated_ignores_continuation_token() {
+        for continuation in [
+            "<NextContinuationToken/>",
+            "<NextContinuationToken></NextContinuationToken>",
+            "<NextContinuationToken>1ueGcxLPRx1Tr/XYExHnhbYLgveDs2J/wm36Hy4vbOwM=</NextContinuationToken>",
+        ] {
+            let parsed = ListObjectsV2::parse_response(&page(false, continuation)).unwrap();
+            assert_eq!(parsed.contents.len(), 1);
+            assert!(parsed.next_continuation_token.is_none(), "{continuation}");
+        }
     }
 }
