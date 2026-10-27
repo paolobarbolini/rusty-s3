@@ -175,8 +175,7 @@ mod tests {
             assert!(map.get("nothing").is_none());
             assert_eq!(map.get("content-type"), Some("text/plain"));
 
-            let iter = map.iter();
-            iter.eq(vec![("content-type", "text/plain")]);
+            assert!(map.iter().eq(vec![("content-type", "text/plain")]));
         }
 
         {
@@ -187,11 +186,10 @@ mod tests {
             assert_eq!(map.get("content-type"), Some("text/plain"));
             assert_eq!(map.get("cache-control"), Some("public, max-age=86400"));
 
-            let iter = map.iter();
-            iter.eq(vec![
+            assert!(map.iter().eq(vec![
                 ("cache-control", "public, max-age=86400"),
                 ("content-type", "text/plain"),
-            ]);
+            ]));
         }
 
         {
@@ -203,12 +201,11 @@ mod tests {
             assert_eq!(map.get("cache-control"), Some("public, max-age=86400"));
             assert_eq!(map.get("x-amz-storage-class"), Some("standard"));
 
-            let iter = map.iter();
-            iter.eq(vec![
+            assert!(map.iter().eq(vec![
                 ("cache-control", "public, max-age=86400"),
                 ("content-type", "text/plain"),
                 ("x-amz-storage-class", "standard"),
-            ]);
+            ]));
         }
 
         {
@@ -219,11 +216,10 @@ mod tests {
             assert_eq!(map.get("cache-control"), Some("public, max-age=86400"));
             assert_eq!(map.get("x-amz-storage-class"), Some("standard"));
 
-            let iter = map.iter();
-            iter.eq(vec![
+            assert!(map.iter().eq(vec![
                 ("cache-control", "public, max-age=86400"),
                 ("x-amz-storage-class", "standard"),
-            ]);
+            ]));
         }
 
         {
@@ -234,11 +230,10 @@ mod tests {
             assert_eq!(map.get("cache-control"), Some("public, max-age=86400"));
             assert_eq!(map.get("x-amz-storage-class"), Some("standard"));
 
-            let iter = map.iter();
-            iter.eq(vec![
+            assert!(map.iter().eq(vec![
                 ("cache-control", "public, max-age=86400"),
                 ("x-amz-storage-class", "standard"),
-            ]);
+            ]));
         }
 
         {
@@ -252,11 +247,10 @@ mod tests {
             );
             assert_eq!(map.get("x-amz-storage-class"), Some("standard"));
 
-            let iter = map.iter();
-            iter.eq(vec![
+            assert!(map.iter().eq(vec![
                 ("cache-control", "public, max-age=86400, immutable"),
                 ("x-amz-storage-class", "standard"),
-            ]);
+            ]));
         }
     }
 
