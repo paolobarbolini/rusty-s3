@@ -188,13 +188,15 @@ fn base_url(mut endpoint: Url, name: &str, path_style: UrlStyle) -> Result<Url, 
             endpoint.set_path(&path);
         }
         UrlStyle::VirtualHost => {
-            // `Url::set_host` ignores anything after a `:`
-            if name.contains(':') {
-                return Err(ParseError::InvalidDomainCharacter);
-            }
-
             let host = format!("{}.{}", name, endpoint.host_str().unwrap());
             endpoint.set_host(Some(&host))?;
+
+            // `Url::set_host` ignores anything after a `:`, lowercases the
+            // host and maps or drops some other characters, which could give
+            // the url of another bucket
+            if endpoint.host_str() != Some(host.as_str()) {
+                return Err(ParseError::InvalidDomainCharacter);
+            }
         }
     }
 
@@ -525,6 +527,27 @@ mod tests {
             Bucket::new(endpoint, UrlStyle::VirtualHost, "example.com:", "eu-west-1"),
             Err(BucketError::ParseError(ParseError::InvalidDomainCharacter))
         );
+    }
+
+    #[test]
+    fn new_domainstyle_name_changed_by_host() {
+        let endpoint: Url = "https://s3.dualstack.eu-west-1.amazonaws.com"
+            .parse()
+            .unwrap();
+        // Hosts are lowercased, and other characters are mapped or dropped,
+        // which would give the url of the bucket `admin`, or `admin.evil`
+        for name in [
+            "ADMIN",
+            "\u{ff41}\u{ff44}\u{ff4d}\u{ff49}\u{ff4e}",
+            "ad\u{ad}min",
+            "admin\u{3002}evil",
+        ] {
+            assert_eq!(
+                Bucket::new(endpoint.clone(), UrlStyle::VirtualHost, name, "eu-west-1"),
+                Err(BucketError::ParseError(ParseError::InvalidDomainCharacter)),
+                "{name}"
+            );
+        }
     }
 
     #[test]
