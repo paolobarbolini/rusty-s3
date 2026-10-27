@@ -5,7 +5,7 @@ use rusty_s3::actions::{ListObjectsV2, S3Action as _};
 mod common;
 
 #[tokio::test]
-async fn test1() {
+async fn put_head_get_object() {
     let (bucket, credentials, client) = common::bucket().await;
 
     let action = bucket.list_objects_v2(Some(&credentials));
