@@ -12,7 +12,12 @@ use crate::{Bucket, Credentials, Map};
 
 /// Abort multipart upload.
 ///
-/// This also cleans up any previously uploaded part.
+/// This frees the storage used by the parts which were already uploaded.
+/// A part which is still being uploaded when the abort is processed might
+/// still be stored, and keep using storage, so wait for every
+/// [`UploadPart`][crate::actions::UploadPart] request to complete before
+/// aborting. AWS also recommends checking with `ListParts` that no parts are
+/// left, aborting again if some are.
 ///
 /// Find out more about `AbortMultipartUpload` from the [AWS API Reference][api]
 ///
