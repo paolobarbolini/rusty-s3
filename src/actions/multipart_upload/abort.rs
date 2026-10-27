@@ -19,9 +19,15 @@ use crate::{Bucket, Credentials, Map};
 /// aborting. AWS also recommends checking with `ListParts` that no parts are
 /// left, aborting again if some are.
 ///
+/// Uploads which fail aren't always aborted, like when the process uploading
+/// them crashes, so the bucket should also have a lifecycle rule which
+/// aborts the uploads left incomplete for a number of days, as a fail-safe:
+/// see [Configuring a bucket lifecycle configuration to delete incomplete multipart uploads][lifecycle].
+///
 /// Find out more about `AbortMultipartUpload` from the [AWS API Reference][api]
 ///
 /// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_AbortMultipartUpload.html
+/// [lifecycle]: https://docs.aws.amazon.com/AmazonS3/latest/userguide/mpu-abort-incomplete-mpu-lifecycle-config.html
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Clone)]
 pub struct AbortMultipartUpload<'a> {
