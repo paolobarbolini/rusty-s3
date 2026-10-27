@@ -79,7 +79,9 @@ where
 
     let a1;
     let a2;
-    let standard_query = match token {
+    // An empty token isn't a token: signing it as `X-Amz-Security-Token=`
+    // only makes the request fail.
+    let standard_query = match token.filter(|token| !token.is_empty()) {
         Some(token) => {
             a1 = [
                 ("X-Amz-Algorithm", "AWS4-HMAC-SHA256"),
@@ -241,6 +243,35 @@ mod tests {
         );
 
         assert_eq!(expected, got.as_str());
+    }
+
+    #[test]
+    fn empty_token_is_not_signed() {
+        // Fri, 24 May 2013 00:00:00 GMT
+        let date = Timestamp::from_second(1_369_353_600).unwrap();
+
+        let url: Url = "https://examplebucket.s3.amazonaws.com/test.txt"
+            .parse()
+            .unwrap();
+        let sign_with_token = |token| {
+            sign(
+                &date,
+                Method::Get,
+                url.clone(),
+                "AKIAIOSFODNN7EXAMPLE",
+                "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+                token,
+                "us-east-1",
+                86400,
+                iter::empty(),
+                iter::empty(),
+            )
+        };
+
+        // An empty token must be ignored, not signed as `X-Amz-Security-Token=`
+        let got = sign_with_token(Some(""));
+        assert!(!got.as_str().contains("X-Amz-Security-Token"), "got: {got}");
+        assert_eq!(got, sign_with_token(None));
     }
 
     #[test]
