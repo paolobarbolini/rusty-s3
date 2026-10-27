@@ -73,7 +73,7 @@ required-features = ["xml"]
 
 [[test]]
 name = "upload_download"
-required-features = ["full"]
+required-features = ["xml"]
 
 [[example]]
 name = "create_bucket"
@@ -81,7 +81,7 @@ required-features = ["xml"]
 
 [[example]]
 name = "list_objects"
-required-features = ["full"]
+required-features = ["xml"]
 
 [[example]]
 name = "multipart_upload"
