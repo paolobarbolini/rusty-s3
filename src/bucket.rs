@@ -48,6 +48,17 @@ use crate::signing::util::{percent_encode, percent_encode_path};
 /// assert_eq!(bucket.region(), "eu-west-1");
 /// assert_eq!(bucket.object_url("duck.jpg").as_str(), "https://rusty-s3.s3.dualstack.eu-west-1.amazonaws.com/duck.jpg");
 /// ```
+///
+/// ## Object keys
+///
+/// Urls can't represent every object key. Path segments made of `.` or `..`
+/// are resolved like in a path of a file system, so `a/../b.jpg` gives the
+/// url of `b.jpg`, and with path-style urls `../b/c.jpg` gives the url of
+/// `c.jpg` in bucket `b`. An empty key gives the url of the bucket itself,
+/// turning actions on objects into actions on the bucket: for example
+/// `DeleteObject` becomes `DeleteBucket`. Keys like these must be rejected
+/// before being given to rusty-s3, especially if they come from untrusted
+/// sources.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Bucket {
     base_url: Url,
@@ -147,6 +158,9 @@ impl Bucket {
     ///
     /// This is not a signed url, it's just the starting point for
     /// generating an url to an S3 object.
+    ///
+    /// See [Object keys](Bucket#object-keys) for the keys which can't be
+    /// represented by an url.
     #[must_use]
     pub fn object_url(&self, object: &str) -> Url {
         // Appended to the path of the bucket rather than resolved against
