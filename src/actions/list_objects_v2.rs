@@ -155,6 +155,11 @@ impl<'a> ListObjectsV2<'a> {
     /// By default, the action returns up to 1,000 key names.
     /// The response might contain fewer keys but will never contain more.
     ///
+    /// Values above [`u16::MAX`] are clamped to it, so that the `MaxKeys`
+    /// value which some S3-compatible servers echo back always fits in
+    /// [`ListObjectsV2Response::max_keys`]. Amazon S3 never returns more than
+    /// 1,000 keys per request anyway.
+    ///
     /// See <https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax> for more infos.
     /// # Example
     /// ```
@@ -163,6 +168,7 @@ impl<'a> ListObjectsV2<'a> {
     /// list.with_continuation_token("tamo"); // <- This token should come from a previous call to the list API.
     /// ```
     pub fn with_max_keys(&mut self, max_keys: usize) {
+        let max_keys = u16::try_from(max_keys).unwrap_or(u16::MAX);
         self.query_mut().insert("max-keys", max_keys.to_string());
     }
 
@@ -328,6 +334,35 @@ mod tests {
 
         // The unsigned URL must percent-encode the space as `%20`, never `+`, so
         // S3 interprets the prefix value correctly.
+        assert_eq!(expected, url.as_str());
+    }
+
+    #[test]
+    fn anonymous_max_keys_saturates_at_u16_max() {
+        let expires_in = Duration::from_secs(86400);
+
+        let endpoint = "https://s3.amazonaws.com".parse().unwrap();
+        let bucket = Bucket::new(
+            endpoint,
+            UrlStyle::VirtualHost,
+            "examplebucket",
+            "us-east-1",
+        )
+        .unwrap();
+
+        let mut action = ListObjectsV2::new(&bucket, None);
+        action.with_max_keys(500);
+        let url = action.sign(expires_in);
+        let expected =
+            "https://examplebucket.s3.amazonaws.com/?encoding-type=url&list-type=2&max-keys=500";
+        assert_eq!(expected, url.as_str());
+
+        // Some implementations (e.g. MinIO) echo `max-keys` back as `MaxKeys`,
+        // which must fit in `ListObjectsV2Response::max_keys`.
+        action.with_max_keys(usize::MAX);
+        let url = action.sign(expires_in);
+        let expected =
+            "https://examplebucket.s3.amazonaws.com/?encoding-type=url&list-type=2&max-keys=65535";
         assert_eq!(expected, url.as_str());
     }
 
