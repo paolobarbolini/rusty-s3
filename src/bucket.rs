@@ -405,11 +405,15 @@ impl StdError for BucketError {}
 
 #[cfg(test)]
 mod tests {
+    use std::time::Duration;
+
+    use jiff::Timestamp;
     use pretty_assertions::assert_eq;
 
     use super::*;
     #[cfg(feature = "full")]
     use crate::actions::ObjectIdentifier;
+    use crate::actions::S3Action;
 
     #[test]
     fn new_pathstyle() {
@@ -667,6 +671,16 @@ mod tests {
         }
     }
 
+    /// Sign `action` at a fixed time, so that the resulting urls can be compared
+    fn signed_url<'a>(action: &impl S3Action<'a>) -> Url {
+        // Fri, 24 May 2013 00:00:00 GMT
+        let date = Timestamp::from_second(1_369_353_600).unwrap();
+        action.sign_with_time(Duration::from_secs(86400), &date)
+    }
+
+    /// Every `Bucket` helper must build the same request as the constructor of
+    /// the action it returns. `object` and `upload_id` are different so that
+    /// swapped arguments are caught.
     #[test]
     fn all_actions() {
         let endpoint: Url = "https://s3.dualstack.eu-west-1.amazonaws.com"
@@ -681,34 +695,96 @@ mod tests {
             "AKIAIOSFODNN7EXAMPLE",
             "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
         );
+        let creds = Some(&credentials);
+        let object = "duck.jpg";
+        let upload_id = "abcd";
 
-        let _ = bucket.create_bucket(&credentials);
-        let _ = bucket.delete_bucket(&credentials);
-        let _ = bucket.head_bucket(Some(&credentials));
-        #[cfg(feature = "full")]
-        let _ = bucket.get_bucket_policy(Some(&credentials));
-
-        let _ = bucket.head_object(Some(&credentials), "duck.jpg");
-        let _ = bucket.get_object(Some(&credentials), "duck.jpg");
-        #[cfg(feature = "xml")]
-        let _ = bucket.list_objects_v2(Some(&credentials));
-        let _ = bucket.put_object(Some(&credentials), "duck.jpg");
-        let _ = bucket.delete_object(Some(&credentials), "duck.jpg");
-        #[cfg(feature = "full")]
-        let _ = bucket.delete_objects(Some(&credentials), std::iter::empty::<ObjectIdentifier>());
-
-        #[cfg(feature = "xml")]
-        let _ = bucket.create_multipart_upload(Some(&credentials), "duck.jpg");
-        let _ = bucket.upload_part(Some(&credentials), "duck.jpg", 1, "abcd");
-        #[cfg(feature = "xml")]
-        let _ = bucket.complete_multipart_upload(
-            Some(&credentials),
-            "duck.jpg",
-            "abcd",
-            std::iter::once("1234"),
+        assert_eq!(
+            signed_url(&bucket.create_bucket(&credentials)),
+            signed_url(&CreateBucket::new(&bucket, &credentials))
         );
-        let _ = bucket.abort_multipart_upload(Some(&credentials), "duck.jpg", "abcd");
+        assert_eq!(
+            signed_url(&bucket.delete_bucket(&credentials)),
+            signed_url(&DeleteBucket::new(&bucket, &credentials))
+        );
+        assert_eq!(
+            signed_url(&bucket.head_bucket(creds)),
+            signed_url(&HeadBucket::new(&bucket, creds))
+        );
+        #[cfg(feature = "full")]
+        assert_eq!(
+            signed_url(&bucket.get_bucket_policy(creds)),
+            signed_url(&GetBucketPolicy::new(&bucket, creds))
+        );
+
+        assert_eq!(
+            signed_url(&bucket.head_object(creds, object)),
+            signed_url(&HeadObject::new(&bucket, creds, object))
+        );
+        assert_eq!(
+            signed_url(&bucket.get_object(creds, object)),
+            signed_url(&GetObject::new(&bucket, creds, object))
+        );
         #[cfg(feature = "xml")]
-        let _ = bucket.list_parts(Some(&credentials), "duck.jpg", "abcd");
+        assert_eq!(
+            signed_url(&bucket.list_objects_v2(creds)),
+            signed_url(&ListObjectsV2::new(&bucket, creds))
+        );
+        assert_eq!(
+            signed_url(&bucket.put_object(creds, object)),
+            signed_url(&PutObject::new(&bucket, creds, object))
+        );
+        assert_eq!(
+            signed_url(&bucket.delete_object(creds, object)),
+            signed_url(&DeleteObject::new(&bucket, creds, object))
+        );
+        #[cfg(feature = "full")]
+        {
+            let objects = [ObjectIdentifier::new(object.to_owned())];
+            assert_eq!(
+                signed_url(&bucket.delete_objects(creds, objects.iter())),
+                signed_url(&DeleteObjects::new(&bucket, creds, objects.iter()))
+            );
+        }
+
+        #[cfg(feature = "xml")]
+        assert_eq!(
+            signed_url(&bucket.create_multipart_upload(creds, object)),
+            signed_url(&CreateMultipartUpload::new(&bucket, creds, object))
+        );
+        assert_eq!(
+            signed_url(&bucket.upload_part(creds, object, 1, upload_id)),
+            signed_url(&UploadPart::new(&bucket, creds, object, 1, upload_id))
+        );
+        #[cfg(feature = "xml")]
+        {
+            let etags = ["1234"];
+            assert_eq!(
+                signed_url(&bucket.complete_multipart_upload(
+                    creds,
+                    object,
+                    upload_id,
+                    etags.iter().copied()
+                )),
+                signed_url(&CompleteMultipartUpload::new(
+                    &bucket,
+                    creds,
+                    object,
+                    upload_id,
+                    etags.iter().copied()
+                ))
+            );
+        }
+        assert_eq!(
+            signed_url(&bucket.abort_multipart_upload(creds, object, upload_id)),
+            signed_url(&AbortMultipartUpload::new(
+                &bucket, creds, object, upload_id
+            ))
+        );
+        #[cfg(feature = "xml")]
+        assert_eq!(
+            signed_url(&bucket.list_parts(creds, object, upload_id)),
+            signed_url(&ListParts::new(&bucket, creds, object, upload_id))
+        );
     }
 }

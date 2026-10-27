@@ -365,6 +365,32 @@ mod tests {
     }
 
     #[test]
+    fn anonymous_builders() {
+        let expires_in = Duration::from_secs(86400);
+
+        let endpoint = "https://s3.amazonaws.com".parse().unwrap();
+        let bucket = Bucket::new(
+            endpoint,
+            UrlStyle::VirtualHost,
+            "examplebucket",
+            "us-east-1",
+        )
+        .unwrap();
+
+        let mut action = ListObjectsV2::new(&bucket, None);
+        action.with_prefix("tamo/");
+        action.with_delimiter("/");
+        action.with_start_after("tamo/duck.jpg");
+        action.with_continuation_token("1ueGcxLPRx1Tr/XYExHnhbYLgveDs2J/wm36Hy4vbOwM=");
+        action.with_max_keys(5);
+
+        let url = action.sign(expires_in);
+        let expected = "https://examplebucket.s3.amazonaws.com/?continuation-token=1ueGcxLPRx1Tr%2FXYExHnhbYLgveDs2J%2Fwm36Hy4vbOwM%3D&delimiter=%2F&encoding-type=url&list-type=2&max-keys=5&prefix=tamo%2F&start-after=tamo%2Fduck.jpg";
+
+        assert_eq!(expected, url.as_str());
+    }
+
+    #[test]
     fn anonymous_prefix_with_space() {
         let expires_in = Duration::from_secs(86400);
 
