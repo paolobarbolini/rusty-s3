@@ -1,4 +1,4 @@
-use std::{iter, str};
+use std::str;
 
 use jiff::Timestamp;
 use url::Url;
@@ -65,8 +65,10 @@ where
         _ => panic!("unsupported url scheme"),
     };
 
-    let standard_headers = iter::once(("host", host_header.as_str()));
-    let headers = SortingIterator::new(standard_headers, headers);
+    // A `host` header given by the caller replaces the one of the url
+    let has_host = headers.clone().any(|(k, _)| k == "host");
+    let standard_headers = (!has_host).then_some(("host", host_header.as_str()));
+    let headers = SortingIterator::new(standard_headers.into_iter(), headers);
 
     let signed_headers = headers.clone().map(|(k, _)| k);
     let mut signed_headers_str = String::new();
@@ -242,6 +244,31 @@ mod tests {
             headers.iter().copied(),
         );
 
+        assert_eq!(expected, got.as_str());
+    }
+
+    #[test]
+    fn host_header_replaces_url_host() {
+        // Fri, 24 May 2013 00:00:00 GMT
+        let date = Timestamp::from_second(1_369_353_600).unwrap();
+
+        let url = "https://127.0.0.1:8443/test.txt".parse().unwrap();
+        let headers = [("host", "examplebucket.s3.amazonaws.com")];
+        let got = sign(
+            &date,
+            Method::Get,
+            url,
+            "AKIAIOSFODNN7EXAMPLE",
+            "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+            None,
+            "us-east-1",
+            86400,
+            iter::empty(),
+            headers.iter().copied(),
+        );
+
+        // Same signature as `aws_example`, which is signed for that host
+        let expected = "https://127.0.0.1:8443/test.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&X-Amz-Signature=aeeed9bbccd4d02ee5c0109b86d86835f995330da4c265957d157751f604d404";
         assert_eq!(expected, got.as_str());
     }
 

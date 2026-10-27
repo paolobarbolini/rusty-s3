@@ -160,3 +160,22 @@ async fn test_headers_sequential_spaces() {
         .error_for_status()
         .expect("PutObject unexpected status code");
 }
+
+#[tokio::test]
+async fn test_host_header() {
+    let (bucket, credentials, client) = common::bucket().await;
+
+    // Like a request sent through a proxy with another name
+    let mut action = bucket.put_object(Some(&credentials), "test.txt");
+    action.headers_mut().insert("host", "s3.example.com");
+    let url = action.sign(Duration::from_secs(60));
+    client
+        .put(url)
+        .header("host", "s3.example.com")
+        .body(vec![b'r'; 1024])
+        .send()
+        .await
+        .expect("send PutObject")
+        .error_for_status()
+        .expect("PutObject unexpected status code");
+}
