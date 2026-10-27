@@ -10,7 +10,7 @@ license = "BSD-2-Clause"
 documentation = "https://docs.rs/rusty-s3"
 readme = "README.md"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.89"
 
 [dependencies]
 aws-lc-rs = { version = "1.17", default-features = false, features = ["aws-lc-sys"], optional = true }
