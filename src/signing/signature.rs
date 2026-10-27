@@ -35,7 +35,7 @@ mod tests {
     #[test]
     fn aws_example() {
         // Fri, 24 May 2013 00:00:00 GMT
-        let date = Timestamp::from_second(1369353600).unwrap();
+        let date = Timestamp::from_second(1_369_353_600).unwrap();
 
         let secret = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
         let region = "us-east-1";

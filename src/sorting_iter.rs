@@ -85,7 +85,7 @@ mod tests {
         let b = vec![5, 9, 15, 35, 45, 50];
 
         let iter = SortingIterator::new(a.into_iter(), b.into_iter());
-        assert!(iter.eq(vec![5, 9, 10, 15, 20, 25, 30, 35, 40, 45, 50].into_iter()))
+        assert!(iter.eq(vec![5, 9, 10, 15, 20, 25, 30, 35, 40, 45, 50].into_iter()));
     }
 
     #[test]
@@ -93,6 +93,6 @@ mod tests {
         let a = vec![10, 20, 25, 30, 40];
 
         let iter = SortingIterator::new(a.into_iter(), iter::empty());
-        assert!(iter.eq(vec![10, 20, 25, 30, 40].into_iter()))
+        assert!(iter.eq(vec![10, 20, 25, 30, 40].into_iter()));
     }
 }

@@ -78,7 +78,7 @@ mod tests {
     #[test]
     fn aws_example() {
         // Fri, 24 May 2013 00:00:00 GMT
-        let date = Timestamp::from_second(1369353600).unwrap();
+        let date = Timestamp::from_second(1_369_353_600).unwrap();
         let expires_in = Duration::from_secs(86400);
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
@@ -106,7 +106,7 @@ mod tests {
     #[test]
     fn aws_example_custom_query() {
         // Fri, 24 May 2013 00:00:00 GMT
-        let date = Timestamp::from_second(1369353600).unwrap();
+        let date = Timestamp::from_second(1_369_353_600).unwrap();
         let expires_in = Duration::from_secs(86400);
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();

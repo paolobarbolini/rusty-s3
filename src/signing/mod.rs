@@ -141,7 +141,7 @@ mod tests {
     #[test]
     fn aws_example() {
         // Fri, 24 May 2013 00:00:00 GMT
-        let date = Timestamp::from_second(1369353600).unwrap();
+        let date = Timestamp::from_second(1_369_353_600).unwrap();
 
         let method = Method::Get;
         let url = "https://examplebucket.s3.amazonaws.com/test.txt"
@@ -173,7 +173,7 @@ mod tests {
     #[test]
     fn aws_example_token() {
         // Fri, 24 May 2013 00:00:00 GMT
-        let date = Timestamp::from_second(1369353600).unwrap();
+        let date = Timestamp::from_second(1_369_353_600).unwrap();
 
         let method = Method::Get;
         let url = "https://examplebucket.s3.amazonaws.com/test.txt"
@@ -206,7 +206,7 @@ mod tests {
     #[test]
     fn aws_headers_example() {
         // Fri, 24 May 2013 00:00:00 GMT
-        let date = Timestamp::from_second(1369353600).unwrap();
+        let date = Timestamp::from_second(1_369_353_600).unwrap();
 
         let method = Method::Get;
         let url = "https://examplebucket.s3.amazonaws.com/test.txt"
@@ -246,7 +246,7 @@ mod tests {
     #[test]
     fn query_value_with_space_is_percent_encoded() {
         // Fri, 24 May 2013 00:00:00 GMT
-        let date = Timestamp::from_second(1369353600).unwrap();
+        let date = Timestamp::from_second(1_369_353_600).unwrap();
 
         let url = "https://examplebucket.s3.amazonaws.com/test.txt"
             .parse()

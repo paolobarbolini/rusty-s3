@@ -123,7 +123,7 @@ mod tests {
                 .expiration()
                 .duration_since(Timestamp::UNIX_EPOCH)
                 .as_secs(),
-            1609197009
+            1_609_197_009
         );
 
         let debug_output = format!("{deserialized:?}");
