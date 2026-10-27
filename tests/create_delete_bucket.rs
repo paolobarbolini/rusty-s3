@@ -5,7 +5,7 @@ use rusty_s3::actions::S3Action as _;
 mod common;
 
 #[tokio::test]
-async fn test2() {
+async fn create_delete_bucket() {
     let (bucket, credentials, client) = common::bucket().await;
 
     let action = bucket.delete_bucket(&credentials);
