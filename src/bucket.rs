@@ -89,7 +89,9 @@ impl Bucket {
     ///
     /// The query string and fragment of the `endpoint` are ignored: use
     /// [`S3Action::query_mut`](crate::S3Action::query_mut) to add query
-    /// parameters to a request.
+    /// parameters to a request. Its username and password are ignored too,
+    /// as they would end up in every presigned url: configure the HTTP client
+    /// instead, if a proxy in front of S3 needs them.
     ///
     /// # Errors
     ///
@@ -156,6 +158,13 @@ fn base_url(mut endpoint: Url, name: &str, path_style: UrlStyle) -> Result<Url, 
     // only be kept by some unsigned requests
     endpoint.set_query(None);
     endpoint.set_fragment(None);
+
+    // Credentials would end up in every url, presigned ones included, and
+    // HTTP clients send them in an `Authorization` header, which S3 rejects
+    // next to a presigned query string. Removing them only fails for urls
+    // which can't have any, like the ones without a host.
+    let _ = endpoint.set_username("");
+    let _ = endpoint.set_password(None);
 
     match path_style {
         UrlStyle::Path => {
@@ -403,6 +412,27 @@ mod tests {
     #[test]
     fn new_ignores_endpoint_query_and_fragment() {
         let endpoint: Url = "https://s3.dualstack.eu-west-1.amazonaws.com/?tenant=t1#frag"
+            .parse()
+            .unwrap();
+        let name = "rusty-s3";
+        let region = "eu-west-1";
+
+        let path_style = Bucket::new(endpoint.clone(), UrlStyle::Path, name, region).unwrap();
+        assert_eq!(
+            path_style.base_url().as_str(),
+            "https://s3.dualstack.eu-west-1.amazonaws.com/rusty-s3/"
+        );
+
+        let domain_style = Bucket::new(endpoint, UrlStyle::VirtualHost, name, region).unwrap();
+        assert_eq!(
+            domain_style.base_url().as_str(),
+            "https://rusty-s3.s3.dualstack.eu-west-1.amazonaws.com/"
+        );
+    }
+
+    #[test]
+    fn new_ignores_endpoint_credentials() {
+        let endpoint: Url = "https://AKIA:TOPSECRET@s3.dualstack.eu-west-1.amazonaws.com/"
             .parse()
             .unwrap();
         let name = "rusty-s3";
