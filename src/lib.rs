@@ -34,6 +34,22 @@
 //! let action = bucket.get_object(Some(&credentials), "duck.jpg");
 //! println!("GET {}", action.sign(presigned_url_duration));
 //! ```
+//!
+//! ## Features
+//!
+//! * `rustcrypto` (enabled by default), `aws-lc-rs` and `graviola`: the
+//!   cryptography used for signing requests. At least one of them must be
+//!   enabled. If more are, `aws-lc-rs` is preferred over `rustcrypto`, which is
+//!   preferred over `graviola`, so to avoid building `rustcrypto` with another
+//!   one, disable the default features and enable `full` again, like with
+//!   `default-features = false, features = ["aws-lc-rs", "full"]`.
+//! * `xml`: the actions which send or receive XML, like `ListObjectsV2`
+//!   and the ones for multipart uploads.
+//! * `full` (enabled by default): `xml`, plus `DeleteObjects`,
+//!   `GetBucketPolicy` and the parsing of the credentials returned by the EC2
+//!   metadata service.
+//! * `wasm_bindgen`: get the current time from JavaScript, which is needed to
+//!   sign requests on `wasm32-unknown-unknown`.
 
 #![deny(
     missing_debug_implementations,
