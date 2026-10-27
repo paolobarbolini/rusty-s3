@@ -144,7 +144,7 @@ mod tests {
     #[test]
     fn aws_example() {
         // Fri, 24 May 2013 00:00:00 GMT
-        let date = Timestamp::from_second(1369353600).unwrap();
+        let date = Timestamp::from_second(1_369_353_600).unwrap();
         let expires_in = Duration::from_secs(86400);
 
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
@@ -244,13 +244,13 @@ mod tests {
         assert_eq!(part_1.etag, "\"7778aef83f66abc1fa1e8477f296d394\"");
         assert_eq!(part_1.number, 2);
         assert_eq!(part_1.last_modified, "2010-11-10T20:48:34.000Z");
-        assert_eq!(part_1.size, 10485760);
+        assert_eq!(part_1.size, 10_485_760);
 
         let part_2 = &parsed.parts[1];
         assert_eq!(part_2.etag, "\"aaaa18db4cc2f85cedef654fccc4a4x8\"");
         assert_eq!(part_2.number, 3);
         assert_eq!(part_2.last_modified, "2010-11-10T20:48:33.000Z");
-        assert_eq!(part_2.size, 10485760);
+        assert_eq!(part_2.size, 10_485_760);
 
         assert_eq!(parsed.max_parts, 2);
         assert_eq!(parsed.next_part_number_marker, Some(3));

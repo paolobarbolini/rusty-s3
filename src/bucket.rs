@@ -480,7 +480,7 @@ mod tests {
             Some(&credentials),
             "duck.jpg",
             "abcd",
-            ["1234"].iter().copied(),
+            std::iter::once("1234"),
         );
         let _ = bucket.abort_multipart_upload(Some(&credentials), "duck.jpg", "abcd");
         #[cfg(feature = "xml")]
