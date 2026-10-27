@@ -175,9 +175,11 @@ impl<'a> ListObjectsV2<'a> {
         let mut parsed: ListObjectsV2Response = instant_xml::from_str(s)?;
 
         // When `encoding-type=url` is requested (which `new` always does), S3
-        // percent-encodes the key-related fields in the response. Some
-        // implementations (e.g. DigitalOcean Spaces) encode characters such as
-        // `/` and `%`, so the values must be decoded to recover the real keys.
+        // URL-encodes the key-related fields in the response. AWS S3 and MinIO
+        // encode them like HTML forms do (a space becomes `+` and a literal `+`
+        // becomes `%2B`), while other implementations (e.g. DigitalOcean Spaces)
+        // percent-encode everything, so the values must be decoded to recover
+        // the real keys.
         let url_encoded = parsed.encoding_type.as_deref() == Some("url");
 
         // S3 returns an Owner with an empty DisplayName and ID when fetch-owner is disabled
@@ -190,16 +192,16 @@ impl<'a> ListObjectsV2<'a> {
             }
 
             if url_encoded {
-                percent_decode_in_place(&mut content.key);
+                url_decode_in_place(&mut content.key);
             }
         }
 
         if url_encoded {
             for prefix in &mut parsed.common_prefixes {
-                percent_decode_in_place(&mut prefix.prefix);
+                url_decode_in_place(&mut prefix.prefix);
             }
             if let Some(start_after) = &mut parsed.start_after {
-                percent_decode_in_place(start_after);
+                url_decode_in_place(start_after);
             }
         }
 
@@ -207,11 +209,13 @@ impl<'a> ListObjectsV2<'a> {
     }
 }
 
-/// Percent-decode `value` in place, leaving it untouched if it is not valid
-/// percent-encoded UTF-8.
-fn percent_decode_in_place(value: &mut String) {
-    if let Ok(Cow::Owned(decoded)) = percent_decode_str(value).decode_utf8() {
-        *value = decoded;
+/// URL-decode `value` in place, decoding `+` as a space like
+/// `application/x-www-form-urlencoded` does, leaving it untouched if it
+/// does not decode to valid UTF-8.
+fn url_decode_in_place(value: &mut String) {
+    let plus_decoded = value.replace('+', " ");
+    if let Ok(decoded) = percent_decode_str(&plus_decoded).decode_utf8() {
+        *value = decoded.into_owned();
     }
 }
 
@@ -464,6 +468,58 @@ mod tests {
 
         assert_eq!(parsed.start_after.as_deref(), Some("start/after"));
         assert_eq!(parsed.encoding_type.as_deref(), Some("url"));
+    }
+
+    #[test]
+    fn parse_url_encoded_plus_is_space() {
+        // AWS S3 and MinIO encode a space as `+` and a literal `+` as `%2B`
+        let input = r#"<?xml version="1.0" encoding="UTF-8"?>
+        <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+            <Name>test</Name>
+            <Prefix></Prefix>
+            <StartAfter>a+b.txt</StartAfter>
+            <KeyCount>3</KeyCount>
+            <MaxKeys>1000</MaxKeys>
+            <Delimiter>/</Delimiter>
+            <IsTruncated>false</IsTruncated>
+            <Contents>
+                <Key>a%2Bb.txt</Key>
+                <LastModified>2020-12-01T20:43:11.794Z</LastModified>
+                <ETag>"7621c71dae731ac4bc8217dabc0e1d30"</ETag>
+                <Size>7</Size>
+                <StorageClass>STANDARD</StorageClass>
+            </Contents>
+            <Contents>
+                <Key>x%2By+z.txt</Key>
+                <LastModified>2020-12-01T20:43:11.794Z</LastModified>
+                <ETag>"2c434fcdb170dbff904de9928b52d4ce"</ETag>
+                <Size>18</Size>
+                <StorageClass>STANDARD</StorageClass>
+            </Contents>
+            <Contents>
+                <Key>%C3%BCn%C3%AF+c%C3%B6d%C3%A9.txt</Key>
+                <LastModified>2020-12-01T20:43:11.794Z</LastModified>
+                <ETag>"8d9e23ea740613aaf0a561fa32a526f4"</ETag>
+                <Size>16</Size>
+                <StorageClass>STANDARD</StorageClass>
+            </Contents>
+            <CommonPrefixes>
+                <Prefix>dir+name/</Prefix>
+            </CommonPrefixes>
+            <EncodingType>url</EncodingType>
+        </ListBucketResult>
+        "#;
+
+        let parsed = ListObjectsV2::parse_response(input).unwrap();
+        assert_eq!(parsed.contents.len(), 3);
+        assert_eq!(parsed.contents[0].key, "a+b.txt");
+        assert_eq!(parsed.contents[1].key, "x+y z.txt");
+        assert_eq!(parsed.contents[2].key, "ünï cödé.txt");
+
+        assert_eq!(parsed.common_prefixes.len(), 1);
+        assert_eq!(parsed.common_prefixes[0].prefix, "dir name/");
+
+        assert_eq!(parsed.start_after.as_deref(), Some("a b.txt"));
     }
 
     #[test]
