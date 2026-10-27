@@ -48,10 +48,6 @@ impl<'a> Map<'a> {
     /// map.insert("k", "b");
     /// assert_eq!(map.get("k"), Some("b"));
     /// ```
-    ///
-    /// # Panics
-    ///
-    /// In case of out of bound inner index access
     pub fn insert<K, V>(&mut self, key: K, value: V)
     where
         K: Into<Cow<'a, str>>,
@@ -62,10 +58,7 @@ impl<'a> Map<'a> {
 
         let i = self.inner.binary_search_by(|a| a.0.cmp(&key));
         match i {
-            Ok(i) => {
-                let old_value = self.inner.get_mut(i).expect("i can't be out of bounds");
-                *old_value = (key, value);
-            }
+            Ok(i) => self.inner[i] = (key, value),
             Err(i) => self.inner.insert(i, (key, value)),
         }
     }
@@ -81,10 +74,6 @@ impl<'a> Map<'a> {
     /// map.append("k", "b");
     /// assert_eq!(map.get("k"), Some("a, b"));
     /// ```
-    ///
-    /// # Panics
-    ///
-    /// In case of out of bound inner index access
     pub fn append<K, V>(&mut self, key: K, value: V)
     where
         K: Into<Cow<'a, str>>,
@@ -96,7 +85,7 @@ impl<'a> Map<'a> {
         let i = self.inner.binary_search_by(|a| a.0.cmp(&key));
         match i {
             Ok(i) => {
-                let old_value = self.inner.get_mut(i).expect("i can't be out of bounds");
+                let old_value = &mut self.inner[i];
                 let new_value = Cow::Owned(format!("{}, {}", old_value.1, value));
                 *old_value = (key, new_value);
             }
@@ -114,7 +103,7 @@ impl<'a> Map<'a> {
 
     /// Return an `Iterator` over this map
     ///
-    /// The elements are always sorted in alphabetical order based on the key.
+    /// The elements are always sorted by key, comparing their bytes.
     pub fn iter(&self) -> impl Iterator<Item = (&str, &str)> + Clone {
         self.inner.iter().map(|t| (t.0.as_ref(), t.1.as_ref()))
     }
