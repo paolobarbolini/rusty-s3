@@ -347,6 +347,7 @@ impl Bucket {
     ///
     /// See [`DeleteObjects`] for more details.
     #[cfg(feature = "full")]
+    #[must_use]
     pub const fn delete_objects<'a, I>(
         &'a self,
         credentials: Option<&'a Credentials>,
@@ -390,6 +391,7 @@ impl Bucket {
     ///
     /// See [`CompleteMultipartUpload`] for more details.
     #[cfg(feature = "xml")]
+    #[must_use]
     pub const fn complete_multipart_upload<'a, I>(
         &'a self,
         credentials: Option<&'a Credentials>,

@@ -33,12 +33,14 @@ pub struct Credentials {
 impl Credentials {
     /// Construct a new `Credentials` using the provided key and secret
     #[inline]
+    #[must_use]
     pub fn new(key: impl Into<String>, secret: impl Into<String>) -> Self {
         Self::new_with_maybe_token(key.into(), secret.into(), None)
     }
 
     /// Construct a new `Credentials` using the provided key, secret and token
     #[inline]
+    #[must_use]
     pub fn new_with_token(
         key: impl Into<String>,
         secret: impl Into<String>,
