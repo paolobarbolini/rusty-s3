@@ -14,7 +14,7 @@ use crate::{Bucket, Credentials, Map};
 ///
 /// Find out more about `CompleteMultipartUpload` from the [AWS API Reference][api]
 ///
-/// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateMultipartUpload.html
+/// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CompleteMultipartUpload.html
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Clone)]
 pub struct CompleteMultipartUpload<'a, I> {
