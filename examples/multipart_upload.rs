@@ -5,7 +5,8 @@ use std::time::Duration;
 use reqwest::Client;
 use reqwest::header::ETAG;
 use rusty_s3::actions::{
-    CompleteMultipartUpload, CreateMultipartUpload, S3Action as _, UploadPart,
+    AbortMultipartUpload, CompleteMultipartUpload, CompleteMultipartUploadResponse,
+    CreateMultipartUpload, S3Action as _, UploadPart,
 };
 use rusty_s3::{Bucket, Credentials, UrlStyle};
 
@@ -35,13 +36,27 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         multipart.upload_id()
     );
 
-    let part_upload = UploadPart::new(
-        &bucket,
-        Some(&credential),
-        "idk.txt",
-        1,
-        multipart.upload_id(),
-    );
+    if let Err(err) = upload(&client, &bucket, &credential, multipart.upload_id()).await {
+        // the uploaded parts consume storage until the upload is completed or aborted
+        let action =
+            AbortMultipartUpload::new(&bucket, Some(&credential), "idk.txt", multipart.upload_id());
+        let url = action.sign(ONE_HOUR);
+        client.delete(url).send().await?.error_for_status()?;
+
+        println!("multipart upload aborted");
+        return Err(err);
+    }
+
+    Ok(())
+}
+
+async fn upload(
+    client: &Client,
+    bucket: &Bucket,
+    credential: &Credentials,
+    upload_id: &str,
+) -> Result<(), Box<dyn StdError>> {
+    let part_upload = UploadPart::new(bucket, Some(credential), "idk.txt", 1, upload_id);
     let url = part_upload.sign(ONE_HOUR);
 
     let body = "123456789";
@@ -54,16 +69,17 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     let etag = resp
         .headers()
         .get(ETAG)
-        .expect("every UploadPart request returns an Etag");
+        .ok_or("UploadPart response is missing the ETag")?
+        .to_str()?;
 
-    println!("etag: {}", etag.to_str().unwrap());
+    println!("etag: {etag}");
 
     let action = CompleteMultipartUpload::new(
-        &bucket,
-        Some(&credential),
+        bucket,
+        Some(credential),
         "idk.txt",
-        multipart.upload_id(),
-        iter::once(etag.to_str().unwrap()),
+        upload_id,
+        iter::once(etag),
     );
     let url = action.sign(ONE_HOUR);
 
@@ -74,7 +90,10 @@ async fn main() -> Result<(), Box<dyn StdError>> {
         .await?
         .error_for_status()?;
     let body = resp.text().await?;
-    println!("it worked! {body}");
+    // S3 can respond with `200 OK` and still fail, reporting the `Error` in the body
+    let completed = CompleteMultipartUploadResponse::parse(&body)
+        .map_err(|err| format!("CompleteMultipartUpload failed: {err}: {body}"))?;
+    println!("it worked! etag: {}", completed.etag());
 
     Ok(())
 }
