@@ -64,6 +64,7 @@ impl<'a, I> CompleteMultipartUpload<'a, I> {
     ///
     /// Without `credentials` the request isn't signed.
     #[inline]
+    #[must_use]
     pub const fn new(
         bucket: &'a Bucket,
         credentials: Option<&'a Credentials>,
@@ -96,6 +97,7 @@ where
     /// # Panics
     ///
     /// Panics if there are more than [`u16::MAX`] parts.
+    #[must_use]
     pub fn body(self) -> String {
         #[derive(ToXml)]
         #[xml(rename = "CompleteMultipartUpload")]

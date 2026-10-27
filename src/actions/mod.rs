@@ -66,6 +66,7 @@ pub trait S3Action<'a> {
     ///
     /// If the action has no credentials, the URL isn't signed, so
     /// `expires_in` is ignored.
+    #[must_use]
     fn sign(&self, expires_in: Duration) -> Url {
         let now = Timestamp::now();
         self.sign_with_time(expires_in, &now)
@@ -110,5 +111,6 @@ pub trait S3Action<'a> {
     /// Sign a request for this action, as if it was signed at `time`
     ///
     /// See [`S3Action::sign`]. This is mostly useful for testing.
+    #[must_use]
     fn sign_with_time(&self, expires_in: Duration, time: &Timestamp) -> Url;
 }

@@ -47,6 +47,7 @@ pub(crate) mod util;
     clippy::option_if_let_else,
     clippy::single_match_else
 )]
+#[must_use]
 pub fn sign<'a, Q, H>(
     date: &Timestamp,
     method: Method,

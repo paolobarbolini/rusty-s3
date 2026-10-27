@@ -67,6 +67,7 @@ impl<'a, I> DeleteObjects<'a, I> {
     ///
     /// Without `credentials` the request isn't signed.
     #[inline]
+    #[must_use]
     pub const fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>, objects: I) -> Self {
         Self {
             bucket,
@@ -79,6 +80,7 @@ impl<'a, I> DeleteObjects<'a, I> {
     }
 
     /// Whether quiet mode is enabled. See [`set_quiet`][Self::set_quiet].
+    #[must_use]
     pub const fn quiet(&self) -> bool {
         self.quiet
     }
@@ -186,6 +188,7 @@ where
     /// # Panics
     ///
     /// Panics if XML serialization fails, which shouldn't happen in practice.
+    #[must_use]
     pub fn body_with_md5(self) -> (String, String) {
         #[derive(ToXml)]
         #[xml(rename = "Delete")]
