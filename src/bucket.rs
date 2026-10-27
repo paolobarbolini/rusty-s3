@@ -5,14 +5,14 @@ use std::fmt::{self, Display};
 use url::{ParseError, Url};
 
 use crate::Credentials;
-#[cfg(feature = "full")]
-use crate::actions::DeleteObjects;
 use crate::actions::{
     AbortMultipartUpload, CreateBucket, DeleteBucket, DeleteObject, GetObject, HeadBucket,
     HeadObject, PutObject, UploadPart,
 };
 #[cfg(feature = "xml")]
 use crate::actions::{CompleteMultipartUpload, CreateMultipartUpload, ListObjectsV2, ListParts};
+#[cfg(feature = "full")]
+use crate::actions::{DeleteObjects, GetBucketPolicy};
 use crate::signing::util::{percent_encode, percent_encode_path};
 
 /// An S3 bucket
@@ -220,6 +220,18 @@ impl Bucket {
     #[must_use]
     pub const fn delete_bucket<'a>(&'a self, credentials: &'a Credentials) -> DeleteBucket<'a> {
         DeleteBucket::new(self, credentials)
+    }
+
+    /// Retrieve a bucket's policy from S3.
+    ///
+    /// See [`GetBucketPolicy`] for more details.
+    #[cfg(feature = "full")]
+    #[must_use]
+    pub const fn get_bucket_policy<'a>(
+        &'a self,
+        credentials: Option<&'a Credentials>,
+    ) -> GetBucketPolicy<'a> {
+        GetBucketPolicy::new(self, credentials)
     }
 }
 
@@ -672,6 +684,9 @@ mod tests {
 
         let _ = bucket.create_bucket(&credentials);
         let _ = bucket.delete_bucket(&credentials);
+        let _ = bucket.head_bucket(Some(&credentials));
+        #[cfg(feature = "full")]
+        let _ = bucket.get_bucket_policy(Some(&credentials));
 
         let _ = bucket.head_object(Some(&credentials), "duck.jpg");
         let _ = bucket.get_object(Some(&credentials), "duck.jpg");
