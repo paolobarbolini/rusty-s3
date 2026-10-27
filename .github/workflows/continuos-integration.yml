@@ -2,14 +2,24 @@ name: CI
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   fmt:
     runs-on: ubuntu-24.04
+    timeout-minutes: 5
 
     steps:
 
     - name: Checkout code
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
 
     - name: Install Rust
       run: |
@@ -21,11 +31,14 @@ jobs:
 
   clippy:
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
 
     steps:
 
     - name: Checkout code
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
 
     - name: Install Rust
       run: |
@@ -41,11 +54,14 @@ jobs:
         platform: [ubuntu-24.04, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.platform }}
+    timeout-minutes: 20
 
     steps:
 
     - name: Checkout code
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
 
     - name: Run Versity S3 Gateway
       if: matrix.platform == 'ubuntu-24.04'
@@ -98,11 +114,14 @@ jobs:
 
   msrv:
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
 
     steps:
 
     - name: Checkout code
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
 
     - name: Install Rust
       run: rustup default 1.89
@@ -112,11 +131,14 @@ jobs:
 
   coverage:
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
 
     steps:
 
     - name: Checkout code
-      uses: actions/checkout@v7
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
 
     - name: Install cargo-tarpaulin
       run: |
@@ -129,13 +151,13 @@ jobs:
       run: ./cargo-tarpaulin tarpaulin --lib --out Xml
 
     - name: Upload to codecov.io
-      uses: codecov/codecov-action@v7.0.0
+      uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         args: '--lib'
 
     - name: Archive code coverage results
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: code-coverage-report
         path: cobertura.xml
