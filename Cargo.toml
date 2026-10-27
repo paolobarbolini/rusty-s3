@@ -56,6 +56,10 @@ name = "actions"
 harness = false
 
 [[test]]
+name = "create_delete_bucket"
+required-features = ["xml"]
+
+[[test]]
 name = "delete_objects"
 required-features = ["full"]
 
@@ -70,6 +74,10 @@ required-features = ["xml"]
 [[test]]
 name = "upload_download"
 required-features = ["full"]
+
+[[example]]
+name = "create_bucket"
+required-features = ["xml"]
 
 [[example]]
 name = "list_objects"

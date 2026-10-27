@@ -22,7 +22,12 @@ async fn main() -> Result<(), Box<dyn StdError>> {
     let action = CreateBucket::new(&bucket, &credential);
     let signed_url = action.sign(ONE_HOUR);
 
-    client.put(signed_url).send().await?.error_for_status()?;
+    client
+        .put(signed_url)
+        .body(action.body())
+        .send()
+        .await?
+        .error_for_status()?;
 
     Ok(())
 }
