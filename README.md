@@ -57,14 +57,14 @@ More examples can be found in the examples directory on GitHub.
     * [`DeleteObjects`][deleteobjects]
     * [`ListObjectsV2`][listobjectsv2]
 * Multipart upload
-    * [`CreateMultipartUpload`][completemultipart]
+    * [`CreateMultipartUpload`][createmultipart]
     * [`UploadPart`][uploadpart]
     * [`ListParts`][listparts]
     * [`CompleteMultipartUpload`][completemultipart]
     * [`AbortMultipartUpload`][abortmultipart]
 
 [abortmultipart]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_AbortMultipartUpload.html
-[completemultipart]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateMultipartUpload.html
+[completemultipart]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CompleteMultipartUpload.html
 [listparts]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListParts.html
 [createbucket]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateBucket.html
 [deletebucket]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteBucket.html
@@ -76,7 +76,7 @@ More examples can be found in the examples directory on GitHub.
 [headobject]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html
 [listobjectsv2]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html
 [putobject]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html
-[uploadpart]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPart
+[uploadpart]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPart.html
 
 ### Development
 
