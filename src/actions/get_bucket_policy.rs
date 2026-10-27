@@ -30,7 +30,8 @@ pub struct GetBucketPolicy<'a> {
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Clone, Deserialize, PartialEq, Eq)]
 pub struct GetBucketPolicyResponse {
-    #[serde(rename = "Version")]
+    /// The version of the policy language, empty if the policy doesn't have one
+    #[serde(rename = "Version", default)]
     pub version: String,
     #[serde(rename = "Id")]
     pub id: Option<String>,
@@ -149,6 +150,31 @@ mod tests {
         let url = action.sign(expires_in);
         let expected = "https://examplebucket.s3.amazonaws.com/?policy=&x-id=GetBucketPolicy";
         assert_eq!(expected, url.as_str());
+    }
+
+    #[test]
+    fn parse_response_no_version() -> Result<(), serde_json::Error> {
+        // `Version` is optional in the policy grammar
+        let content = r#"{
+"Id":"aaaa-bbbb-cccc-dddd",
+"Statement" : [
+    {
+        "Effect":"Allow",
+        "Principal":"*",
+        "Action":"s3:GetObject",
+        "Resource":"arn:aws:s3:::bucket/*"
+    }
+]
+}
+"#;
+        assert_eq!(
+            GetBucketPolicy::parse_response(content)?,
+            GetBucketPolicyResponse {
+                version: String::new(),
+                id: Some("aaaa-bbbb-cccc-dddd".to_string()),
+            }
+        );
+        Ok(())
     }
 
     #[test]
