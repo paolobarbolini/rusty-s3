@@ -51,14 +51,14 @@ pub struct ListObjectsV2Response {
 #[xml(rename = "Contents", ns(S3_XML_NS))]
 pub struct ListObjectsContent {
     #[xml(rename = "ETag")]
-    pub etag: String,
+    pub etag: Option<String>,
     #[xml(rename = "Key")]
     pub key: String,
     #[xml(rename = "LastModified")]
-    pub last_modified: String,
+    pub last_modified: Option<String>,
     pub owner: Option<ListObjectsOwner>,
     #[xml(rename = "Size")]
-    pub size: u64,
+    pub size: Option<u64>,
     #[xml(rename = "StorageClass")]
     pub storage_class: Option<String>,
 }
@@ -382,27 +382,45 @@ mod tests {
         assert_eq!(parsed.contents.len(), 3);
 
         let item_1 = &parsed.contents[0];
-        assert_eq!(item_1.etag, "\"bfd537a51d15208163231b0711e0b1f3\"");
+        assert_eq!(
+            item_1.etag.as_deref(),
+            Some("\"bfd537a51d15208163231b0711e0b1f3\"")
+        );
         assert_eq!(item_1.key, "duck.jpg");
-        assert_eq!(item_1.last_modified, "2020-12-01T20:43:11.794Z");
+        assert_eq!(
+            item_1.last_modified.as_deref(),
+            Some("2020-12-01T20:43:11.794Z")
+        );
         assert!(item_1.owner.is_none());
-        assert_eq!(item_1.size, 4274);
+        assert_eq!(item_1.size, Some(4274));
         assert_eq!(item_1.storage_class, Some("STANDARD".to_string()));
 
         let item_2 = &parsed.contents[1];
-        assert_eq!(item_2.etag, "\"5927c5d64d94a5786f90003aa26d0159-1\"");
+        assert_eq!(
+            item_2.etag.as_deref(),
+            Some("\"5927c5d64d94a5786f90003aa26d0159-1\"")
+        );
         assert_eq!(item_2.key, "idk.txt");
-        assert_eq!(item_2.last_modified, "2020-12-05T08:23:52.215Z");
+        assert_eq!(
+            item_2.last_modified.as_deref(),
+            Some("2020-12-05T08:23:52.215Z")
+        );
         assert!(item_2.owner.is_none());
-        assert_eq!(item_2.size, 9);
+        assert_eq!(item_2.size, Some(9));
         assert_eq!(item_2.storage_class, Some("STANDARD".to_string()));
 
         let item_3 = &parsed.contents[2];
-        assert_eq!(item_3.etag, "\"f7dbec93a0932ccb4d0f4e512eb1a443\"");
+        assert_eq!(
+            item_3.etag.as_deref(),
+            Some("\"f7dbec93a0932ccb4d0f4e512eb1a443\"")
+        );
         assert_eq!(item_3.key, "img.jpg");
-        assert_eq!(item_3.last_modified, "2020-11-26T20:21:35.858Z");
+        assert_eq!(
+            item_3.last_modified.as_deref(),
+            Some("2020-11-26T20:21:35.858Z")
+        );
         assert!(item_3.owner.is_none());
-        assert_eq!(item_3.size, 41259);
+        assert_eq!(item_3.size, Some(41259));
         assert_eq!(item_3.storage_class, Some("STANDARD".to_string()));
 
         assert_eq!(parsed.max_keys, Some(4500));
@@ -432,6 +450,46 @@ mod tests {
         assert!(parsed.common_prefixes.is_empty());
         assert!(parsed.next_continuation_token.is_none());
         assert!(parsed.start_after.is_none());
+    }
+
+    #[test]
+    fn parse_optional_fields() {
+        // The s3s crate leaves out the optional ETag
+        let input = r#"<?xml version="1.0" encoding="UTF-8"?>
+        <ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+            <Name>test</Name>
+            <Prefix></Prefix>
+            <KeyCount>2</KeyCount>
+            <MaxKeys>1000</MaxKeys>
+            <IsTruncated>false</IsTruncated>
+            <Contents>
+                <Key>duck.jpg</Key>
+                <LastModified>2020-12-01T20:43:11.794Z</LastModified>
+                <Size>4274</Size>
+            </Contents>
+            <Contents>
+                <Key>idk.txt</Key>
+            </Contents>
+        </ListBucketResult>
+        "#;
+
+        let parsed = ListObjectsV2::parse_response(input).unwrap();
+        assert_eq!(parsed.contents.len(), 2);
+
+        let item_1 = &parsed.contents[0];
+        assert_eq!(item_1.key, "duck.jpg");
+        assert!(item_1.etag.is_none());
+        assert_eq!(
+            item_1.last_modified.as_deref(),
+            Some("2020-12-01T20:43:11.794Z")
+        );
+        assert_eq!(item_1.size, Some(4274));
+
+        let item_2 = &parsed.contents[1];
+        assert_eq!(item_2.key, "idk.txt");
+        assert!(item_2.etag.is_none());
+        assert!(item_2.last_modified.is_none());
+        assert!(item_2.size.is_none());
     }
 
     #[test]
