@@ -58,6 +58,7 @@
     rustdoc::broken_intra_doc_links
 )]
 #![forbid(unsafe_code)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 pub use self::actions::S3Action;
 pub use self::bucket::{Bucket, BucketError, UrlStyle};
