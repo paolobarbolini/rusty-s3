@@ -3,7 +3,7 @@
 //! The rusty-s3 crate provides a convenient API for signing, building
 //! and parsing AWS S3 requests and responses.
 //! It follows a Sans-IO approach, meaning that the library itself doesn't
-//! send any of the requests. It's the reposibility of the user to choose an
+//! send any of the requests. It's the responsibility of the user to choose an
 //! HTTP client, be it synchronous or asynchronous, and use it to send the requests.
 //!
 //! ## Basic getting started example

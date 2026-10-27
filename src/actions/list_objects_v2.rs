@@ -114,7 +114,7 @@ impl<'a> ListObjectsV2<'a> {
 
     /// Limits the response to keys that begin with the specified prefix.
     ///
-    /// See <https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax> for more infos.
+    /// See <https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax> for more information.
     /// # Example
     /// ```
     /// # let bucket = rusty_s3::Bucket::new(url::Url::parse("http://rusty_s3/").unwrap(), rusty_s3::UrlStyle::Path, "doggo", "doggoland").unwrap();
@@ -127,7 +127,7 @@ impl<'a> ListObjectsV2<'a> {
 
     /// A delimiter is a character that you use to group keys.
     ///
-    /// See <https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax> for more infos.
+    /// See <https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax> for more information.
     /// # Example
     /// ```
     /// # let bucket = rusty_s3::Bucket::new(url::Url::parse("http://rusty_s3/").unwrap(), rusty_s3::UrlStyle::Path, "doggo", "doggoland").unwrap();
@@ -142,7 +142,7 @@ impl<'a> ListObjectsV2<'a> {
     /// Amazon S3 starts listing after this specified key.
     /// `StartAfter` can be any key in the bucket.
     ///
-    /// See <https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax> for more infos.
+    /// See <https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax> for more information.
     /// # Example
     /// ```
     /// # let bucket = rusty_s3::Bucket::new(url::Url::parse("http://rusty_s3/").unwrap(), rusty_s3::UrlStyle::Path, "doggo", "doggoland").unwrap();
@@ -156,7 +156,7 @@ impl<'a> ListObjectsV2<'a> {
     /// `ContinuationToken` indicates to Amazon S3 that the list is being continued on this bucket with a token.
     /// `ContinuationToken` is obfuscated and is not a real key.
     ///
-    /// See <https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax> for more infos.
+    /// See <https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax> for more information.
     /// # Example
     /// ```
     /// # let bucket = rusty_s3::Bucket::new(url::Url::parse("http://rusty_s3/").unwrap(), rusty_s3::UrlStyle::Path, "doggo", "doggoland").unwrap();
@@ -177,7 +177,7 @@ impl<'a> ListObjectsV2<'a> {
     /// [`ListObjectsV2Response::max_keys`]. Amazon S3 never returns more than
     /// 1,000 keys per request anyway.
     ///
-    /// See <https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax> for more infos.
+    /// See <https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html#API_ListObjectsV2_RequestSyntax> for more information.
     /// # Example
     /// ```
     /// # let bucket = rusty_s3::Bucket::new(url::Url::parse("http://rusty_s3/").unwrap(), rusty_s3::UrlStyle::Path, "doggo", "doggoland").unwrap();

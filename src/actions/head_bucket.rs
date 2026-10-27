@@ -8,7 +8,7 @@ use crate::actions::Method;
 use crate::signing::sign;
 use crate::{Bucket, Credentials, Map};
 
-/// Retrieve an bucket's metadata from S3, using a `HEAD` request.
+/// Retrieve a bucket's metadata from S3, using a `HEAD` request.
 ///
 /// Find out more about `HeadBucket` from the [AWS API Reference][api]
 ///
