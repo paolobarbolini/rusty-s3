@@ -74,6 +74,12 @@ impl Clone for RotatingCredentials {
 
 impl PartialEq for RotatingCredentials {
     fn eq(&self, other: &Self) -> bool {
+        // Clones share the same credentials, which could be rotated between
+        // the two `get` calls
+        if Arc::ptr_eq(&self.inner, &other.inner) {
+            return true;
+        }
+
         let current1 = self.get();
         let current2 = other.get();
         *current1 == *current2
@@ -82,7 +88,10 @@ impl PartialEq for RotatingCredentials {
 
 #[cfg(test)]
 mod tests {
-    use pretty_assertions::assert_eq;
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::thread;
+
+    use pretty_assertions::{assert_eq, assert_ne};
 
     use super::*;
 
@@ -146,6 +155,42 @@ mod tests {
         drop(current);
 
         assert_eq!(credentials, credentials2);
+    }
+
+    #[test]
+    fn eq_different_instances() {
+        let credentials =
+            RotatingCredentials::new("abcd".into(), "1234".into(), Some("xyz".into()));
+        let credentials2 =
+            RotatingCredentials::new("abcd".into(), "1234".into(), Some("xyz".into()));
+        assert_eq!(credentials, credentials2);
+
+        credentials.update("dcba".into(), "4321".into(), Some("yxz".into()));
+        assert_ne!(credentials, credentials2);
+    }
+
+    #[test]
+    fn eq_cloned_while_rotating() {
+        let credentials =
+            RotatingCredentials::new("abcd".into(), "1234".into(), Some("xyz".into()));
+        let credentials2 = credentials.clone();
+        let done = AtomicBool::new(false);
+
+        let mismatches = thread::scope(|s| {
+            s.spawn(|| {
+                let mut flip = false;
+                while !done.load(Ordering::Relaxed) {
+                    let key = if flip { "abcd" } else { "dcba" };
+                    credentials.update(key.into(), "1234".into(), Some("xyz".into()));
+                    flip = !flip;
+                }
+            });
+
+            let mismatches = (0..100_000).filter(|_| credentials != credentials2).count();
+            done.store(true, Ordering::Relaxed);
+            mismatches
+        });
+        assert_eq!(mismatches, 0);
     }
 
     #[test]
