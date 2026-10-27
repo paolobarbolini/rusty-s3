@@ -50,7 +50,7 @@ jobs:
         rustup component add clippy
 
     - name: Run clippy
-      run: cargo clippy
+      run: cargo clippy --locked
 
   test:
     strategy:
@@ -78,43 +78,43 @@ jobs:
 
     - name: Run tests (aws-lc-rs)
       if: matrix.platform == 'ubuntu-24.04'
-      run: cargo test --no-default-features --features aws-lc-rs
+      run: cargo test --locked --no-default-features --features aws-lc-rs
 
     - name: Run tests (rustcrypto)
       if: matrix.platform == 'ubuntu-24.04'
-      run: cargo test --no-default-features --features rustcrypto
+      run: cargo test --locked --no-default-features --features rustcrypto
 
     - name: Run tests (graviola)
       if: matrix.platform == 'ubuntu-24.04'
-      run: cargo test --no-default-features --features graviola
+      run: cargo test --locked --no-default-features --features graviola
 
     - name: Run tests (default features)
       if: matrix.platform == 'ubuntu-24.04'
-      run: cargo test
+      run: cargo test --locked
 
     - name: Run tests (xml, not full)
       if: matrix.platform == 'ubuntu-24.04'
-      run: cargo test --no-default-features --features rustcrypto,xml
+      run: cargo test --locked --no-default-features --features rustcrypto,xml
 
     - name: Run tests (aws-lc-rs)
       if: matrix.platform != 'ubuntu-24.04'
-      run: cargo test --lib --no-default-features --features aws-lc-rs
+      run: cargo test --locked --lib --no-default-features --features aws-lc-rs
 
     - name: Run tests (rustcrypto)
       if: matrix.platform != 'ubuntu-24.04'
-      run: cargo test --lib --no-default-features --features rustcrypto
+      run: cargo test --locked --lib --no-default-features --features rustcrypto
 
     - name: Run tests (graviola)
       if: matrix.platform != 'ubuntu-24.04'
-      run: cargo test --lib --no-default-features --features graviola
+      run: cargo test --locked --lib --no-default-features --features graviola
 
     - name: Run tests (default features)
       if: matrix.platform != 'ubuntu-24.04'
-      run: cargo test --lib
+      run: cargo test --locked --lib
 
     - name: Run tests (xml, not full)
       if: matrix.platform != 'ubuntu-24.04'
-      run: cargo test --lib --no-default-features --features rustcrypto,xml
+      run: cargo test --locked --lib --no-default-features --features rustcrypto,xml
 
   msrv:
     runs-on: ubuntu-24.04
@@ -131,7 +131,7 @@ jobs:
       run: rustup default 1.89
 
     - name: Run tests
-      run: cargo test --lib
+      run: cargo test --locked --lib
 
   coverage:
     runs-on: ubuntu-24.04
