@@ -270,6 +270,47 @@ mod tests {
     }
 
     #[test]
+    fn body_with_md5() {
+        let endpoint = "https://s3.amazonaws.com".parse().unwrap();
+        let bucket = Bucket::new(
+            endpoint,
+            UrlStyle::VirtualHost,
+            "examplebucket",
+            "us-east-1",
+        )
+        .unwrap();
+
+        let objects = [
+            ObjectIdentifier::new("123".to_owned()),
+            ObjectIdentifier {
+                key: "456".to_owned(),
+                version_id: Some("ver1234".to_owned()),
+            },
+        ];
+
+        let action = DeleteObjects::new(&bucket, None, objects.iter());
+        assert!(!action.quiet());
+
+        let (body, content_md5) = action.body_with_md5();
+        assert_eq!(
+            body,
+            "<Delete><Object><Key>123</Key></Object><Object><Key>456</Key><VersionId>ver1234</VersionId></Object></Delete>"
+        );
+        assert_eq!(content_md5, "mF3VYw5nAXHpVm5KJfiC7g==");
+
+        let mut action = DeleteObjects::new(&bucket, None, objects.iter());
+        action.set_quiet(true);
+        assert!(action.quiet());
+
+        let (body, content_md5) = action.body_with_md5();
+        assert_eq!(
+            body,
+            "<Delete><Object><Key>123</Key></Object><Object><Key>456</Key><VersionId>ver1234</VersionId></Object><Quiet>true</Quiet></Delete>"
+        );
+        assert_eq!(content_md5, "nm9A4HQxFv2UGEMMOxRomw==");
+    }
+
+    #[test]
     fn body_escapes_carriage_returns() {
         let endpoint = "https://s3.amazonaws.com".parse().unwrap();
         let bucket = Bucket::new(

@@ -101,9 +101,7 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn deserialize() {
-        let json = r#"{
+    const JSON: &str = r#"{
     "Code" : "Success",
     "LastUpdated" : "2020-12-28T16:47:50Z",
     "Type" : "AWS-HMAC",
@@ -113,7 +111,9 @@ mod tests {
     "Expiration" : "2020-12-28T23:10:09Z"
 }"#;
 
-        let deserialized = Ec2SecurityCredentialsMetadataResponse::deserialize(json).unwrap();
+    #[test]
+    fn deserialize() {
+        let deserialized = Ec2SecurityCredentialsMetadataResponse::deserialize(JSON).unwrap();
         assert_eq!(deserialized.key(), "some_access_key");
         assert_eq!(deserialized.secret(), "some_secret_key");
         assert_eq!(deserialized.token(), "some_token");
@@ -131,5 +131,28 @@ mod tests {
             debug_output,
             "Ec2SecurityCredentialsMetadataResponse { key: \"some_access_key\", .. }"
         );
+    }
+
+    #[test]
+    fn into_credentials() {
+        let deserialized = Ec2SecurityCredentialsMetadataResponse::deserialize(JSON).unwrap();
+
+        let credentials = deserialized.into_credentials();
+        assert_eq!(credentials.key(), "some_access_key");
+        assert_eq!(credentials.secret(), "some_secret_key");
+        assert_eq!(credentials.token(), Some("some_token"));
+    }
+
+    #[test]
+    fn rotate_credentials() {
+        let rotating = RotatingCredentials::new("abcd".into(), "1234".into(), None);
+        let deserialized = Ec2SecurityCredentialsMetadataResponse::deserialize(JSON).unwrap();
+
+        deserialized.rotate_credentials(&rotating);
+
+        let current = rotating.get();
+        assert_eq!(current.key(), "some_access_key");
+        assert_eq!(current.secret(), "some_secret_key");
+        assert_eq!(current.token(), Some("some_token"));
     }
 }
