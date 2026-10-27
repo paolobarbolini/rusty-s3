@@ -73,7 +73,8 @@ pub trait S3Action<'a> {
     /// Get a mutable reference to the query string of this action
     ///
     /// The `X-Amz-*` query parameters of the signature are added when signing,
-    /// so they must not be specified here.
+    /// so they must not be specified here. See [`sign`](crate::signing::sign)
+    /// for the names which every server signs the same way.
     fn query_mut(&mut self) -> &mut Map<'a>;
 
     /// Get a mutable reference to the signed headers of this action

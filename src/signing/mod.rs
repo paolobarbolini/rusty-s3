@@ -21,6 +21,10 @@ pub(crate) mod util;
 /// percent-encoded, like [`Bucket::object_url`] does, while its query string
 /// is replaced by `query_string`, which gets percent-encoded and must already
 /// be sorted by name, then by value.
+/// Query parameter names should only contain ASCII letters, digits, `-`,
+/// `.`, `_` and `~`: servers don't agree on how to sort other names when
+/// verifying the signature, as AWS sorts them after percent-encoding them,
+/// like the specification says, and others before, like rusty-s3 does.
 /// `headers` are signed along with the `host` header, which is taken from
 /// `url` unless it's one of them, and must be sent with the request with the
 /// same values. The payload isn't signed.
