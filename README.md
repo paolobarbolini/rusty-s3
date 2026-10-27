@@ -32,7 +32,7 @@ let bucket = Bucket::new(endpoint, path_style, name, region).expect("Url has a v
 
 // setting up the credentials
 let key = env::var("AWS_ACCESS_KEY_ID").expect("AWS_ACCESS_KEY_ID is set and a valid String");
-let secret = env::var("AWS_SECRET_ACCESS_KEY").expect("AWS_ACCESS_KEY_ID is set and a valid String");
+let secret = env::var("AWS_SECRET_ACCESS_KEY").expect("AWS_SECRET_ACCESS_KEY is set and a valid String");
 let credentials = Credentials::new(key, secret);
 
 // signing a request
@@ -49,6 +49,7 @@ More examples can be found in the examples directory on GitHub.
     * [`CreateBucket`][createbucket]
     * [`DeleteBucket`][deletebucket]
     * [`HeadBucket`][headbucket]
+    * [`GetBucketPolicy`][getbucketpolicy]
 * Basic methods
     * [`HeadObject`][headobject]
     * [`GetObject`][getobject]
@@ -72,6 +73,7 @@ More examples can be found in the examples directory on GitHub.
 [createmultipart]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateMultipartUpload.html
 [deleteobject]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObject.html
 [deleteobjects]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_DeleteObjects.html
+[getbucketpolicy]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketPolicy.html
 [getobject]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
 [headobject]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html
 [listobjectsv2]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjectsV2.html
