@@ -268,6 +268,32 @@ mod tests {
     }
 
     #[test]
+    fn body_escapes_carriage_returns() {
+        let endpoint = "https://s3.amazonaws.com".parse().unwrap();
+        let bucket = Bucket::new(
+            endpoint,
+            UrlStyle::VirtualHost,
+            "examplebucket",
+            "us-east-1",
+        )
+        .unwrap();
+
+        let objects = [
+            // macOS keeps custom folder icons in files named `Icon\r`
+            ObjectIdentifier::new("Icon\r".to_owned()),
+            ObjectIdentifier {
+                key: "a\rb\r\nc\nd&<>\"'".to_owned(),
+                version_id: Some("ver\r1234".to_owned()),
+            },
+        ];
+        let action = DeleteObjects::new(&bucket, None, objects.iter());
+        let (body, _) = action.body_with_md5();
+        let expected = "<Delete><Object><Key>Icon&#xD;</Key></Object><Object><Key>a&#xD;b&#xD;\nc\nd&amp;&lt;&gt;&quot;&apos;</Key><VersionId>ver&#xD;1234</VersionId></Object></Delete>";
+
+        assert_eq!(body, expected);
+    }
+
+    #[test]
     fn parse_response_success() {
         let input = r#"<?xml version="1.0" encoding="UTF-8"?>
         <DeleteResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">

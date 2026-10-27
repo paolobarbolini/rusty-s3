@@ -54,6 +54,49 @@ async fn delete_objects() {
     assert!(list.contents.is_empty());
 }
 
+#[tokio::test]
+async fn delete_objects_carriage_return() {
+    let (bucket, credentials, client) = common::bucket().await;
+
+    // XML parsers turn a raw `\r` into `\n`, which would delete the decoy
+    let target = "Icon\r";
+    let decoy = "Icon\n";
+    for key in [target, decoy] {
+        let action = bucket.put_object(Some(&credentials), key);
+        let url = action.sign(Duration::from_secs(60));
+        client
+            .put(url)
+            .send()
+            .await
+            .expect("send PutObject")
+            .error_for_status()
+            .expect("PutObject unexpected status code");
+    }
+
+    let objects = [ObjectIdentifier::new(target.to_owned())];
+    let action = bucket.delete_objects(Some(&credentials), objects.iter());
+    let url = action.sign(Duration::from_secs(60));
+    let (body, content_md5) = action.body_with_md5();
+    client
+        .post(url)
+        .header("Content-MD5", content_md5)
+        .body(body)
+        .send()
+        .await
+        .expect("send DeleteObjects")
+        .error_for_status()
+        .expect("DeleteObjects unexpected status code");
+
+    let action = bucket.list_objects_v2(Some(&credentials));
+    let list = get_objects_list(&client, action.sign(Duration::from_secs(60))).await;
+    let keys = list
+        .contents
+        .iter()
+        .map(|content| content.key.as_str())
+        .collect::<Vec<_>>();
+    assert_eq!(keys, [decoy]);
+}
+
 async fn get_objects_list(client: &Client, url: Url) -> ListObjectsV2Response {
     let resp = client
         .get(url)
