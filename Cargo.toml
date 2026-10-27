@@ -92,6 +92,7 @@ name = "multipart_upload"
 required-features = ["xml"]
 
 [lints.rust]
+unnameable_types = "warn"
 unreachable_pub = "warn"
 
 [lints.clippy]
