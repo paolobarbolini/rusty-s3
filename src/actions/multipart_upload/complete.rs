@@ -108,7 +108,7 @@ where
     }
 
     fn sign_with_time(&self, expires_in: Duration, time: &Timestamp) -> Url {
-        let url = self.bucket.object_url(self.object).unwrap();
+        let url = self.bucket.object_url(self.object);
         let query = iter::once(("uploadId", self.upload_id));
 
         match self.credentials {
