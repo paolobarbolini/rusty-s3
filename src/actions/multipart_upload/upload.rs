@@ -83,6 +83,7 @@ impl<'a> S3Action<'a> for UploadPart<'a> {
             ("partNumber", part_number.as_str()),
             ("uploadId", self.upload_id),
         ];
+        let query = SortingIterator::new(query.into_iter(), self.query.iter());
 
         match self.credentials {
             Some(credentials) => sign(
@@ -94,10 +95,10 @@ impl<'a> S3Action<'a> for UploadPart<'a> {
                 credentials.token(),
                 self.bucket.region(),
                 expires_in.as_secs(),
-                SortingIterator::new(query.iter().copied(), self.query.iter()),
+                query,
                 self.headers.iter(),
             ),
-            None => crate::signing::util::add_query_params(url, query.iter().copied()),
+            None => crate::signing::util::add_query_params(url, query),
         }
     }
 }
@@ -150,9 +151,11 @@ mod tests {
         )
         .unwrap();
 
-        let action = UploadPart::new(&bucket, None, "test.txt", 1, "abcd");
+        let mut action = UploadPart::new(&bucket, None, "test.txt", 1, "abcd");
+        action.query_mut().insert("x-id", "UploadPart");
+
         let url = action.sign(expires_in);
-        let expected = "https://examplebucket.s3.amazonaws.com/test.txt?partNumber=1&uploadId=abcd";
+        let expected = "https://examplebucket.s3.amazonaws.com/test.txt?partNumber=1&uploadId=abcd&x-id=UploadPart";
 
         assert_eq!(expected, url.as_str());
     }

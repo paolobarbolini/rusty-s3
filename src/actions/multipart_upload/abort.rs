@@ -65,7 +65,8 @@ impl<'a> S3Action<'a> for AbortMultipartUpload<'a> {
 
     fn sign_with_time(&self, expires_in: Duration, time: &Timestamp) -> Url {
         let url = self.bucket.object_url(self.object);
-        let query = iter::once(("uploadId", self.upload_id));
+        let query =
+            SortingIterator::new(iter::once(("uploadId", self.upload_id)), self.query.iter());
 
         match self.credentials {
             Some(credentials) => sign(
@@ -77,7 +78,7 @@ impl<'a> S3Action<'a> for AbortMultipartUpload<'a> {
                 credentials.token(),
                 self.bucket.region(),
                 expires_in.as_secs(),
-                SortingIterator::new(query, self.query.iter()),
+                query,
                 self.headers.iter(),
             ),
             None => crate::signing::util::add_query_params(url, query),
@@ -132,9 +133,11 @@ mod tests {
         )
         .unwrap();
 
-        let action = AbortMultipartUpload::new(&bucket, None, "test.txt", "abcd");
+        let mut action = AbortMultipartUpload::new(&bucket, None, "test.txt", "abcd");
+        action.query_mut().insert("x-id", "AbortMultipartUpload");
+
         let url = action.sign(expires_in);
-        let expected = "https://examplebucket.s3.amazonaws.com/test.txt?uploadId=abcd";
+        let expected = "https://examplebucket.s3.amazonaws.com/test.txt?uploadId=abcd&x-id=AbortMultipartUpload";
 
         assert_eq!(expected, url.as_str());
     }

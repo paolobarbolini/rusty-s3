@@ -69,7 +69,7 @@ impl<'a> S3Action<'a> for PutObject<'a> {
                 self.query.iter(),
                 self.headers.iter(),
             ),
-            None => url,
+            None => crate::signing::util::add_query_params(url, self.query.iter()),
         }
     }
 }
@@ -121,9 +121,11 @@ mod tests {
         )
         .unwrap();
 
-        let action = PutObject::new(&bucket, None, "test.txt");
+        let mut action = PutObject::new(&bucket, None, "test.txt");
+        action.query_mut().insert("x-id", "PutObject");
+
         let url = action.sign(expires_in);
-        let expected = "https://examplebucket.s3.amazonaws.com/test.txt";
+        let expected = "https://examplebucket.s3.amazonaws.com/test.txt?x-id=PutObject";
 
         assert_eq!(expected, url.as_str());
     }
