@@ -23,6 +23,9 @@ pub struct HeadBucket<'a> {
 }
 
 impl<'a> HeadBucket<'a> {
+    /// Construct a new `HeadBucket` action
+    ///
+    /// Without `credentials` the request isn't signed.
     #[inline]
     #[must_use]
     pub const fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>) -> Self {

@@ -25,6 +25,7 @@ pub struct DeleteBucket<'a> {
 }
 
 impl<'a> DeleteBucket<'a> {
+    /// Construct a new `DeleteBucket` action
     #[must_use]
     pub const fn new(bucket: &'a Bucket, credentials: &'a Credentials) -> Self {
         Self {

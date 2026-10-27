@@ -33,6 +33,9 @@ pub struct PutObject<'a> {
 }
 
 impl<'a> PutObject<'a> {
+    /// Construct a new `PutObject` action
+    ///
+    /// Without `credentials` the request isn't signed.
     #[inline]
     #[must_use]
     pub const fn new(

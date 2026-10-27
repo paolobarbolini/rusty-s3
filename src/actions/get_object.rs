@@ -24,6 +24,9 @@ pub struct GetObject<'a> {
 }
 
 impl<'a> GetObject<'a> {
+    /// Construct a new `GetObject` action
+    ///
+    /// Without `credentials` the request isn't signed.
     #[inline]
     #[must_use]
     pub const fn new(

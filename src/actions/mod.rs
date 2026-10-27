@@ -53,6 +53,7 @@ mod put_object;
 
 /// A request which can be signed
 pub trait S3Action<'a> {
+    /// The HTTP method of the request
     const METHOD: Method;
 
     /// Sign a request for this action, using `METHOD` for the [`Method`]

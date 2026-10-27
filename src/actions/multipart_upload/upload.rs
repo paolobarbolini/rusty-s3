@@ -59,6 +59,9 @@ pub struct UploadPart<'a> {
 }
 
 impl<'a> UploadPart<'a> {
+    /// Construct a new `UploadPart` action
+    ///
+    /// Without `credentials` the request isn't signed.
     #[inline]
     #[must_use]
     pub const fn new(

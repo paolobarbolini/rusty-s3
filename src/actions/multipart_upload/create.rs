@@ -31,6 +31,7 @@ pub struct CreateMultipartUpload<'a> {
     headers: Map<'a>,
 }
 
+/// The response of a [`CreateMultipartUpload`] request
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Clone)]
 pub struct CreateMultipartUploadResponse(InnerCreateMultipartUploadResponse);
@@ -43,6 +44,9 @@ struct InnerCreateMultipartUploadResponse {
 }
 
 impl<'a> CreateMultipartUpload<'a> {
+    /// Construct a new `CreateMultipartUpload` action
+    ///
+    /// Without `credentials` the request isn't signed.
     #[inline]
     #[must_use]
     pub const fn new(
@@ -72,6 +76,8 @@ impl<'a> CreateMultipartUpload<'a> {
 }
 
 impl CreateMultipartUploadResponse {
+    /// The ID of the multipart upload, which the other multipart upload
+    /// actions need
     #[must_use]
     pub fn upload_id(&self) -> &str {
         &self.0.upload_id

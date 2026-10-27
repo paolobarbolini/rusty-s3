@@ -1,3 +1,5 @@
+//! Listing the objects of a bucket, with `ListObjectsV2`
+
 use std::borrow::Cow;
 use std::time::Duration;
 
@@ -31,18 +33,25 @@ pub struct ListObjectsV2<'a> {
 }
 
 #[allow(clippy::module_name_repetitions)]
+/// The response of a [`ListObjectsV2`] request
 #[derive(Debug, Clone, FromXml)]
 #[xml(rename = "ListBucketResult", ns(S3_XML_NS))]
 pub struct ListObjectsV2Response {
+    /// The listed objects
     pub contents: Vec<ListObjectsContent>,
 
+    /// The maximum number of keys the response could contain
     #[xml(rename = "MaxKeys")]
     pub max_keys: Option<u16>,
+    /// The keys grouped by their common prefix, when there's a delimiter
     pub common_prefixes: Vec<CommonPrefixes>,
+    /// The token to continue listing from, if the list is truncated
     #[xml(rename = "NextContinuationToken")]
     pub next_continuation_token: Option<String>,
+    /// The key after which the list starts, if the request had one
     #[xml(rename = "StartAfter")]
     pub start_after: Option<String>,
+    /// How the keys are encoded in the response, if they are
     #[xml(rename = "EncodingType")]
     pub encoding_type: Option<String>,
 }
@@ -64,39 +73,55 @@ struct InnerListObjectsV2Response {
     encoding_type: Option<String>,
 }
 
+/// An object listed by [`ListObjectsV2`]
 #[derive(Debug, Clone, FromXml)]
 #[xml(rename = "Contents", ns(S3_XML_NS))]
 pub struct ListObjectsContent {
+    /// The entity tag of the object
     #[xml(rename = "ETag")]
     pub etag: Option<String>,
+    /// The key of the object
     #[xml(rename = "Key")]
     pub key: String,
+    /// When the object was last modified
     #[xml(rename = "LastModified")]
     pub last_modified: Option<String>,
+    /// The owner of the object, which S3 only returns if asked to
     pub owner: Option<ListObjectsOwner>,
+    /// The size of the object, in bytes
     #[xml(rename = "Size")]
     pub size: Option<u64>,
+    /// The storage class of the object
     #[xml(rename = "StorageClass")]
     pub storage_class: Option<String>,
 }
 
+/// The owner of an object listed by [`ListObjectsV2`]
 #[derive(Debug, Clone, FromXml)]
 #[xml(rename = "Owner", ns(S3_XML_NS))]
 pub struct ListObjectsOwner {
+    /// The ID of the owner
     #[xml(rename = "ID")]
     pub id: String,
+    /// The display name of the owner
     #[xml(rename = "DisplayName")]
     pub display_name: Option<String>,
 }
 
+/// Keys grouped by [`ListObjectsV2`] because they have a common prefix
 #[derive(Debug, Clone, FromXml)]
 #[xml(rename = "CommonPrefixes", ns(S3_XML_NS))]
 pub struct CommonPrefixes {
+    /// The common prefix of the keys, up to the first delimiter after the
+    /// prefix of the request
     #[xml(rename = "Prefix")]
     pub prefix: String,
 }
 
 impl<'a> ListObjectsV2<'a> {
+    /// Construct a new `ListObjectsV2` action
+    ///
+    /// Without `credentials` the request isn't signed.
     #[must_use]
     pub fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>) -> Self {
         let mut query = Map::new();

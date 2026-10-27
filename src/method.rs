@@ -3,10 +3,15 @@ use std::fmt::{self, Display};
 /// The HTTP request method for an [`S3Action`](crate::actions::S3Action).
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum Method {
+    /// `HEAD`
     Head,
+    /// `GET`
     Get,
+    /// `POST`
     Post,
+    /// `PUT`
     Put,
+    /// `DELETE`
     Delete,
 }
 

@@ -63,6 +63,9 @@ pub struct DeleteObjects<'a, I> {
 }
 
 impl<'a, I> DeleteObjects<'a, I> {
+    /// Construct a new `DeleteObjects` action
+    ///
+    /// Without `credentials` the request isn't signed.
     #[inline]
     pub const fn new(bucket: &'a Bucket, credentials: Option<&'a Credentials>, objects: I) -> Self {
         Self {
@@ -109,36 +112,50 @@ impl ObjectIdentifier {
     }
 }
 
+/// The response of a [`DeleteObjects`] request
 #[derive(Debug, Clone, FromXml)]
 #[xml(rename = "DeleteResult", ns(S3_XML_NS))]
 pub struct DeleteObjectsResponse {
+    /// The deleted objects, which aren't reported in quiet mode
     pub deleted: Vec<DeletedObject>,
+    /// The objects which couldn't be deleted
     #[xml(rename = "Error")]
     pub errors: Vec<ErrorObject>,
 }
 
+/// An object deleted by [`DeleteObjects`]
 #[derive(Debug, Clone, FromXml)]
 #[xml(rename = "Deleted", ns(S3_XML_NS))]
 pub struct DeletedObject {
+    /// The key of the object
     #[xml(rename = "Key")]
     pub key: String,
+    /// The version of the object which was deleted, if one was given
     #[xml(rename = "VersionId")]
     pub version_id: Option<String>,
+    /// Whether the deleted version was a delete marker or, if no version was
+    /// given, whether a delete marker was created
     #[xml(rename = "DeleteMarker")]
     pub delete_marker: Option<bool>,
+    /// The version of the delete marker which was created or deleted
     #[xml(rename = "DeleteMarkerVersionId")]
     pub delete_marker_version_id: Option<String>,
 }
 
+/// An object [`DeleteObjects`] couldn't delete
 #[derive(Debug, Clone, FromXml)]
 #[xml(rename = "Error", ns(S3_XML_NS))]
 pub struct ErrorObject {
+    /// The key of the object
     #[xml(rename = "Key")]
     pub key: String,
+    /// The version of the object, if one was given
     #[xml(rename = "VersionId")]
     pub version_id: Option<String>,
+    /// The code of the error, like `AccessDenied`
     #[xml(rename = "Code")]
     pub code: String,
+    /// A description of the error
     #[xml(rename = "Message")]
     pub message: String,
 }

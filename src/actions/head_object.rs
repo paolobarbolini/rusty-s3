@@ -24,6 +24,9 @@ pub struct HeadObject<'a> {
 }
 
 impl<'a> HeadObject<'a> {
+    /// Construct a new `HeadObject` action
+    ///
+    /// Without `credentials` the request isn't signed.
     #[inline]
     #[must_use]
     pub const fn new(

@@ -42,6 +42,9 @@ pub struct AbortMultipartUpload<'a> {
 }
 
 impl<'a> AbortMultipartUpload<'a> {
+    /// Construct a new `AbortMultipartUpload` action
+    ///
+    /// Without `credentials` the request isn't signed.
     #[inline]
     #[must_use]
     pub const fn new(
