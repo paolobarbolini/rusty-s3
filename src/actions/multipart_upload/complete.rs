@@ -12,6 +12,14 @@ use crate::{Bucket, Credentials, Map};
 
 /// Complete a multipart upload.
 ///
+/// The parts are given as the `ETag`s returned when uploading them with
+/// [`UploadPart`][crate::actions::UploadPart], and they're numbered by their
+/// position: the first `ETag` is sent as part number 1, the second as part
+/// number 2, and so on. The `ETag`s must therefore be in part number order,
+/// which isn't the order in which parts finish uploading if they're uploaded
+/// concurrently, and the parts must have been uploaded with consecutive
+/// part numbers starting from 1.
+///
 /// Find out more about `CompleteMultipartUpload` from the [AWS API Reference][api]
 ///
 /// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CompleteMultipartUpload.html
@@ -69,6 +77,8 @@ where
     I: Iterator<Item = &'a str>,
 {
     /// Generate the XML body for the request.
+    ///
+    /// The `n`-th `ETag` is sent as part number `n`, counting from 1.
     ///
     /// # Panics
     ///
