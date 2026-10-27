@@ -20,6 +20,16 @@ use crate::{Bucket, Credentials, Map};
 /// concurrently, and the parts must have been uploaded with consecutive
 /// part numbers starting from 1.
 ///
+/// Since completing the upload can take S3 several minutes, it can respond
+/// with `200 OK` before knowing whether it succeeded, so the body of the
+/// response must be checked too: it contains an `Error` instead of a
+/// `CompleteMultipartUploadResult` if completing the upload failed, which
+/// makes [`CompleteMultipartUploadResponse::parse`] fail. When giving up,
+/// abort the upload with
+/// [`AbortMultipartUpload`][crate::actions::AbortMultipartUpload], since the
+/// uploaded parts are stored, and paid for, until the multipart upload is
+/// completed or aborted.
+///
 /// Find out more about `CompleteMultipartUpload` from the [AWS API Reference][api]
 ///
 /// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_CompleteMultipartUpload.html
