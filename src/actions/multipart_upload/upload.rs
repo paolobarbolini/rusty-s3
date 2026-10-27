@@ -11,7 +11,8 @@ use crate::{Bucket, Credentials, Map};
 
 /// Upload a part to a previously created multipart upload.
 ///
-/// Every part must be between 5 MB and 5 GB in size, except for the last part.
+/// Every part must be between 5 MiB and 5 GiB in size, except for the last
+/// part, which can be smaller.
 ///
 /// The part must be uploaded via a PUT request, on success the server will
 /// return an `ETag` header which must be given to
@@ -19,6 +20,23 @@ use crate::{Bucket, Credentials, Map};
 /// complete the upload.
 ///
 /// A maximum of 10,000 parts can be uploaded to a single multipart upload.
+///
+/// ## Choosing the size of parts
+///
+/// Since there can only be 10,000 parts, they must be at least as large as
+/// the object divided by 10,000: for example, 5 MiB parts can upload objects
+/// of up to about 48.8 GiB. Within these limits, smaller parts:
+///
+/// * can be uploaded concurrently over more connections
+/// * lose less progress when uploading one of them fails and has to be
+///   retried
+/// * work over slow connections: some S3 compatible services abort requests
+///   which upload slower than a minimum speed, so parts of 5 to 10 MiB might
+///   be the only way to upload an object at all
+///
+/// while larger parts take fewer requests, each of them signed, sent and,
+/// on AWS, paid for separately. The AWS CLI uses 8 MiB parts, making them
+/// larger only for objects which would need more than 10,000 of them.
 ///
 /// The uploaded part will consume storage on S3 until the multipart upload
 /// is completed or aborted.
