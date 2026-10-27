@@ -87,13 +87,23 @@ impl<'a> ListParts<'a> {
 
     /// Parse the XML response from S3 into a struct
     ///
+    /// The next part number marker is only kept if the response is truncated.
+    ///
     /// # Errors
     ///
-    /// Will return an error if the XML cannot be deserialized
+    /// Will return an error if the XML cannot be deserialized, or if the
+    /// response is truncated without a part number to continue listing from
     pub fn parse_response(s: &str) -> Result<ListPartsResponse, instant_xml::Error> {
         let mut parts: ListPartsResponse = instant_xml::from_str(s)?;
-        if !parts.is_truncated {
-            parts.next_part_number_marker = None;
+        match (parts.is_truncated, parts.next_part_number_marker) {
+            (false, _) => parts.next_part_number_marker = None,
+            // Part numbers start from 1, so continuing from 0 would start over
+            (true, None | Some(0)) => {
+                return Err(instant_xml::Error::MissingValue(
+                    "ListPartsResponse::next_part_number_marker",
+                ));
+            }
+            (true, Some(_)) => {}
         }
         Ok(parts)
     }
@@ -282,5 +292,55 @@ mod tests {
         assert!(parsed.parts.is_empty());
         assert_eq!(parsed.max_parts, 2);
         assert!(parsed.next_part_number_marker.is_none());
+    }
+
+    /// A page of a listing, with `marker` before its `MaxParts`
+    fn page(is_truncated: bool, marker: &str) -> String {
+        format!(
+            r#"<?xml version="1.0" encoding="UTF-8"?>
+        <ListPartsResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+          <Bucket>example-bucket</Bucket>
+          <Key>example-object</Key>
+          <UploadId>XXBsb2FkIElEIGZvciBlbHZpbmcncyVcdS1tb3ZpZS5tMnRzEEEwbG9hZA</UploadId>
+          <PartNumberMarker>2</PartNumberMarker>
+          {marker}
+          <MaxParts>1</MaxParts>
+          <IsTruncated>{is_truncated}</IsTruncated>
+          <Part>
+            <PartNumber>3</PartNumber>
+            <LastModified>2010-11-10T20:48:33.000Z</LastModified>
+            <ETag>"aaaa18db4cc2f85cedef654fccc4a4x8"</ETag>
+            <Size>10485760</Size>
+          </Part>
+        </ListPartsResult>
+        "#
+        )
+    }
+
+    #[test]
+    fn parse_truncated_without_next_part_number_marker() {
+        for marker in [
+            "",
+            "<NextPartNumberMarker></NextPartNumberMarker>",
+            "<NextPartNumberMarker>0</NextPartNumberMarker>",
+        ] {
+            let err = ListParts::parse_response(&page(true, marker)).unwrap_err();
+            assert_eq!(
+                err,
+                instant_xml::Error::MissingValue("ListPartsResponse::next_part_number_marker"),
+                "{marker}"
+            );
+        }
+    }
+
+    #[test]
+    fn parse_not_truncated_ignores_next_part_number_marker() {
+        // On the last page MinIO sends 0, and versitygw the last part number
+        for marker in ["0", "3"] {
+            let marker = format!("<NextPartNumberMarker>{marker}</NextPartNumberMarker>");
+            let parsed = ListParts::parse_response(&page(false, &marker)).unwrap();
+            assert_eq!(parsed.parts.len(), 1);
+            assert!(parsed.next_part_number_marker.is_none(), "{marker}");
+        }
     }
 }
