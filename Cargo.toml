@@ -72,6 +72,10 @@ name = "list_parts"
 required-features = ["xml"]
 
 [[test]]
+name = "multipart_upload"
+required-features = ["xml"]
+
+[[test]]
 name = "upload_download"
 required-features = ["xml"]
 
