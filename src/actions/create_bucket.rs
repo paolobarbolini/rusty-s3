@@ -1,14 +1,22 @@
 use std::time::Duration;
 
+#[cfg(feature = "xml")]
+use instant_xml::ToXml;
 use jiff::Timestamp;
 use url::Url;
 
 use crate::actions::Method;
+#[cfg(feature = "xml")]
+use crate::actions::S3_XML_NS;
 use crate::actions::S3Action;
 use crate::signing::sign;
 use crate::{Bucket, Credentials, Map};
 
 /// Create a new bucket.
+///
+/// Outside of `us-east-1`, the region of the bucket must also be sent as
+/// its location constraint in the body of the request, which
+/// `CreateBucket::body` generates when the `xml` feature is enabled.
 ///
 /// Find out more about `CreateBucket` from the [AWS API Reference][api]
 ///
@@ -32,6 +40,36 @@ impl<'a> CreateBucket<'a> {
             query: Map::new(),
             headers: Map::new(),
         }
+    }
+
+    /// Generate the XML body for the request.
+    ///
+    /// It sets the region of the bucket as its location constraint, which is
+    /// required in every region except `us-east-1`, where it must be left
+    /// out, so the body is empty.
+    ///
+    /// # Panics
+    ///
+    /// Panics if XML serialization fails, which shouldn't happen in practice.
+    #[cfg(feature = "xml")]
+    #[must_use]
+    pub fn body(&self) -> String {
+        #[derive(ToXml)]
+        #[xml(rename = "CreateBucketConfiguration", ns(S3_XML_NS))]
+        struct CreateBucketConfiguration<'a> {
+            #[xml(rename = "LocationConstraint")]
+            location_constraint: &'a str,
+        }
+
+        let region = self.bucket.region();
+        if region == "us-east-1" {
+            return String::new();
+        }
+
+        let req = CreateBucketConfiguration {
+            location_constraint: region,
+        };
+        instant_xml::to_string(&req).unwrap()
     }
 }
 
@@ -96,5 +134,30 @@ mod tests {
         let expected = "https://examplebucket.s3.amazonaws.com/?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&X-Amz-Signature=fb5c8ab11e9fd9d3c54ea0293e1df0820feef6c1f2de12e5fe00636e3f0cf9d2";
 
         assert_eq!(expected, url.as_str());
+
+        #[cfg(feature = "xml")]
+        assert_eq!(action.body(), "");
+    }
+
+    #[test]
+    #[cfg(feature = "xml")]
+    fn body_location_constraint() {
+        let endpoint = "https://s3.eu-west-1.amazonaws.com".parse().unwrap();
+        let bucket = Bucket::new(
+            endpoint,
+            UrlStyle::VirtualHost,
+            "examplebucket",
+            "eu-west-1",
+        )
+        .unwrap();
+        let credentials = Credentials::new(
+            "AKIAIOSFODNN7EXAMPLE",
+            "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+        );
+
+        let action = CreateBucket::new(&bucket, &credentials);
+        let expected = "<CreateBucketConfiguration xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\"><LocationConstraint>eu-west-1</LocationConstraint></CreateBucketConfiguration>";
+
+        assert_eq!(action.body(), expected);
     }
 }
