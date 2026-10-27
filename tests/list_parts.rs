@@ -1,7 +1,9 @@
 use reqwest::Client;
 use std::time::Duration;
 
-use rusty_s3::actions::{CreateMultipartUpload, ListParts, ListPartsResponse, S3Action as _};
+use rusty_s3::actions::{
+    CreateMultipartUpload, ListParts, ListPartsResponse, PartsContent, S3Action as _,
+};
 
 mod common;
 
@@ -50,17 +52,18 @@ async fn list_parts() {
     assert_eq!(parts.parts.len(), 2);
     assert_eq!(parts.max_parts, 2);
     assert_eq!(parts.next_part_number_marker, Some(2));
-    for part in &parts.parts {
-        assert_eq!(part.size, part_size as u64);
-        assert_eq!(part.etag, "\"0551556e17bba4b6c9dfbaab9e6f08dd\"");
-    }
+    assert_parts(&parts.parts, part_size);
 
     let mut action = bucket.list_parts(Some(&credentials), key, upload_id);
     action.set_part_number_marker(parts.next_part_number_marker.unwrap());
     let parts = get_list_of_parts(&client, action).await;
     assert_eq!(parts.parts.len(), 1);
     assert!(parts.next_part_number_marker.is_none());
-    for part in &parts.parts {
+    assert_parts(&parts.parts, part_size);
+}
+
+fn assert_parts(parts: &[PartsContent], part_size: usize) {
+    for part in parts {
         assert_eq!(part.size, part_size as u64);
         assert_eq!(part.etag, "\"0551556e17bba4b6c9dfbaab9e6f08dd\"");
     }

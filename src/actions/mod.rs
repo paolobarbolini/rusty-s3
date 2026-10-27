@@ -9,7 +9,9 @@ pub use self::create_bucket::CreateBucket;
 pub use self::delete_bucket::DeleteBucket;
 pub use self::delete_object::DeleteObject;
 #[cfg(feature = "full")]
-pub use self::delete_objects::{DeleteObjects, DeleteObjectsResponse, ObjectIdentifier};
+pub use self::delete_objects::{
+    DeleteObjects, DeleteObjectsResponse, DeletedObject, ErrorObject, ObjectIdentifier,
+};
 #[cfg(feature = "full")]
 pub use self::get_bucket_policy::{GetBucketPolicy, GetBucketPolicyResponse};
 pub use self::get_object::GetObject;
@@ -24,7 +26,7 @@ pub use self::multipart_upload::complete::CompleteMultipartUpload;
 #[cfg(feature = "xml")]
 pub use self::multipart_upload::create::{CreateMultipartUpload, CreateMultipartUploadResponse};
 #[cfg(feature = "xml")]
-pub use self::multipart_upload::list_parts::{ListParts, ListPartsResponse};
+pub use self::multipart_upload::list_parts::{ListParts, ListPartsResponse, PartsContent};
 pub use self::multipart_upload::upload::UploadPart;
 pub use self::put_object::PutObject;
 use crate::{Map, Method};

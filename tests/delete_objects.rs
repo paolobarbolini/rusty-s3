@@ -3,11 +3,15 @@ use std::time::Duration;
 use reqwest::Client;
 use url::Url;
 
-use rusty_s3::actions::{ListObjectsV2, ListObjectsV2Response, ObjectIdentifier, S3Action as _};
+use rusty_s3::actions::{
+    DeleteObjectsResponse, DeletedObject, ErrorObject, ListObjectsV2, ListObjectsV2Response,
+    ObjectIdentifier, S3Action as _,
+};
 
 mod common;
 
 #[tokio::test]
+#[ignore = "versitygw puts the response outside of the S3 namespace until a release with https://github.com/versity/versitygw/pull/2579"]
 async fn delete_objects() {
     let (bucket, credentials, client) = common::bucket().await;
 
@@ -40,7 +44,7 @@ async fn delete_objects() {
     let action = bucket.delete_objects(Some(&credentials), objects.iter());
     let url = action.sign(Duration::from_secs(60));
     let (body, content_md5) = action.body_with_md5();
-    client
+    let text = client
         .post(url)
         .header("Content-MD5", content_md5)
         .body(body)
@@ -48,7 +52,15 @@ async fn delete_objects() {
         .await
         .expect("send DeleteObjects")
         .error_for_status()
-        .expect("DeleteObjects unexpected status code");
+        .expect("DeleteObjects unexpected status code")
+        .text()
+        .await
+        .expect("DeleteObjects read response body");
+    let response = DeleteObjectsResponse::parse(&text).expect("DeleteObjects parse response");
+    let errors: &[ErrorObject] = &response.errors;
+    assert!(errors.is_empty(), "{errors:?}");
+    let deleted: &[DeletedObject] = &response.deleted;
+    assert_eq!(deleted.len(), 100);
 
     let list = get_objects_list(&client, list_url.clone()).await;
     assert!(list.contents.is_empty());
