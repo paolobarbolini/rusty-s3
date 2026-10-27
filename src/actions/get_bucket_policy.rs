@@ -87,7 +87,7 @@ impl<'a> S3Action<'a> for GetBucketPolicy<'a> {
                 query,
                 self.headers.iter(),
             ),
-            None => crate::signing::util::add_query_params(url, self.query.iter()),
+            None => crate::signing::util::add_query_params(url, query),
         }
     }
 }
@@ -97,6 +97,59 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     use super::*;
+    use crate::{Bucket, Credentials, UrlStyle};
+
+    #[test]
+    fn aws_example_signed() {
+        // Fri, 24 May 2013 00:00:00 GMT
+        let date = Timestamp::from_second(1_369_353_600).unwrap();
+        let expires_in = Duration::from_secs(86400);
+
+        let endpoint = "https://s3.amazonaws.com".parse().unwrap();
+        let bucket = Bucket::new(
+            endpoint,
+            UrlStyle::VirtualHost,
+            "examplebucket",
+            "us-east-1",
+        )
+        .unwrap();
+        let credentials = Credentials::new(
+            "AKIAIOSFODNN7EXAMPLE",
+            "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+        );
+
+        let action = GetBucketPolicy::new(&bucket, Some(&credentials));
+
+        let url = action.sign_with_time(expires_in, &date);
+        let expected = "https://examplebucket.s3.amazonaws.com/?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAIOSFODNN7EXAMPLE%2F20130524%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20130524T000000Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&policy=&X-Amz-Signature=e26de56ab8c3baaf62acf68f921e280f4674f741813006644bbd5fb6d2aaa2eb";
+
+        assert_eq!(expected, url.as_str());
+    }
+
+    #[test]
+    fn anonymous_custom_query() {
+        let expires_in = Duration::from_secs(86400);
+
+        let endpoint = "https://s3.amazonaws.com".parse().unwrap();
+        let bucket = Bucket::new(
+            endpoint,
+            UrlStyle::VirtualHost,
+            "examplebucket",
+            "us-east-1",
+        )
+        .unwrap();
+
+        let action = GetBucketPolicy::new(&bucket, None);
+        let url = action.sign(expires_in);
+        let expected = "https://examplebucket.s3.amazonaws.com/?policy=";
+        assert_eq!(expected, url.as_str());
+
+        let mut action = GetBucketPolicy::new(&bucket, None);
+        action.query_mut().insert("x-id", "GetBucketPolicy");
+        let url = action.sign(expires_in);
+        let expected = "https://examplebucket.s3.amazonaws.com/?policy=&x-id=GetBucketPolicy";
+        assert_eq!(expected, url.as_str());
+    }
 
     #[test]
     fn aws_example() -> Result<(), serde_json::Error> {

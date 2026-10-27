@@ -109,7 +109,8 @@ where
 
     fn sign_with_time(&self, expires_in: Duration, time: &Timestamp) -> Url {
         let url = self.bucket.object_url(self.object);
-        let query = iter::once(("uploadId", self.upload_id));
+        let query =
+            SortingIterator::new(iter::once(("uploadId", self.upload_id)), self.query.iter());
 
         match self.credentials {
             Some(credentials) => sign(
@@ -121,7 +122,7 @@ where
                 credentials.token(),
                 self.bucket.region(),
                 expires_in.as_secs(),
-                SortingIterator::new(query, self.query.iter()),
+                query,
                 self.headers.iter(),
             ),
             None => crate::signing::util::add_query_params(url, query),
@@ -187,10 +188,12 @@ mod tests {
         .unwrap();
 
         let etags = ["123456789", "abcdef"];
-        let action =
+        let mut action =
             CompleteMultipartUpload::new(&bucket, None, "test.txt", "abcd", etags.iter().copied());
+        action.query_mut().insert("x-id", "CompleteMultipartUpload");
+
         let url = action.sign(expires_in);
-        let expected = "https://examplebucket.s3.amazonaws.com/test.txt?uploadId=abcd";
+        let expected = "https://examplebucket.s3.amazonaws.com/test.txt?uploadId=abcd&x-id=CompleteMultipartUpload";
 
         assert_eq!(expected, url.as_str());
     }

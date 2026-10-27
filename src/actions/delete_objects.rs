@@ -260,9 +260,11 @@ mod tests {
                 version_id: Some("ver1234".to_owned()),
             },
         ];
-        let action = DeleteObjects::new(&bucket, None, objects.iter());
+        let mut action = DeleteObjects::new(&bucket, None, objects.iter());
+        action.query_mut().insert("x-id", "DeleteObjects");
+
         let url = action.sign(expires_in);
-        let expected = "https://examplebucket.s3.amazonaws.com/?delete=1";
+        let expected = "https://examplebucket.s3.amazonaws.com/?delete=1&x-id=DeleteObjects";
 
         assert_eq!(expected, url.as_str());
     }
