@@ -82,6 +82,25 @@ pub trait S3Action<'a> {
     /// with the same value specified, otherwise the S3 API will return an error.
     /// The `host` header is always signed: unless it's specified here, it's
     /// taken from the URL.
+    ///
+    /// Conversely, every `x-amz-*` header of the final request, like
+    /// `x-amz-acl`, `x-amz-storage-class` or `x-amz-meta-*`, must be specified
+    /// here too: AWS rejects requests with `x-amz-*` headers which aren't
+    /// signed, even though some S3 compatible servers accept them.
+    ///
+    /// ```
+    /// # use std::time::Duration;
+    /// # use rusty_s3::{Bucket, Credentials, S3Action as _, UrlStyle};
+    /// # let endpoint = "https://s3.amazonaws.com".parse().unwrap();
+    /// # let bucket = Bucket::new(endpoint, UrlStyle::VirtualHost, "rusty-s3", "us-east-1").unwrap();
+    /// # let credentials = Credentials::new("key", "secret");
+    /// let mut action = bucket.put_object(Some(&credentials), "duck.jpg");
+    /// action.headers_mut().insert("x-amz-storage-class", "STANDARD_IA");
+    /// let url = action.sign(Duration::from_secs(60 * 60));
+    ///
+    /// // the `PUT` request to `url` must have the `x-amz-storage-class: STANDARD_IA` header
+    /// assert!(url.as_str().contains("X-Amz-SignedHeaders=host%3Bx-amz-storage-class"));
+    /// ```
     fn headers_mut(&mut self) -> &mut Map<'a>;
 
     /// Sign a request for this action, as if it was signed at `time`
