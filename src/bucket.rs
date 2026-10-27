@@ -13,7 +13,7 @@ use crate::actions::{
 };
 #[cfg(feature = "xml")]
 use crate::actions::{CompleteMultipartUpload, CreateMultipartUpload, ListObjectsV2, ListParts};
-use crate::signing::util::percent_encode_path;
+use crate::signing::util::{percent_encode, percent_encode_path};
 
 /// An S3 bucket
 ///
@@ -98,7 +98,8 @@ impl Bucket {
     ///
     /// # Errors
     ///
-    /// Returns a `BucketError` if the `endpoint` is not a valid url, or if the `endpoint` is missing the host.
+    /// Returns a `BucketError` if the `endpoint` is not a valid url, if the `endpoint` is missing the host,
+    /// or if the `name` can't be part of a host name when using [`UrlStyle::VirtualHost`].
     pub fn new(
         endpoint: Url,
         path_style: UrlStyle,
@@ -172,7 +173,8 @@ fn base_url(mut endpoint: Url, name: &str, path_style: UrlStyle) -> Result<Url, 
     let _ = endpoint.set_password(None);
 
     // The path of the endpoint is a prefix of every url. Without a trailing
-    // `/`, `Url::join` would replace its last segment.
+    // `/`, the name of the bucket or the key would be appended to its last
+    // segment.
     if !endpoint.path().ends_with('/') {
         let path = format!("{}/", endpoint.path());
         endpoint.set_path(&path);
@@ -180,15 +182,23 @@ fn base_url(mut endpoint: Url, name: &str, path_style: UrlStyle) -> Result<Url, 
 
     match path_style {
         UrlStyle::Path => {
-            let path = format!("{name}/");
-            endpoint.join(&path)
+            // Appended as a single encoded segment, so that the name can't
+            // change anything else of the url, like the host
+            let path = format!("{}{}/", endpoint.path(), percent_encode(name));
+            endpoint.set_path(&path);
         }
         UrlStyle::VirtualHost => {
+            // `Url::set_host` ignores anything after a `:`
+            if name.contains(':') {
+                return Err(ParseError::InvalidDomainCharacter);
+            }
+
             let host = format!("{}.{}", name, endpoint.host_str().unwrap());
             endpoint.set_host(Some(&host))?;
-            Ok(endpoint)
         }
     }
+
+    Ok(endpoint)
 }
 
 // === Bucket level actions ===
@@ -482,6 +492,38 @@ mod tests {
         assert_eq!(
             Bucket::new(endpoint, UrlStyle::Path, name, region),
             Err(BucketError::MissingHost)
+        );
+    }
+
+    #[test]
+    fn new_pathstyle_special_characters() {
+        for (name, path) in [
+            ("tenant:bucket", "tenant%3Abucket"),
+            ("//example.com", "%2F%2Fexample.com"),
+            ("http://example.com", "http%3A%2F%2Fexample.com"),
+            ("a?b#c", "a%3Fb%23c"),
+        ] {
+            let endpoint: Url = "https://s3.dualstack.eu-west-1.amazonaws.com"
+                .parse()
+                .unwrap();
+            let bucket = Bucket::new(endpoint, UrlStyle::Path, name, "eu-west-1").unwrap();
+
+            assert_eq!(
+                bucket.base_url().as_str(),
+                format!("https://s3.dualstack.eu-west-1.amazonaws.com/{path}/")
+            );
+            assert_eq!(bucket.name(), name);
+        }
+    }
+
+    #[test]
+    fn new_domainstyle_colon() {
+        let endpoint: Url = "https://s3.dualstack.eu-west-1.amazonaws.com"
+            .parse()
+            .unwrap();
+        assert_eq!(
+            Bucket::new(endpoint, UrlStyle::VirtualHost, "example.com:", "eu-west-1"),
+            Err(BucketError::ParseError(ParseError::InvalidDomainCharacter))
         );
     }
 
