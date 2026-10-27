@@ -87,7 +87,10 @@ impl From<ParseError> for BucketError {
 impl Bucket {
     /// Construct a new S3 bucket
     ///
-    /// The query string and fragment of the `endpoint` are ignored: use
+    /// The path of the `endpoint`, if any, is kept as a prefix of the urls of
+    /// the bucket: for example, with [`UrlStyle::Path`],
+    /// `https://example.com/s3` gives `https://example.com/s3/<bucket>/<key>`.
+    /// Its query string and fragment are ignored: use
     /// [`S3Action::query_mut`](crate::S3Action::query_mut) to add query
     /// parameters to a request. Its username and password are ignored too,
     /// as they would end up in every presigned url: configure the HTTP client
@@ -165,6 +168,13 @@ fn base_url(mut endpoint: Url, name: &str, path_style: UrlStyle) -> Result<Url, 
     // which can't have any, like the ones without a host.
     let _ = endpoint.set_username("");
     let _ = endpoint.set_password(None);
+
+    // The path of the endpoint is a prefix of every url. Without a trailing
+    // `/`, `Url::join` would replace its last segment.
+    if !endpoint.path().ends_with('/') {
+        let path = format!("{}/", endpoint.path());
+        endpoint.set_path(&path);
+    }
 
     match path_style {
         UrlStyle::Path => {
@@ -503,6 +513,47 @@ mod tests {
             "https://rusty-s3.s3.dualstack.eu-west-1.amazonaws.com/something/cat.jpg",
             domain_style.as_str()
         );
+    }
+
+    #[test]
+    fn path_prefix_pathstyle() {
+        for endpoint in [
+            "https://example.com/storage/v1/s3",
+            "https://example.com/storage/v1/s3/",
+        ] {
+            let endpoint: Url = endpoint.parse().unwrap();
+            let bucket = Bucket::new(endpoint, UrlStyle::Path, "rusty-s3", "eu-west-1").unwrap();
+
+            assert_eq!(
+                bucket.base_url().as_str(),
+                "https://example.com/storage/v1/s3/rusty-s3/"
+            );
+            assert_eq!(
+                bucket.object_url("something/cat.jpg").unwrap().as_str(),
+                "https://example.com/storage/v1/s3/rusty-s3/something/cat.jpg"
+            );
+        }
+    }
+
+    #[test]
+    fn path_prefix_domainstyle() {
+        for endpoint in [
+            "https://example.com/storage/v1/s3",
+            "https://example.com/storage/v1/s3/",
+        ] {
+            let endpoint: Url = endpoint.parse().unwrap();
+            let bucket =
+                Bucket::new(endpoint, UrlStyle::VirtualHost, "rusty-s3", "eu-west-1").unwrap();
+
+            assert_eq!(
+                bucket.base_url().as_str(),
+                "https://rusty-s3.example.com/storage/v1/s3/"
+            );
+            assert_eq!(
+                bucket.object_url("something/cat.jpg").unwrap().as_str(),
+                "https://rusty-s3.example.com/storage/v1/s3/something/cat.jpg"
+            );
+        }
     }
 
     #[test]
