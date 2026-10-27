@@ -120,9 +120,26 @@ impl<'a> Map<'a> {
     }
 }
 
+/// The names of the elements whose values are secret, hidden from the
+/// `Debug` output
+const SENSITIVE: &[&str] = &[
+    "authorization",
+    "x-amz-copy-source-server-side-encryption-customer-key",
+    "x-amz-security-token",
+    "x-amz-server-side-encryption-customer-key",
+];
+
 impl Debug for Map<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_map().entries(self.iter()).finish()
+        let mut map = f.debug_map();
+        for (key, value) in self.iter() {
+            if SENSITIVE.iter().any(|name| key.eq_ignore_ascii_case(name)) {
+                map.entry(&key, &format_args!("Sensitive"));
+            } else {
+                map.entry(&key, &value);
+            }
+        }
+        map.finish()
     }
 }
 
@@ -241,5 +258,22 @@ mod tests {
                 ("x-amz-storage-class", "standard"),
             ]);
         }
+    }
+
+    #[test]
+    fn debug_hides_secrets() {
+        let mut map = Map::new();
+        map.insert("x-amz-server-side-encryption-customer-algorithm", "AES256");
+        map.insert("x-amz-server-side-encryption-customer-key", "c2VjcmV0");
+        map.insert("x-amz-server-side-encryption-customer-key-MD5", "bWQ1");
+        map.insert(
+            "X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key",
+            "c2VjcmV0",
+        );
+
+        assert_eq!(
+            format!("{map:?}"),
+            r#"{"X-Amz-Copy-Source-Server-Side-Encryption-Customer-Key": Sensitive, "x-amz-server-side-encryption-customer-algorithm": "AES256", "x-amz-server-side-encryption-customer-key": Sensitive, "x-amz-server-side-encryption-customer-key-MD5": "bWQ1"}"#
+        );
     }
 }
