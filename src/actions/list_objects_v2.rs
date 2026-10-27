@@ -13,9 +13,9 @@ use crate::{Bucket, Credentials, Map};
 /// List all objects in the bucket.
 ///
 /// If `next_continuation_token` is `Some` the response is truncated, and the
-/// rest of the list can be retrieved by reusing the `ListObjectV2` action
-/// but with `continuation-token` set to the value of `next_continuation_token`
-/// received in the previous response.
+/// rest of the list can be retrieved by reusing the `ListObjectsV2` action
+/// but with [`with_continuation_token`][Self::with_continuation_token] set to
+/// the value of `next_continuation_token` received in the previous response.
 ///
 /// Find out more about `ListObjectsV2` from the [AWS API Reference][api]
 ///
@@ -147,7 +147,7 @@ impl<'a> ListObjectsV2<'a> {
     /// ```
     /// # let bucket = rusty_s3::Bucket::new(url::Url::parse("http://rusty_s3/").unwrap(), rusty_s3::UrlStyle::Path, "doggo", "doggoland").unwrap();
     /// let mut list = bucket.list_objects_v2(None);
-    /// list.with_start_after("tamo"); // <- This token should come from a previous call to the list API.
+    /// list.with_start_after("tamo");
     /// ```
     pub fn with_start_after(&mut self, start_after: impl Into<Cow<'a, str>>) {
         self.query_mut().insert("start-after", start_after);
@@ -182,7 +182,7 @@ impl<'a> ListObjectsV2<'a> {
     /// ```
     /// # let bucket = rusty_s3::Bucket::new(url::Url::parse("http://rusty_s3/").unwrap(), rusty_s3::UrlStyle::Path, "doggo", "doggoland").unwrap();
     /// let mut list = bucket.list_objects_v2(None);
-    /// list.with_continuation_token("tamo"); // <- This token should come from a previous call to the list API.
+    /// list.with_max_keys(100);
     /// ```
     pub fn with_max_keys(&mut self, max_keys: usize) {
         let max_keys = u16::try_from(max_keys).unwrap_or(u16::MAX);
@@ -190,6 +190,10 @@ impl<'a> ListObjectsV2<'a> {
     }
 
     /// Parse the XML response from S3 into a struct.
+    ///
+    /// Since `ListObjectsV2` asks for the keys to be URL-encoded in the response,
+    /// so that any key can be represented in XML, the keys, the common prefixes
+    /// and `start_after` are URL-decoded.
     ///
     /// The continuation token is only kept if the response is truncated.
     ///
