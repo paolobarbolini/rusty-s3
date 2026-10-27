@@ -1,12 +1,11 @@
 use std::iter;
 use std::time::Duration;
 
-use instant_xml::ToXml;
+use instant_xml::{FromXml, ToXml};
 use jiff::Timestamp;
 use url::Url;
 
-use crate::actions::Method;
-use crate::actions::S3Action;
+use crate::actions::{Method, S3_XML_NS, S3Action};
 use crate::signing::sign;
 use crate::sorting_iter::SortingIterator;
 use crate::{Bucket, Credentials, Map};
@@ -28,6 +27,18 @@ pub struct CompleteMultipartUpload<'a, I> {
 
     query: Map<'a>,
     headers: Map<'a>,
+}
+
+/// The response of a [`CompleteMultipartUpload`] request
+#[allow(clippy::module_name_repetitions)]
+#[derive(Debug, Clone)]
+pub struct CompleteMultipartUploadResponse(InnerCompleteMultipartUploadResponse);
+
+#[derive(Debug, Clone, FromXml)]
+#[xml(rename = "CompleteMultipartUploadResult", ns(S3_XML_NS))]
+struct InnerCompleteMultipartUploadResponse {
+    #[xml(rename = "ETag")]
+    etag: String,
 }
 
 impl<'a, I> CompleteMultipartUpload<'a, I> {
@@ -90,6 +101,27 @@ where
         let req = CompleteMultipartUploadBody { parts };
 
         instant_xml::to_string(&req).unwrap()
+    }
+}
+
+impl CompleteMultipartUploadResponse {
+    /// Parse the XML response from S3
+    ///
+    /// S3 can respond with `200 OK` and still fail to complete the upload,
+    /// so the body must be parsed even when the status code is successful.
+    ///
+    /// # Errors
+    ///
+    /// Will return an error if the XML cannot be deserialized, like when it's
+    /// an `Error` instead of a `CompleteMultipartUploadResult`
+    pub fn parse(s: &str) -> Result<Self, instant_xml::Error> {
+        instant_xml::from_str(s).map(Self)
+    }
+
+    /// The `ETag` of the object
+    #[must_use]
+    pub fn etag(&self) -> &str {
+        &self.0.etag
     }
 }
 
@@ -190,6 +222,40 @@ mod tests {
         let etags = iter::repeat_n("abcdef", usize::from(u16::MAX) + 1);
         let action = CompleteMultipartUpload::new(&bucket, None, "test.txt", "abcd", etags);
         let _ = action.body();
+    }
+
+    #[test]
+    fn parse() {
+        let input = r#"<?xml version="1.0" encoding="UTF-8"?>
+        <CompleteMultipartUploadResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+            <Location>https://examplebucket.s3.amazonaws.com/test.txt</Location>
+            <Bucket>examplebucket</Bucket>
+            <Key>test.txt</Key>
+            <ETag>"3858f62230ac3c915f300c664312c11f-9"</ETag>
+        </CompleteMultipartUploadResult>
+        "#;
+
+        let parsed = CompleteMultipartUploadResponse::parse(input).unwrap();
+        assert_eq!(parsed.etag(), "\"3858f62230ac3c915f300c664312c11f-9\"");
+    }
+
+    #[test]
+    fn parse_error() {
+        // sent with `200 OK` when completing the upload fails
+        let input = r#"<?xml version="1.0" encoding="UTF-8"?>
+        <Error>
+            <Code>InternalError</Code>
+            <Message>We encountered an internal error. Please try again.</Message>
+            <RequestId>656c76696e6727732072657175657374</RequestId>
+            <HostId>Uuag1LuByRx9e6j5Onimru9pO4ZVKnJ2Qz7/C1NPcfTWAtRPfTaOFg==</HostId>
+        </Error>
+        "#;
+
+        let err = CompleteMultipartUploadResponse::parse(input).unwrap_err();
+        assert!(
+            matches!(err, instant_xml::Error::UnexpectedValue(_)),
+            "{err}"
+        );
     }
 
     #[test]

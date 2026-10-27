@@ -22,7 +22,9 @@ pub use self::head_object::HeadObject;
 pub use self::list_objects_v2::{ListObjectsV2, ListObjectsV2Response};
 pub use self::multipart_upload::abort::AbortMultipartUpload;
 #[cfg(feature = "xml")]
-pub use self::multipart_upload::complete::CompleteMultipartUpload;
+pub use self::multipart_upload::complete::{
+    CompleteMultipartUpload, CompleteMultipartUploadResponse,
+};
 #[cfg(feature = "xml")]
 pub use self::multipart_upload::create::{CreateMultipartUpload, CreateMultipartUploadResponse};
 #[cfg(feature = "xml")]
