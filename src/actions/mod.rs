@@ -56,21 +56,36 @@ pub trait S3Action<'a> {
     const METHOD: Method;
 
     /// Sign a request for this action, using `METHOD` for the [`Method`]
+    ///
+    /// The returned URL is valid for `expires_in`, starting from now, with a
+    /// precision of seconds, so with less than a second it has already
+    /// expired. S3 only accepts durations between 1 second and 7 days, and
+    /// URLs signed with temporary credentials also stop working when the
+    /// credentials expire.
+    ///
+    /// If the action has no credentials, the URL isn't signed, so
+    /// `expires_in` is ignored.
     fn sign(&self, expires_in: Duration) -> Url {
         let now = Timestamp::now();
         self.sign_with_time(expires_in, &now)
     }
 
     /// Get a mutable reference to the query string of this action
+    ///
+    /// The `X-Amz-*` query parameters of the signature are added when signing,
+    /// so they must not be specified here.
     fn query_mut(&mut self) -> &mut Map<'a>;
 
     /// Get a mutable reference to the signed headers of this action
     ///
     /// Headers specified here must also be present in the final request,
     /// with the same value specified, otherwise the S3 API will return an error.
+    /// The `host` header is always signed: unless it's specified here, it's
+    /// taken from the URL.
     fn headers_mut(&mut self) -> &mut Map<'a>;
 
-    /// Takes the time at which the URL should be signed
-    /// Used for testing purposes
+    /// Sign a request for this action, as if it was signed at `time`
+    ///
+    /// See [`S3Action::sign`]. This is mostly useful for testing.
     fn sign_with_time(&self, expires_in: Duration, time: &Timestamp) -> Url;
 }
