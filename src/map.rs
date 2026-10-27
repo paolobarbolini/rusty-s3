@@ -18,14 +18,14 @@ impl<'a> Map<'a> {
     /// Get the number of elements in this `Map`
     #[inline]
     #[must_use]
-    pub fn len(&self) -> usize {
+    pub const fn len(&self) -> usize {
         self.inner.len()
     }
 
     /// Return `true` if this `Map` is empty
     #[inline]
     #[must_use]
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.inner.is_empty()
     }
 

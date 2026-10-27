@@ -182,10 +182,11 @@ impl<'a> ListObjectsV2<'a> {
 
         // S3 returns an Owner with an empty DisplayName and ID when fetch-owner is disabled
         for content in &mut parsed.contents {
-            if let Some(owner) = &content.owner {
-                if owner.id.is_empty() && owner.display_name.as_deref().is_none_or(str::is_empty) {
-                    content.owner = None;
-                }
+            if let Some(owner) = &content.owner
+                && owner.id.is_empty()
+                && owner.display_name.as_deref().is_none_or(str::is_empty)
+            {
+                content.owner = None;
             }
 
             if url_encoded {
