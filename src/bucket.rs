@@ -81,11 +81,15 @@ pub enum UrlStyle {
     VirtualHost,
 }
 
+/// An error creating a [`Bucket`]
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum BucketError {
+    /// The scheme of the endpoint isn't `http` or `https`
     UnsupportedScheme,
+    /// The endpoint doesn't have a host
     MissingHost,
+    /// The url of the bucket couldn't be built
     ParseError(ParseError),
 }
 
@@ -109,8 +113,10 @@ impl Bucket {
     ///
     /// # Errors
     ///
-    /// Returns a `BucketError` if the `endpoint` is not a valid url, if the `endpoint` is missing the host,
-    /// or if the `name` can't be part of a host name when using [`UrlStyle::VirtualHost`].
+    /// Returns a `BucketError` if the scheme of the `endpoint` isn't `http` or `https`, if the `endpoint`
+    /// doesn't have a host, or if the url of the bucket can't be built, like when using
+    /// [`UrlStyle::VirtualHost`] with a `name` which can't be part of a host name, or with an
+    /// IP address as the host of the `endpoint`.
     pub fn new(
         endpoint: Url,
         path_style: UrlStyle,
