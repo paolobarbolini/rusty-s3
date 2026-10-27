@@ -10,6 +10,15 @@ use crate::{Bucket, Credentials, Map};
 
 /// Upload a file to S3, using a `PUT` request.
 ///
+/// The file can be up to 5 GB in size: larger files must be uploaded with a
+/// multipart upload, see [`UploadPart`][crate::actions::UploadPart].
+///
+/// The request must have a `Content-Length` header, otherwise AWS rejects it
+/// with `411 Length Required`. Some HTTP clients, like `reqwest`, leave it out
+/// when the body is empty, so it must be set to `0` explicitly to upload an
+/// empty file. Bodies of unknown length, sent with
+/// `Transfer-Encoding: chunked`, aren't supported either.
+///
 /// Find out more about `PutObject` from the [AWS API Reference][api]
 ///
 /// [api]: https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html
