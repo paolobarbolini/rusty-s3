@@ -2,7 +2,7 @@
 
 [![crates.io](https://img.shields.io/crates/v/rusty-s3.svg)](https://crates.io/crates/rusty-s3)
 [![Documentation](https://docs.rs/rusty-s3/badge.svg)](https://docs.rs/rusty-s3)
-[![dependency status](https://deps.rs/crate/rusty-s3/0.10.2/status.svg)](https://deps.rs/crate/rusty-s3/0.10.2)
+[![dependency status](https://deps.rs/crate/rusty-s3/0.11.0/status.svg)](https://deps.rs/crate/rusty-s3/0.11.0)
 [![Rustc Version 1.89+](https://img.shields.io/badge/rustc-1.89+-lightgray.svg)](https://blog.rust-lang.org/2025/08/07/Rust-1.89.0/)
 [![CI](https://github.com/paolobarbolini/rusty-s3/actions/workflows/continuos-integration.yml/badge.svg?branch=main)](https://github.com/paolobarbolini/rusty-s3/actions/workflows/continuos-integration.yml?query=branch%3Amain)
 [![codecov](https://codecov.io/gh/paolobarbolini/rusty-s3/branch/main/graph/badge.svg?token=K0YPC21N8D)](https://codecov.io/gh/paolobarbolini/rusty-s3)

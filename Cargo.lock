@@ -1441,7 +1441,7 @@ checksum = "cf54715a573b99ac80df0bc206da022bcd442c974952c7b9720069370852e21f"
 
 [[package]]
 name = "rusty-s3"
-version = "0.10.2"
+version = "0.11.0"
 dependencies = [
  "aws-lc-rs",
  "base64",
