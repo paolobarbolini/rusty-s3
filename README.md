@@ -13,7 +13,8 @@ and rusty take onto s3's APIs.
 Request signing and response parsing capabilities are provided for the
 most common S3 actions, using AWS Signature Version 4.
 
-Minio compatibility tested on every commit by GitHub Actions.
+Every commit is tested by GitHub Actions against the
+[Versity S3 Gateway](https://github.com/versity/versitygw).
 
 ## Examples
 
@@ -79,11 +80,13 @@ More examples can be found in the examples directory on GitHub.
 
 ### Development
 
+The integration tests need an S3 server listening on `localhost:9000`
+
 ```zsh
-docker run -p 9000:9000 -p 9001:9001 minio/minio:RELEASE.2024-12-18T13-15-44Z server /data --console-address ":9001"
+docker run -p 9000:7070 versity/versitygw:v1.9.0 --access minioadmin --secret minioadmin --region minio --port :7070 posix /tmp/vgw
 ```
 
 In another terminal
 ```zsh
-cargo test --lib # or other specific command
+cargo test # or other specific command
 ```
