@@ -87,6 +87,10 @@ impl From<ParseError> for BucketError {
 impl Bucket {
     /// Construct a new S3 bucket
     ///
+    /// The query string and fragment of the `endpoint` are ignored: use
+    /// [`S3Action::query_mut`](crate::S3Action::query_mut) to add query
+    /// parameters to a request.
+    ///
     /// # Errors
     ///
     /// Returns a `BucketError` if the `endpoint` is not a valid url, or if the `endpoint` is missing the host.
@@ -148,6 +152,11 @@ impl Bucket {
 }
 
 fn base_url(mut endpoint: Url, name: &str, path_style: UrlStyle) -> Result<Url, ParseError> {
+    // Signing replaces the query string, so the one of the endpoint would
+    // only be kept by some unsigned requests
+    endpoint.set_query(None);
+    endpoint.set_fragment(None);
+
     match path_style {
         UrlStyle::Path => {
             let path = format!("{name}/");
@@ -389,6 +398,27 @@ mod tests {
         assert_eq!(bucket.base_url(), &base_url);
         assert_eq!(bucket.name(), name);
         assert_eq!(bucket.region(), region);
+    }
+
+    #[test]
+    fn new_ignores_endpoint_query_and_fragment() {
+        let endpoint: Url = "https://s3.dualstack.eu-west-1.amazonaws.com/?tenant=t1#frag"
+            .parse()
+            .unwrap();
+        let name = "rusty-s3";
+        let region = "eu-west-1";
+
+        let path_style = Bucket::new(endpoint.clone(), UrlStyle::Path, name, region).unwrap();
+        assert_eq!(
+            path_style.base_url().as_str(),
+            "https://s3.dualstack.eu-west-1.amazonaws.com/rusty-s3/"
+        );
+
+        let domain_style = Bucket::new(endpoint, UrlStyle::VirtualHost, name, region).unwrap();
+        assert_eq!(
+            domain_style.base_url().as_str(),
+            "https://rusty-s3.s3.dualstack.eu-west-1.amazonaws.com/"
+        );
     }
 
     #[test]
