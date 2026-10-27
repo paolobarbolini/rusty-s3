@@ -105,7 +105,7 @@ jobs:
       uses: actions/checkout@v7
 
     - name: Install Rust
-      run: rustup default 1.85
+      run: rustup default 1.89
 
     - name: Run tests
       run: cargo test --lib
