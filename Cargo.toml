@@ -13,19 +13,19 @@ edition = "2024"
 rust-version = "1.85"
 
 [dependencies]
-aws-lc-rs = { version = "1.17", optional = true }
+aws-lc-rs = { version = "1.17", default-features = false, features = ["aws-lc-sys"], optional = true }
 graviola = { version = "0.4", optional = true }
 hmac = { version = "0.13", optional = true }
 jiff = { version = "0.2", default-features = false, features = ["std"] }
 percent-encoding = "2.1.0"
-sha2 = { version = "0.11", optional = true }
+sha2 = { version = "0.11", default-features = false, optional = true }
 url = "2.2.0"
 zeroize = "1"
 
 # optional
-base64 = { version = "0.23", optional = true }
+base64 = { version = "0.23", default-features = false, features = ["alloc"], optional = true }
 instant-xml = { version = "0.7", optional = true }
-md-5 = { version = "0.11", optional = true }
+md-5 = { version = "0.11", default-features = false, optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
 serde_json = { version = "1", optional = true }
 
