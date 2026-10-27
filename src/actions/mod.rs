@@ -81,6 +81,8 @@ pub trait S3Action<'a> {
     ///
     /// Headers specified here must also be present in the final request,
     /// with the same value specified, otherwise the S3 API will return an error.
+    /// Their names must be lowercase, like `content-type`, since they're
+    /// signed as they are and the signature expects them in lowercase.
     /// The `host` header is always signed: unless it's specified here, it's
     /// taken from the URL.
     ///

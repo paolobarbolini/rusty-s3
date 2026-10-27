@@ -25,9 +25,10 @@ pub(crate) mod util;
 /// `.`, `_` and `~`: servers don't agree on how to sort other names when
 /// verifying the signature, as AWS sorts them after percent-encoding them,
 /// like the specification says, and others before, like rusty-s3 does.
-/// `headers` are signed along with the `host` header, which is taken from
-/// `url` unless it's one of them, and must be sent with the request with the
-/// same values. The payload isn't signed.
+/// `headers` must be sorted by name, and their names must be lowercase.
+/// They're signed along with the `host` header, which is taken from `url`
+/// unless it's one of them, and must be sent with the request with the same
+/// values. The payload isn't signed.
 ///
 /// `expires_seconds` is used as it is for the `X-Amz-Expires` query
 /// parameter, and S3 only accepts values between 1 and 604800 (7 days).
