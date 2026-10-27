@@ -134,6 +134,9 @@ jobs:
     - name: Run tests
       run: cargo test --locked --lib
 
+    - name: Run tests (aws-lc-rs)
+      run: cargo test --locked --lib --no-default-features --features aws-lc-rs
+
   coverage:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
