@@ -62,11 +62,18 @@ impl Credentials {
     /// from the `AWS_SECRET_ACCESS_KEY` environment variable.
     /// If `AWS_SESSION_TOKEN` is set a token is also read.
     /// Returns `None` if either environment variables aren't set or they aren't valid utf-8.
+    ///
+    /// Like in the AWS SDK for Rust, variables that are empty or only contain
+    /// whitespace are treated as if they weren't set.
     #[must_use]
     pub fn from_env() -> Option<Self> {
-        let key = env::var("AWS_ACCESS_KEY_ID").ok()?;
-        let secret = env::var("AWS_SECRET_ACCESS_KEY").ok()?;
-        let token = env::var("AWS_SESSION_TOKEN").ok();
+        fn var(name: &str) -> Option<String> {
+            env::var(name).ok().filter(|value| !value.trim().is_empty())
+        }
+
+        let key = var("AWS_ACCESS_KEY_ID")?;
+        let secret = var("AWS_SECRET_ACCESS_KEY")?;
+        let token = var("AWS_SESSION_TOKEN");
         Some(Self::new_with_maybe_token(key, secret, token))
     }
 
@@ -141,12 +148,36 @@ mod tests {
         unsafe {
             env::set_var("AWS_ACCESS_KEY_ID", "key");
             env::set_var("AWS_SECRET_ACCESS_KEY", "secret");
+            env::remove_var("AWS_SESSION_TOKEN");
         }
 
         let credentials = Credentials::from_env().unwrap();
         assert_eq!(credentials.key(), "key");
         assert_eq!(credentials.secret(), "secret");
         assert!(credentials.token().is_none());
+
+        // Blank variables are treated as unset, like the AWS SDK for Rust does.
+        // Kept in this test because tests run in parallel and share the environment.
+        for blank in ["", " "] {
+            unsafe {
+                env::set_var("AWS_SESSION_TOKEN", blank);
+            }
+            let credentials = Credentials::from_env().unwrap();
+            assert_eq!(credentials.key(), "key");
+            assert!(credentials.token().is_none());
+        }
+
+        unsafe {
+            env::remove_var("AWS_SESSION_TOKEN");
+        }
+
+        for (key, secret) in [("", "secret"), ("key", ""), (" ", " ")] {
+            unsafe {
+                env::set_var("AWS_ACCESS_KEY_ID", key);
+                env::set_var("AWS_SECRET_ACCESS_KEY", secret);
+            }
+            assert!(Credentials::from_env().is_none());
+        }
 
         unsafe {
             env::remove_var("AWS_ACCESS_KEY_ID");
