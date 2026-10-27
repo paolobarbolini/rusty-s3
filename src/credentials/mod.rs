@@ -67,9 +67,12 @@ impl Credentials {
     /// whitespace are treated as if they weren't set.
     #[must_use]
     pub fn from_env() -> Option<Self> {
-        fn var(name: &str) -> Option<String> {
-            env::var(name).ok().filter(|value| !value.trim().is_empty())
-        }
+        Self::from_vars(|name| env::var(name).ok())
+    }
+
+    /// Like `from_env`, but reading the variables with `var`
+    fn from_vars(var: impl Fn(&str) -> Option<String>) -> Option<Self> {
+        let var = |name| var(name).filter(|value| !value.trim().is_empty());
 
         let key = var("AWS_ACCESS_KEY_ID")?;
         let secret = var("AWS_SECRET_ACCESS_KEY")?;
@@ -143,47 +146,68 @@ mod tests {
         assert_eq!(debug_output, "Credentials { key: \"abcd\", .. }");
     }
 
-    #[test]
-    fn from_env() {
-        unsafe {
-            env::set_var("AWS_ACCESS_KEY_ID", "key");
-            env::set_var("AWS_SECRET_ACCESS_KEY", "secret");
-            env::remove_var("AWS_SESSION_TOKEN");
-        }
+    fn from_vars(vars: &[(&str, &str)]) -> Option<Credentials> {
+        Credentials::from_vars(|name| {
+            vars.iter()
+                .find(|(var, _)| *var == name)
+                .map(|(_, value)| (*value).to_owned())
+        })
+    }
 
-        let credentials = Credentials::from_env().unwrap();
+    #[test]
+    fn from_env_key_secret() {
+        let credentials = from_vars(&[
+            ("AWS_ACCESS_KEY_ID", "key"),
+            ("AWS_SECRET_ACCESS_KEY", "secret"),
+        ])
+        .unwrap();
         assert_eq!(credentials.key(), "key");
         assert_eq!(credentials.secret(), "secret");
         assert!(credentials.token().is_none());
+    }
 
-        // Blank variables are treated as unset, like the AWS SDK for Rust does.
-        // Kept in this test because tests run in parallel and share the environment.
+    #[test]
+    fn from_env_key_secret_token() {
+        let credentials = from_vars(&[
+            ("AWS_ACCESS_KEY_ID", "key"),
+            ("AWS_SECRET_ACCESS_KEY", "secret"),
+            ("AWS_SESSION_TOKEN", "token"),
+        ])
+        .unwrap();
+        assert_eq!(credentials.key(), "key");
+        assert_eq!(credentials.secret(), "secret");
+        assert_eq!(credentials.token(), Some("token"));
+    }
+
+    #[test]
+    fn from_env_missing() {
+        assert!(from_vars(&[]).is_none());
+        assert!(from_vars(&[("AWS_ACCESS_KEY_ID", "key")]).is_none());
+        assert!(from_vars(&[("AWS_SECRET_ACCESS_KEY", "secret")]).is_none());
+    }
+
+    #[test]
+    fn from_env_blank() {
+        // Blank variables are treated as unset, like the AWS SDK for Rust does
         for blank in ["", " "] {
-            unsafe {
-                env::set_var("AWS_SESSION_TOKEN", blank);
-            }
-            let credentials = Credentials::from_env().unwrap();
+            let credentials = from_vars(&[
+                ("AWS_ACCESS_KEY_ID", "key"),
+                ("AWS_SECRET_ACCESS_KEY", "secret"),
+                ("AWS_SESSION_TOKEN", blank),
+            ])
+            .unwrap();
             assert_eq!(credentials.key(), "key");
             assert!(credentials.token().is_none());
         }
 
-        unsafe {
-            env::remove_var("AWS_SESSION_TOKEN");
-        }
-
         for (key, secret) in [("", "secret"), ("key", ""), (" ", " ")] {
-            unsafe {
-                env::set_var("AWS_ACCESS_KEY_ID", key);
-                env::set_var("AWS_SECRET_ACCESS_KEY", secret);
-            }
-            assert!(Credentials::from_env().is_none());
+            assert!(
+                from_vars(&[
+                    ("AWS_ACCESS_KEY_ID", key),
+                    ("AWS_SECRET_ACCESS_KEY", secret),
+                ])
+                .is_none()
+            );
         }
-
-        unsafe {
-            env::remove_var("AWS_ACCESS_KEY_ID");
-            env::remove_var("AWS_SECRET_ACCESS_KEY");
-        }
-
-        assert!(Credentials::from_env().is_none());
     }
 }

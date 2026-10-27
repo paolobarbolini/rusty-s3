@@ -41,7 +41,7 @@
     rust_2018_idioms,
     rustdoc::broken_intra_doc_links
 )]
-#![cfg_attr(not(test), forbid(unsafe_code))]
+#![forbid(unsafe_code)]
 
 pub use self::actions::S3Action;
 pub use self::bucket::{Bucket, BucketError, UrlStyle};
