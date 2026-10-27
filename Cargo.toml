@@ -60,6 +60,10 @@ name = "delete_objects"
 required-features = ["full"]
 
 [[test]]
+name = "list_objects_v2"
+required-features = ["xml"]
+
+[[test]]
 name = "list_parts"
 required-features = ["xml"]
 
