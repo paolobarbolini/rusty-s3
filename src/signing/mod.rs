@@ -12,11 +12,28 @@ mod signature;
 mod string_to_sign;
 pub(crate) mod util;
 
-/// Sign a URL with AWS Signature.
+/// Sign a URL with AWS Signature Version 4, making it a presigned URL.
+///
+/// This is how every [`S3Action`] signs its request, but it can also be used
+/// to presign requests for actions that rusty-s3 doesn't implement.
+///
+/// The path of `url` is signed as it is, so it must already be
+/// percent-encoded, like [`Bucket::object_url`] does, while its query string
+/// is replaced by `query_string`, which gets percent-encoded and must already
+/// be sorted by name, then by value.
+/// `headers` are signed along with the `host` header, which is taken from
+/// `url` unless it's one of them, and must be sent with the request with the
+/// same values. The payload isn't signed.
+///
+/// `expires_seconds` is used as it is for the `X-Amz-Expires` query
+/// parameter, and S3 only accepts values between 1 and 604800 (7 days).
 ///
 /// # Panics
 ///
-/// If date format is invalid.
+/// Panics if the scheme of `url` isn't `http` or `https`.
+///
+/// [`S3Action`]: crate::S3Action
+/// [`Bucket::object_url`]: crate::Bucket::object_url
 #[allow(
     clippy::too_many_arguments,
     clippy::map_identity,
