@@ -61,7 +61,7 @@ where
     ///
     /// # Panics
     ///
-    /// Panics if an index is not representable as a `u16`.
+    /// Panics if there are more than [`u16::MAX`] parts.
     pub fn body(self) -> String {
         #[derive(ToXml)]
         #[xml(rename = "CompleteMultipartUpload")]
@@ -83,7 +83,7 @@ where
             .enumerate()
             .map(|(i, etag)| Part {
                 etag,
-                part_number: u16::try_from(i).expect("convert to u16") + 1,
+                part_number: u16::try_from(i + 1).expect("convert to u16"),
             })
             .collect::<Vec<_>>();
 
@@ -172,6 +172,24 @@ mod tests {
 
         let expected = "<CompleteMultipartUpload><Part><ETag>123456789</ETag><PartNumber>1</PartNumber></Part><Part><ETag>abcdef</ETag><PartNumber>2</PartNumber></Part></CompleteMultipartUpload>";
         assert_eq!(action.body(), expected);
+    }
+
+    #[test]
+    #[should_panic(expected = "convert to u16")]
+    fn too_many_parts() {
+        let endpoint = "https://s3.amazonaws.com".parse().unwrap();
+        let bucket = Bucket::new(
+            endpoint,
+            UrlStyle::VirtualHost,
+            "examplebucket",
+            "us-east-1",
+        )
+        .unwrap();
+
+        // Part numbers start at 1, so the last ETag's would be 65536
+        let etags = iter::repeat_n("abcdef", usize::from(u16::MAX) + 1);
+        let action = CompleteMultipartUpload::new(&bucket, None, "test.txt", "abcd", etags);
+        let _ = action.body();
     }
 
     #[test]
