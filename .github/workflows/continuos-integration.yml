@@ -50,7 +50,13 @@ jobs:
         rustup component add clippy
 
     - name: Run clippy
-      run: cargo clippy --locked
+      run: cargo clippy --locked --all-targets
+
+    - name: Run clippy (aws-lc-rs)
+      run: cargo clippy --locked --no-default-features --features aws-lc-rs,full
+
+    - name: Run clippy (graviola)
+      run: cargo clippy --locked --no-default-features --features graviola,full
 
   test:
     strategy:
