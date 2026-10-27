@@ -136,3 +136,27 @@ async fn test_headers() {
 
     assert_eq!(body, bytes);
 }
+
+#[tokio::test]
+async fn test_headers_sequential_spaces() {
+    let (bucket, credentials, client) = common::bucket().await;
+
+    let mut action = bucket.put_object(Some(&credentials), "test.txt");
+    action.headers_mut().insert(
+        "content-disposition",
+        "attachment;  filename=\"rubber  duck.txt\"",
+    );
+    let url = action.sign(Duration::from_secs(60));
+    client
+        .put(url)
+        .header(
+            "content-disposition",
+            "attachment;  filename=\"rubber  duck.txt\"",
+        )
+        .body(vec![b'r'; 1024])
+        .send()
+        .await
+        .expect("send PutObject")
+        .error_for_status()
+        .expect("PutObject unexpected status code");
+}

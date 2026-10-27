@@ -49,7 +49,18 @@ where
     for (key, val) in headers {
         out.write_str(key)?;
         out.write_char(':')?;
-        out.write_str(val.trim())?;
+
+        // Trim the value and collapse sequential spaces into one
+        let mut first = true;
+        for word in val.split_whitespace() {
+            if first {
+                first = false;
+            } else {
+                out.write_char(' ')?;
+            }
+
+            out.write_str(word)?;
+        }
 
         out.write_char('\n')?;
     }
@@ -128,6 +139,28 @@ mod tests {
             vec!["host"].into_iter(),
         );
 
+        assert_eq!(got, expected);
+    }
+
+    #[test]
+    fn header_values_whitespace() {
+        let headers = [
+            (
+                "content-disposition",
+                "  attachment;  filename=\"a  b.txt\" ",
+            ),
+            ("x-amz-meta-foo", "bar\t \tbaz"),
+            ("x-amz-meta-empty", "   "),
+        ];
+
+        let mut got = String::new();
+        canonical_headers(headers.into_iter(), &mut got).unwrap();
+
+        let expected = concat!(
+            "content-disposition:attachment; filename=\"a b.txt\"\n",
+            "x-amz-meta-foo:bar baz\n",
+            "x-amz-meta-empty:\n",
+        );
         assert_eq!(got, expected);
     }
 }
