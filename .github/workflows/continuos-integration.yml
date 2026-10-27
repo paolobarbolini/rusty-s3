@@ -47,14 +47,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v7
 
-    - name: Install and run minio
+    - name: Run Versity S3 Gateway
       if: matrix.platform == 'ubuntu-24.04'
       run: |
-        MINIO_RELEASE="2024-12-18T13-15-44Z"
-        LINK="https://dl.min.io/server/minio/release/linux-amd64/archive"
-        curl -L --output minio "$LINK/minio.RELEASE.$MINIO_RELEASE"
-        chmod +x minio
-        ./minio server minio_data/ &
+        docker run -d -p 9000:7070 \
+          versity/versitygw:v1.10.0@sha256:89cad13cc981986ee284cbafea4613f9533ce6fd5f37a2c96c4c4fb8adb3a316 \
+          --access minioadmin --secret minioadmin --region minio --port :7070 \
+          posix /tmp/vgw
+        timeout 30 sh -c 'until curl -s -o /dev/null http://localhost:9000; do sleep 0.1; done'
 
     - name: Run tests (aws-lc-rs)
       if: matrix.platform == 'ubuntu-24.04'

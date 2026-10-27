@@ -22,8 +22,15 @@ pub(crate) async fn bucket() -> (Bucket, Credentials, Client) {
     let client = Client::new();
     let action = CreateBucket::new(&bucket, &credentials);
     let url = action.sign(Duration::from_secs(60));
+    // Outside of us-east-1 the bucket's region has to be given as its location
+    let body = format!(
+        "<CreateBucketConfiguration xmlns=\"http://s3.amazonaws.com/doc/2006-03-01/\">\
+         <LocationConstraint>{region}</LocationConstraint>\
+         </CreateBucketConfiguration>"
+    );
     client
         .put(url)
+        .body(body)
         .send()
         .await
         .expect("send CreateBucket request")
