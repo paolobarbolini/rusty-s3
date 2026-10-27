@@ -72,12 +72,29 @@ pub enum UrlStyle {
     /// Requests will use "path-style" url: i.e:
     /// `https://s3.<region>.amazonaws.com/<bucket>/<key>`.
     ///
-    /// This style should be considered deprecated and is **NOT RECOMMENDED**.
-    /// Check [Amazon S3 Path Deprecation Plan](https://aws.amazon.com/blogs/aws/amazon-s3-path-deprecation-plan-the-rest-of-the-story/)
-    /// for more information.
+    /// AWS plans to stop supporting this style, but in 2020 it postponed it
+    /// without setting a new date: check
+    /// [Amazon S3 Path Deprecation Plan](https://aws.amazon.com/blogs/aws/amazon-s3-path-deprecation-plan-the-rest-of-the-story/)
+    /// for more information. It's still needed for the buckets which can't use
+    /// [`UrlStyle::VirtualHost`], and with S3 compatible servers which don't
+    /// support virtual-hosted-style urls, like the ones reached through an IP
+    /// address.
     Path,
     /// Requests will use "virtual-hosted-style" urls, i.e:
     /// `https://<bucket>.s3.<region>.amazonaws.com/<key>`.
+    ///
+    /// This is the style recommended by AWS, but since the name of the bucket
+    /// becomes part of the host, it doesn't work with:
+    ///
+    /// * names containing `.` over `https`, because the TLS certificates of
+    ///   AWS only match a single label before `s3.<region>.amazonaws.com`
+    /// * legacy names which aren't valid in a host name, like the ones with
+    ///   uppercase letters, which could be created in `us-east-1` before
+    ///   March 1, 2018
+    ///
+    /// Use [`UrlStyle::Path`] for them. Check
+    /// [Virtual hosting of buckets](https://docs.aws.amazon.com/AmazonS3/latest/userguide/VirtualHosting.html)
+    /// for more information.
     VirtualHost,
 }
 
