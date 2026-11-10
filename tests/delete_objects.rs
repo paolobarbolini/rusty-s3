@@ -11,7 +11,6 @@ use rusty_s3::actions::{
 mod common;
 
 #[tokio::test]
-#[ignore = "versitygw puts the response outside of the S3 namespace until a release with https://github.com/versity/versitygw/pull/2579"]
 async fn delete_objects() {
     let (bucket, credentials, client) = common::bucket().await;
 

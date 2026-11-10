@@ -78,7 +78,7 @@ jobs:
       if: matrix.platform == 'ubuntu-26.04'
       run: |
         docker run -d -p 9000:7070 \
-          versity/versitygw:v1.10.0@sha256:89cad13cc981986ee284cbafea4613f9533ce6fd5f37a2c96c4c4fb8adb3a316 \
+          versity/versitygw:v1.11.0@sha256:8319a530d08d537426e2f855bae5280709795dc73a3f0c347973ef915d6343c5 \
           --access minioadmin --secret minioadmin --region minio --port :7070 \
           posix /tmp/vgw
         timeout 30 sh -c 'until curl -s -o /dev/null http://localhost:9000; do sleep 0.1; done'
